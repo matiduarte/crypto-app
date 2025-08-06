@@ -24,9 +24,12 @@ export const APP_CONFIG = {
     APP_SETTINGS: '@app_settings',
   },
   GOOGLE_SIGNIN_CONFIG: {
-    // These will be configured during Google Sign-In setup
-    WEB_CLIENT_ID: '', // To be filled during configuration
-    IOS_CLIENT_ID: '', // To be filled during configuration
+    WEB_CLIENT_ID:
+      '26541062723-0p5vcfdcbmuco5q4d71d1t91ucka42u4.apps.googleusercontent.com', // Web client ID (required for both platforms)
+    IOS_CLIENT_ID:
+      '26541062723-7lnu0qcfvo29iugs911osr7iuphcva86.apps.googleusercontent.com', // iOS client ID
+    OFFLINE_ACCESS: true,
+    FORCE_CODE_FOR_REFRESH_TOKEN: true,
   },
 } as const;
 

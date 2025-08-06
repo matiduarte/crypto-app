@@ -117,3 +117,9 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Apply Google Services plugin (for Google Sign-In)
+// Note: This will only work when google-services.json is present
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}

@@ -13,6 +13,3 @@ export {
   SafeAreaModal,
   SafeAreaHeader,
 } from './SafeAreaWrapper';
-
-// Test component
-export { CryptoTestComponent } from './CryptoTestComponent';

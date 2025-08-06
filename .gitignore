@@ -2,6 +2,14 @@
 #
 .DS_Store
 
+# Google Sign-In configuration files (sensitive)
+android/app/google-services.json
+ios/GoogleService-Info.plist
+
+# Keep example files for reference
+!android/app/google-services.json.example
+!ios/GoogleService-Info.plist.example
+
 # Xcode
 #
 build/

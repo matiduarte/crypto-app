@@ -8,7 +8,10 @@ interface ScreenWrapperProps {
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
   scrollable?: boolean;
-  scrollViewProps?: Omit<ScrollViewProps, 'children' | 'style' | 'contentContainerStyle'>;
+  scrollViewProps?: Omit<
+    ScrollViewProps,
+    'children' | 'style' | 'contentContainerStyle'
+  >;
   safeAreaEdges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
@@ -19,22 +22,21 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   contentContainerStyle,
   scrollable = false,
   scrollViewProps = {},
-  safeAreaEdges = ['top', 'left', 'right'],
+  safeAreaEdges = ['left', 'right'],
 }) => {
-  const containerStyle = [
-    styles.container,
-    { backgroundColor },
-    style,
-  ];
+  const containerStyle = [styles.container, { backgroundColor }, style];
 
   if (scrollable) {
     const { ScrollView } = require('react-native');
-    
+
     return (
       <SafeAreaView style={containerStyle} edges={safeAreaEdges}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
+          contentContainerStyle={[
+            styles.contentContainer,
+            contentContainerStyle,
+          ]}
           showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
@@ -52,16 +54,21 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 };
 
 // Pre-configured screen types
-export const ScrollableScreen: React.FC<Omit<ScreenWrapperProps, 'scrollable'>> = (props) => (
-  <ScreenWrapper {...props} scrollable />
-);
+export const ScrollableScreen: React.FC<
+  Omit<ScreenWrapperProps, 'scrollable'>
+> = props => <ScreenWrapper {...props} scrollable />;
 
-export const FixedScreen: React.FC<Omit<ScreenWrapperProps, 'scrollable'>> = (props) => (
-  <ScreenWrapper {...props} scrollable={false} />
-);
+export const FixedScreen: React.FC<
+  Omit<ScreenWrapperProps, 'scrollable'>
+> = props => <ScreenWrapper {...props} scrollable={false} />;
 
-export const FullScreenModal: React.FC<Omit<ScreenWrapperProps, 'safeAreaEdges'>> = (props) => (
-  <ScreenWrapper {...props} safeAreaEdges={['top', 'bottom', 'left', 'right']} />
+export const FullScreenModal: React.FC<
+  Omit<ScreenWrapperProps, 'safeAreaEdges'>
+> = props => (
+  <ScreenWrapper
+    {...props}
+    safeAreaEdges={['top', 'bottom', 'left', 'right']}
+  />
 );
 
 const styles = StyleSheet.create({

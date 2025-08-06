@@ -2,25 +2,26 @@ import React from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryProvider } from './src/contexts/QueryProvider';
-import { CryptoTestComponent } from './src/components/common/CryptoTestComponent';
+import { AuthProvider } from './src/contexts/AuthContext';
+import { RootNavigator } from './src/navigation/RootNavigator';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      <QueryProvider>
-        <StatusBar 
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
-          backgroundColor="transparent"
-          translucent
-        />
-        <CryptoTestComponent />
-      </QueryProvider>
+      <AuthProvider>
+        <QueryProvider>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor="transparent"
+            translucent
+          />
+          <RootNavigator />
+        </QueryProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
-
-// Styles removed - now handled by individual components with SafeArea
 
 export default App;

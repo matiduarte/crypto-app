@@ -71,7 +71,12 @@ export interface CryptoFilter {
 }
 
 export interface CryptoSort {
-  field: 'name' | 'current_price' | 'market_cap' | 'total_volume' | 'price_change_percentage_24h';
+  field:
+    | 'name'
+    | 'current_price'
+    | 'market_cap'
+    | 'total_volume'
+    | 'price_change_percentage_24h';
   order: 'asc' | 'desc';
 }
 
@@ -130,10 +135,19 @@ export type CryptoStackParamList = {
 
 // State Types
 export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  loading: boolean;
+  user: any | null; // Google User from @react-native-google-signin/google-signin
+  token: string | null;
+  refreshToken: string | null;
+  isLoggedIn: boolean;
+  isLoading: boolean;
   error: string | null;
+}
+
+export interface AuthContextType extends AuthState {
+  signIn: () => Promise<{ success: boolean; error?: string }>;
+  signOut: () => Promise<{ success: boolean; error?: string }>;
+  refreshTokens: () => Promise<{ success: boolean; error?: string }>;
+  clearError: () => void;
 }
 
 export interface CryptoState {
