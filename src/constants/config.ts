@@ -38,8 +38,8 @@ export const APP_CONFIG = {
 export const FIAT_CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },
-  { code: 'ARS', name: 'Argentine Peso', symbol: '$' },
-  { code: 'PEN', name: 'Peruvian Sol', symbol: 'S/' },
+  { code: 'ARS', name: 'Arg Peso', symbol: '$' },
+  { code: 'PEN', name: 'Peru Sol', symbol: 'S/' },
 ] as const;
 
 // Default Cryptocurrencies

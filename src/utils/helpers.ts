@@ -23,6 +23,56 @@ export const formatPriceUSD = (price: number): string => {
   return `${price.toFixed(2)} USD`;
 };
 
+// Enhanced fiat currency formatting with proper symbols and locale formatting
+export const formatFiatCurrency = (
+  amount: number, 
+  _currencyCode: string, 
+  currencySymbol: string
+): string => {
+  // Handle very small amounts
+  if (amount < 0.01 && amount > 0) {
+    return `${currencySymbol}${amount.toFixed(6)}`;
+  }
+  
+  // Handle normal amounts with proper thousands separators
+  const formatAmount = (value: number, decimals: number = 2): string => {
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  };
+
+  // Format based on amount size
+  if (amount >= 1000000) {
+    return `${currencySymbol}${formatAmount(amount / 1000000, 2)}M`;
+  } else if (amount >= 1000) {
+    return `${currencySymbol}${formatAmount(amount / 1000, 2)}K`;
+  } else if (amount >= 1) {
+    return `${currencySymbol}${formatAmount(amount, 2)}`;
+  } else if (amount >= 0.01) {
+    return `${currencySymbol}${formatAmount(amount, 2)}`;
+  } else {
+    return `${currencySymbol}${amount.toFixed(6)}`;
+  }
+};
+
+// Format crypto amounts with proper precision
+export const formatCryptoAmount = (amount: number, symbol: string): string => {
+  if (amount < 0.00000001 && amount > 0) {
+    return `${amount.toFixed(8)} ${symbol}`;
+  } else if (amount < 0.01 && amount > 0) {
+    return `${amount.toFixed(6)} ${symbol}`;
+  } else if (amount < 1) {
+    return `${amount.toFixed(4)} ${symbol}`;
+  } else if (amount >= 1000000) {
+    return `${(amount / 1000000).toFixed(2)}M ${symbol}`;
+  } else if (amount >= 1000) {
+    return `${(amount / 1000).toFixed(2)}K ${symbol}`;
+  } else {
+    return `${amount.toFixed(2)} ${symbol}`;
+  }
+};
+
 export const formatPercentage = (percentage: number): string => {
   const sign = percentage >= 0 ? '+' : '';
   return `${sign}${percentage.toFixed(2)}%`;
