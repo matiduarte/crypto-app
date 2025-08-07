@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   Image,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { useCryptoStackNavigation } from '../../navigation/hooks';
-import { formatPrice, formatPercentage } from '../../utils/helpers';
+import { formatPriceUSD, formatPercentage, searchCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 
 // CryptoListItem Component Interface
@@ -52,7 +53,7 @@ const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
 
         <View style={styles.itemRight}>
           <Text style={styles.cryptoPrice}>
-            {formatPrice(item.current_price)}
+            {formatPriceUSD(item.current_price)}
           </Text>
           <Text style={[styles.cryptoChange, { color: changeColor }]}>
             {formatPercentage(item.price_change_percentage_24h)}
@@ -65,6 +66,7 @@ const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
 
 export const CryptoListScreen: React.FC = () => {
   const navigation = useCryptoStackNavigation();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Use React Query hook for cryptocurrency data
   const {
@@ -82,9 +84,18 @@ export const CryptoListScreen: React.FC = () => {
     price_change_percentage: '24h',
   });
 
-  const cryptoData = useMemo(() => {
+  // Get the base crypto data
+  const baseCryptoData = useMemo(() => {
     return cryptoResponse?.success ? cryptoResponse.data : [];
   }, [cryptoResponse]);
+
+  // Filter crypto data based on search query (in memory)
+  const cryptoData = useMemo(() => {
+    if (searchQuery.trim().length > 0) {
+      return searchCryptos(baseCryptoData, searchQuery.trim());
+    }
+    return baseCryptoData;
+  }, [baseCryptoData, searchQuery]);
 
   const handleItemPress = useCallback(
     (crypto: Cryptocurrency) => {
@@ -97,6 +108,7 @@ export const CryptoListScreen: React.FC = () => {
   );
 
   const handleRefresh = useCallback(() => {
+    // Always refetch the main data, don't clear search
     refetch();
   }, [refetch]);
 
@@ -158,18 +170,77 @@ export const CryptoListScreen: React.FC = () => {
     );
   };
 
+  // Clear search functionality
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
+
+  // Handle search input change
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+  }, []);
+
+  // Empty search results component
+  const renderEmptySearch = useCallback(() => {
+    if (searchQuery.trim().length === 0 || isLoading) {
+      return null;
+    }
+    
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>🔍</Text>
+        <Text style={styles.emptyTitle}>No Results Found</Text>
+        <Text style={styles.emptySubtext}>
+          No cryptocurrencies match "{searchQuery}". Try a different search term.
+        </Text>
+        <TouchableOpacity style={styles.clearSearchButton} onPress={handleClearSearch}>
+          <Text style={styles.clearSearchText}>Clear Search</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }, [searchQuery, isLoading, handleClearSearch]);
+
   return (
     <FixedScreen>
       <View style={styles.container}>
-        <View style={styles.header}>
+        {/* Search Header */}
+        <View style={styles.searchHeader}>
           <Text style={styles.title}>🍋 Cryptocurrency Market</Text>
-          <Text style={styles.subtitle}>Live prices and 24h changes</Text>
+          <Text style={styles.subtitle}>
+            {searchQuery ? `Search results for "${searchQuery}"` : 'Live USD prices and 24h changes'}
+          </Text>
+          
+          <View style={styles.searchContainer}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search cryptocurrencies..."
+              placeholderTextColor="#9e9e9e"
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              clearButtonMode="while-editing" // iOS only
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearSearch}
+                accessibilityLabel="Clear search"
+              >
+                <Text style={styles.clearButtonText}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {renderLoadingState()}
         {renderErrorState()}
 
-        {!isLoading && !error && (
+        {!isLoading && !error && cryptoData.length === 0 && renderEmptySearch()}
+
+        {!isLoading && !error && cryptoData.length > 0 && (
           <FlatList
             data={cryptoData}
             renderItem={renderItem}
@@ -211,25 +282,68 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  header: {
+  // Search Header
+  searchHeader: {
+    backgroundColor: '#ffffff',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: '#ffffff',
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6c757d',
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+    color: '#6c757d',
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  clearButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: '#6c757d',
+    fontWeight: 'bold',
+  },
+  clearSearchButton: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  clearSearchText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   // Loading State
   loadingContainer: {

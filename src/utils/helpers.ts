@@ -10,6 +10,19 @@ export const formatPrice = (price: number, decimals: number = 2): string => {
   return price.toFixed(decimals);
 };
 
+export const formatPriceUSD = (price: number): string => {
+  if (price < 0.01) {
+    return `${price.toFixed(6)} USD`;
+  } else if (price < 1) {
+    return `${price.toFixed(4)} USD`;
+  } else if (price >= 1000000) {
+    return `${(price / 1000000).toFixed(2)}M USD`;
+  } else if (price >= 1000) {
+    return `${(price / 1000).toFixed(2)}K USD`;
+  }
+  return `${price.toFixed(2)} USD`;
+};
+
 export const formatPercentage = (percentage: number): string => {
   const sign = percentage >= 0 ? '+' : '';
   return `${sign}${percentage.toFixed(2)}%`;
