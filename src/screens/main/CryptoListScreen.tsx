@@ -11,9 +11,9 @@ import {
   TextInput,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { useCryptocurrencies } from '../../hooks/useCryptocurrencies';
+import { useCryptocurrencies, useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { useCryptoStackNavigation } from '../../navigation/hooks';
-import { formatPriceUSD, formatPercentage, searchCryptos } from '../../utils/helpers';
+import { formatPriceUSD, formatPercentage, searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 
 // CryptoListItem Component Interface
@@ -24,6 +24,27 @@ interface CryptoListItemProps {
 
 // Item Separator Component
 const ItemSeparator: React.FC = () => <View style={styles.separator} />;
+
+// Skeleton Loader Component
+const SkeletonLoader: React.FC = () => (
+  <View style={styles.skeletonContainer}>
+    {Array.from({ length: 8 }).map((_, index) => (
+      <View key={index} style={styles.skeletonItem}>
+        <View style={styles.skeletonLeft}>
+          <View style={styles.skeletonImage} />
+          <View style={styles.skeletonTextContainer}>
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonSubtitle} />
+          </View>
+        </View>
+        <View style={styles.skeletonRight}>
+          <View style={styles.skeletonPrice} />
+          <View style={styles.skeletonChange} />
+        </View>
+      </View>
+    ))}
+  </View>
+);
 
 // Move CryptoListItem outside of render to avoid re-creation
 const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
@@ -64,38 +85,67 @@ const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
   },
 );
 
+// Sort options type
+type SortOption = {
+  key: keyof Cryptocurrency;
+  label: string;
+  icon: string;
+};
+
+const SORT_OPTIONS: SortOption[] = [
+  { key: 'market_cap_rank', label: 'Market Cap', icon: '📊' },
+  { key: 'current_price', label: 'Price', icon: '💰' },
+  { key: 'price_change_percentage_24h', label: '24h Change', icon: '📈' },
+  { key: 'name', label: 'Name', icon: '🔤' },
+];
+
 export const CryptoListScreen: React.FC = () => {
   const navigation = useCryptoStackNavigation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<keyof Cryptocurrency>('market_cap_rank');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showSortModal, setShowSortModal] = useState(false);
 
-  // Use React Query hook for cryptocurrency data
+  // Use React Query hook for infinite cryptocurrency data
   const {
-    data: cryptoResponse,
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
     error,
     refetch,
     isFetching,
-  } = useCryptocurrencies({
+  } = useInfiniteCryptocurrencies({
     vs_currency: 'usd',
     order: 'market_cap_desc',
-    per_page: 50,
-    page: 1,
+    per_page: 20, // Smaller pages for better infinite scroll
     sparkline: false,
     price_change_percentage: '24h',
   });
 
-  // Get the base crypto data
+  // Get the base crypto data from all pages
   const baseCryptoData = useMemo(() => {
-    return cryptoResponse?.success ? cryptoResponse.data : [];
-  }, [cryptoResponse]);
+    if (!infiniteData?.pages) return [];
+    
+    return infiniteData.pages
+      .filter(page => page.success)
+      .flatMap(page => page.data)
+      .filter(Boolean);
+  }, [infiniteData]);
 
-  // Filter crypto data based on search query (in memory)
+  // Filter and sort crypto data based on search query and sort options (in memory)
   const cryptoData = useMemo(() => {
+    let filteredData = baseCryptoData;
+    
+    // Apply search filter if query exists
     if (searchQuery.trim().length > 0) {
-      return searchCryptos(baseCryptoData, searchQuery.trim());
+      filteredData = searchCryptos(baseCryptoData, searchQuery.trim());
     }
-    return baseCryptoData;
-  }, [baseCryptoData, searchQuery]);
+    
+    // Apply sorting
+    return sortCryptos(filteredData, sortBy, sortOrder);
+  }, [baseCryptoData, searchQuery, sortBy, sortOrder]);
 
   const handleItemPress = useCallback(
     (crypto: Cryptocurrency) => {
@@ -141,12 +191,7 @@ export const CryptoListScreen: React.FC = () => {
   const renderLoadingState = () => {
     if (!isLoading) return null;
 
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFD700" />
-        <Text style={styles.loadingText}>Loading cryptocurrencies...</Text>
-      </View>
-    );
+    return <SkeletonLoader />;
   };
 
   const renderErrorState = () => {
@@ -180,6 +225,32 @@ export const CryptoListScreen: React.FC = () => {
     setSearchQuery(text);
   }, []);
 
+  // Handle sort option selection
+  const handleSortChange = useCallback((newSortBy: keyof Cryptocurrency) => {
+    if (newSortBy === sortBy) {
+      // Toggle sort order if same field
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Change sort field and default to ascending
+      setSortBy(newSortBy);
+      setSortOrder('asc');
+    }
+    setShowSortModal(false);
+  }, [sortBy]);
+
+  // Toggle sort modal
+  const toggleSortModal = useCallback(() => {
+    setShowSortModal(prev => !prev);
+  }, []);
+
+  // Handle load more for infinite scroll
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage && !searchQuery.trim()) {
+      // Only load more when not searching (to keep infinite scroll simple)
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, searchQuery, fetchNextPage]);
+
   // Empty search results component
   const renderEmptySearch = useCallback(() => {
     if (searchQuery.trim().length === 0 || isLoading) {
@@ -200,6 +271,20 @@ export const CryptoListScreen: React.FC = () => {
     );
   }, [searchQuery, isLoading, handleClearSearch]);
 
+  // Render footer for pagination loading
+  const renderFooter = useCallback(() => {
+    if (!isFetchingNextPage || searchQuery.trim().length > 0) {
+      return null;
+    }
+    
+    return (
+      <View style={styles.paginationFooter}>
+        <ActivityIndicator size="small" color="#FFD700" />
+        <Text style={styles.paginationText}>Loading more...</Text>
+      </View>
+    );
+  }, [isFetchingNextPage, searchQuery]);
+
   return (
     <FixedScreen>
       <View style={styles.container}>
@@ -210,30 +295,83 @@ export const CryptoListScreen: React.FC = () => {
             {searchQuery ? `Search results for "${searchQuery}"` : 'Live USD prices and 24h changes'}
           </Text>
           
-          <View style={styles.searchContainer}>
-            <Text style={styles.searchIcon}>🔍</Text>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search cryptocurrencies..."
-              placeholderTextColor="#9e9e9e"
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-              clearButtonMode="while-editing" // iOS only
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearSearch}
-                accessibilityLabel="Clear search"
-              >
-                <Text style={styles.clearButtonText}>✕</Text>
-              </TouchableOpacity>
-            )}
+          <View style={styles.controlsRow}>
+            <View style={styles.searchContainer}>
+              <Text style={styles.searchIcon}>🔍</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search cryptocurrencies..."
+                placeholderTextColor="#9e9e9e"
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+                clearButtonMode="while-editing" // iOS only
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={handleClearSearch}
+                  accessibilityLabel="Clear search"
+                >
+                  <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={toggleSortModal}
+              accessibilityLabel="Sort options"
+            >
+              <Text style={styles.sortIcon}>
+                {SORT_OPTIONS.find(opt => opt.key === sortBy)?.icon || '📊'}
+              </Text>
+              <Text style={styles.sortOrder}>
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
+
+        {/* Sort Modal */}
+        {showSortModal && (
+          <View style={styles.sortModal}>
+            <View style={styles.sortModalContent}>
+              <View style={styles.sortModalHeader}>
+                <Text style={styles.sortModalTitle}>Sort by</Text>
+                <TouchableOpacity onPress={() => setShowSortModal(false)}>
+                  <Text style={styles.sortModalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {SORT_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.key}
+                  style={[
+                    styles.sortOption,
+                    sortBy === option.key && styles.sortOptionActive
+                  ]}
+                  onPress={() => handleSortChange(option.key)}
+                >
+                  <Text style={styles.sortOptionIcon}>{option.icon}</Text>
+                  <Text style={[
+                    styles.sortOptionText,
+                    sortBy === option.key && styles.sortOptionTextActive
+                  ]}>
+                    {option.label}
+                  </Text>
+                  {sortBy === option.key && (
+                    <Text style={styles.sortOptionOrder}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         {renderLoadingState()}
         {renderErrorState()}
@@ -259,8 +397,11 @@ export const CryptoListScreen: React.FC = () => {
               />
             }
             ListEmptyComponent={EmptyComponent}
+            ListFooterComponent={renderFooter}
             showsVerticalScrollIndicator={false}
             ItemSeparatorComponent={ItemSeparator}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
             getItemLayout={(_data, index) => ({
               length: 72, // Fixed item height
               offset: 72 * index,
@@ -304,7 +445,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
   },
+  controlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
@@ -312,6 +459,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    minWidth: 60,
+    justifyContent: 'center',
+  },
+  sortIcon: {
+    fontSize: 16,
+    marginRight: 4,
+  },
+  sortOrder: {
+    fontSize: 16,
+    color: '#FFD700',
+    fontWeight: 'bold',
   },
   searchIcon: {
     fontSize: 16,
@@ -344,6 +512,149 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
+  },
+  // Sort Modal Styles
+  sortModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  sortModalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 20,
+    marginHorizontal: 20,
+    minWidth: 280,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  sortModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  sortModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  sortModalClose: {
+    fontSize: 18,
+    color: '#6c757d',
+    fontWeight: 'bold',
+    padding: 4,
+  },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  sortOptionActive: {
+    backgroundColor: '#fffbf0',
+  },
+  sortOptionIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  sortOptionText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1a1a1a',
+  },
+  sortOptionTextActive: {
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  sortOptionOrder: {
+    fontSize: 18,
+    color: '#FFD700',
+    fontWeight: 'bold',
+  },
+  // Pagination Styles
+  paginationFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#ffffff',
+  },
+  paginationText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  // Skeleton Loader Styles
+  skeletonContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  skeletonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  skeletonLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  skeletonImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f3f4',
+    marginRight: 12,
+  },
+  skeletonTextContainer: {
+    flex: 1,
+  },
+  skeletonTitle: {
+    height: 16,
+    backgroundColor: '#f1f3f4',
+    borderRadius: 8,
+    marginBottom: 6,
+    width: '70%',
+  },
+  skeletonSubtitle: {
+    height: 12,
+    backgroundColor: '#f1f3f4',
+    borderRadius: 6,
+    width: '40%',
+  },
+  skeletonRight: {
+    alignItems: 'flex-end',
+  },
+  skeletonPrice: {
+    height: 16,
+    width: 80,
+    backgroundColor: '#f1f3f4',
+    borderRadius: 8,
+    marginBottom: 6,
+  },
+  skeletonChange: {
+    height: 12,
+    width: 60,
+    backgroundColor: '#f1f3f4',
+    borderRadius: 6,
   },
   // Loading State
   loadingContainer: {
