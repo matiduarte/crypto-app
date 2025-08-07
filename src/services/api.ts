@@ -11,6 +11,7 @@ class ApiService {
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
+        'x-cg-demo-api-key': API_CONFIG.COINGECKO_API_KEY,
       },
     });
 

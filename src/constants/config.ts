@@ -1,6 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   COINGECKO_BASE_URL: 'https://api.coingecko.com/api/v3',
+  COINGECKO_API_KEY: 'CG-BuUVyNARYwdryyHA1bm1DLyH', // Should be moved to environment variable in production
   ENDPOINTS: {
     COINS: '/coins/markets',
     COIN_DETAIL: '/coins/{id}',
