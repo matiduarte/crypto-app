@@ -10,24 +10,29 @@ import {
 } from '../types';
 
 // Root Stack Navigation Types
-export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+export type RootStackNavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 
 // Auth Stack Navigation Types
-export type AuthStackNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
+export type AuthStackNavigationProp =
+  NativeStackNavigationProp<AuthStackParamList>;
 
 // Main Tab Navigation Types
 export type MainTabNavigationProp = BottomTabNavigationProp<MainTabParamList>;
 
 // Crypto Stack Navigation Types
-export type CryptoStackNavigationProp = NativeStackNavigationProp<CryptoStackParamList>;
+export type CryptoStackNavigationProp =
+  NativeStackNavigationProp<CryptoStackParamList>;
 
 // Route Types
 export type LoginScreenRouteProp = RouteProp<AuthStackParamList, 'Login'>;
-export type CryptoListScreenRouteProp = RouteProp<MainTabParamList, 'CryptoList'>;
+export type CryptoListScreenRouteProp = RouteProp<
+  MainTabParamList,
+  'CryptoList'
+>;
 export type ExchangeScreenRouteProp = RouteProp<MainTabParamList, 'Exchange'>;
 export type ScannerScreenRouteProp = RouteProp<MainTabParamList, 'Scanner'>;
 export type ProfileScreenRouteProp = RouteProp<MainTabParamList, 'Profile'>;
-export type CryptoDetailScreenRouteProp = RouteProp<CryptoStackParamList, 'CryptoDetail'>;
 
 // Typed Navigation Hooks
 export const useRootNavigation = () => {
@@ -67,10 +72,6 @@ export const useProfileRoute = () => {
   return useRoute<ProfileScreenRouteProp>();
 };
 
-export const useCryptoDetailRoute = () => {
-  return useRoute<CryptoDetailScreenRouteProp>();
-};
-
 // Navigation Actions Helper
 export const navigationActions = {
   // Navigate to main app after login
@@ -87,13 +88,16 @@ export const navigationActions = {
   navigateToCryptoDetail: (
     navigation: CryptoStackNavigationProp,
     cryptoId: string,
-    symbol: string
+    symbol: string,
   ) => {
     navigation.navigate('CryptoDetail', { cryptoId, symbol });
   },
 
   // Navigate between tabs
-  navigateToTab: (navigation: MainTabNavigationProp, tabName: keyof MainTabParamList) => {
+  navigateToTab: (
+    navigation: MainTabNavigationProp,
+    tabName: keyof MainTabParamList,
+  ) => {
     navigation.navigate(tabName);
   },
 

@@ -13,3 +13,5 @@ export {
   SafeAreaModal,
   SafeAreaHeader,
 } from './SafeAreaWrapper';
+
+export { CryptoListItem } from './CryptoListItem';

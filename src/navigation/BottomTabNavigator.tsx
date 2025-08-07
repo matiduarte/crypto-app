@@ -108,7 +108,7 @@ interface TabIconProps {
   focused: boolean;
 }
 
-const TabIconComponent: React.FC<TabIconProps> = ({ icon, focused }: TabIconProps) => (
+const TabIconComponent = ({ icon, focused }: TabIconProps) => (
   <TabIcon icon={icon} focused={focused} />
 );
 

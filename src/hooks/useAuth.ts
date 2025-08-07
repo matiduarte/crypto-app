@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService, authHelpers, User, AuthTokens } from '../services/authService';
+import {
+  authService,
+  authHelpers,
+  User,
+  AuthTokens,
+} from '../services/authService';
 import storageService from '../utils/storage';
 
 // Storage keys
@@ -67,11 +72,12 @@ export const useAuthSession = () => {
 
         if (silentResult.success && silentResult.user && silentResult.tokens) {
           // Load additional stored auth data if any
-          const [storedUser, storedToken, storedRefreshToken] = await Promise.all([
-            storageService.getItem<User>(STORAGE_KEYS.USER),
-            storageService.getItem<string>(STORAGE_KEYS.TOKEN),
-            storageService.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN),
-          ]);
+          const [storedUser, storedToken, storedRefreshToken] =
+            await Promise.all([
+              storageService.getItem<User>(STORAGE_KEYS.USER),
+              storageService.getItem<string>(STORAGE_KEYS.TOKEN),
+              storageService.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN),
+            ]);
 
           const user = storedUser || silentResult.user;
           const tokens: AuthTokens = {
@@ -92,8 +98,7 @@ export const useAuthSession = () => {
     gcTime: 1000 * 60 * 10, // 10 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    retry: (failureCount, _error) => {
-      // Don't retry auth errors
+    retry: failureCount => {
       return failureCount < 2;
     },
   });
@@ -104,7 +109,7 @@ export const useAuthSession = () => {
  */
 export const useCurrentUser = () => {
   const { data: session } = useAuthSession();
-  
+
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.user,
     queryFn: async (): Promise<User | null> => {
@@ -135,7 +140,10 @@ export const useGoogleSignIn = () => {
           await Promise.all([
             storageService.setItem(STORAGE_KEYS.USER, result.user),
             storageService.setItem(STORAGE_KEYS.TOKEN, result.tokens.idToken),
-            storageService.setItem(STORAGE_KEYS.REFRESH_TOKEN, result.tokens.accessToken),
+            storageService.setItem(
+              STORAGE_KEYS.REFRESH_TOKEN,
+              result.tokens.accessToken,
+            ),
             storageService.setItem(STORAGE_KEYS.IS_LOGGED_IN, true),
           ]);
 
@@ -154,11 +162,12 @@ export const useGoogleSignIn = () => {
         console.error('Sign-in mutation error:', error);
         return {
           success: false,
-          error: error?.message || 'An unexpected error occurred during sign-in',
+          error:
+            error?.message || 'An unexpected error occurred during sign-in',
         };
       }
     },
-    onSuccess: (result) => {
+    onSuccess: result => {
       if (result.success && result.user && result.tokens) {
         // Update session cache
         queryClient.setQueryData(AUTH_QUERY_KEYS.session, {
@@ -174,7 +183,7 @@ export const useGoogleSignIn = () => {
         queryClient.invalidateQueries({ queryKey: ['auth'] });
       }
     },
-    onError: (_error) => {
+    onError: _error => {
       console.error('Sign-in mutation error:', _error);
     },
   });
@@ -202,18 +211,21 @@ export const useSignOut = () => {
             storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
           ]);
         } catch (storageError) {
-          console.warn('Failed to clear some auth storage items:', storageError);
+          console.warn(
+            'Failed to clear some auth storage items:',
+            storageError,
+          );
           // Continue anyway - storage cleanup failure shouldn't block sign-out
         }
 
-        return { 
-          success: result.success, 
+        return {
+          success: result.success,
           error: result.error,
-          warning: result.warning 
+          warning: result.warning,
         };
       } catch (error: any) {
         console.error('Sign-out mutation error:', error);
-        
+
         // Even if sign-out fails, try to clear local storage
         try {
           await Promise.all([
@@ -222,13 +234,16 @@ export const useSignOut = () => {
             storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
             storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
           ]);
-          
+
           return {
             success: true,
             warning: 'Local sign-out completed (Google sign-out failed)',
           };
         } catch (storageError) {
-          console.error('Failed to clear auth storage during emergency:', storageError);
+          console.error(
+            'Failed to clear auth storage during emergency:',
+            storageError,
+          );
           return {
             success: false,
             error: error?.message || 'Sign-out failed completely',
@@ -248,7 +263,7 @@ export const useSignOut = () => {
       // Clear all cached data (since user is no longer authenticated)
       queryClient.clear();
     },
-    onError: (error) => {
+    onError: error => {
       console.error('Sign-out mutation error:', error);
     },
   });
@@ -269,7 +284,10 @@ export const useRefreshTokens = () => {
           // Update stored tokens
           await Promise.all([
             storageService.setItem(STORAGE_KEYS.TOKEN, result.tokens.idToken),
-            storageService.setItem(STORAGE_KEYS.REFRESH_TOKEN, result.tokens.accessToken),
+            storageService.setItem(
+              STORAGE_KEYS.REFRESH_TOKEN,
+              result.tokens.accessToken,
+            ),
           ]);
 
           return {
@@ -290,10 +308,12 @@ export const useRefreshTokens = () => {
         };
       }
     },
-    onSuccess: (result) => {
+    onSuccess: result => {
       if (result.success && result.tokens) {
         // Update session cache with new tokens
-        const currentSession = queryClient.getQueryData<AuthSession>(AUTH_QUERY_KEYS.session);
+        const currentSession = queryClient.getQueryData<AuthSession>(
+          AUTH_QUERY_KEYS.session,
+        );
         if (currentSession) {
           queryClient.setQueryData(AUTH_QUERY_KEYS.session, {
             ...currentSession,
@@ -302,7 +322,7 @@ export const useRefreshTokens = () => {
         }
       }
     },
-    onError: (error) => {
+    onError: error => {
       console.error('Token refresh mutation error:', error);
       // On refresh failure, user might need to sign in again
       // Clear auth state
@@ -323,7 +343,11 @@ export const useRefreshTokens = () => {
  * Hook that provides authentication state and actions
  */
 export const useAuth = () => {
-  const { data: session, isLoading: isSessionLoading, error: sessionError } = useAuthSession();
+  const {
+    data: session,
+    isLoading: isSessionLoading,
+    error: sessionError,
+  } = useAuthSession();
   const signInMutation = useGoogleSignIn();
   const signOutMutation = useSignOut();
   const refreshTokensMutation = useRefreshTokens();
@@ -333,8 +357,13 @@ export const useAuth = () => {
     user: session?.user || null,
     tokens: session?.tokens || null,
     isLoggedIn: session?.isLoggedIn || false,
-    isLoading: isSessionLoading || signInMutation.isPending || signOutMutation.isPending,
-    error: sessionError?.message || signInMutation.error?.message || signOutMutation.error?.message || null,
+    isLoading:
+      isSessionLoading || signInMutation.isPending || signOutMutation.isPending,
+    error:
+      sessionError?.message ||
+      signInMutation.error?.message ||
+      signOutMutation.error?.message ||
+      null,
 
     // Actions
     signIn: signInMutation.mutateAsync,
@@ -373,7 +402,7 @@ export const useIsAuthenticated = (): boolean => {
  */
 export const useUserData = () => {
   const { data: session } = useAuthSession();
-  
+
   if (!session?.user) return null;
 
   return {

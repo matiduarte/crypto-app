@@ -1,12 +1,6 @@
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-} from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
 import { AuthContextType, AuthState } from '../types';
-import {
-  useAuth as useReactQueryAuth,
-} from '../hooks/useAuth';
+import { useAuth as useReactQueryAuth } from '../hooks/useAuth';
 
 // Create context - now just wraps React Query hooks
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,7 +52,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const result = await auth.refreshTokens();
         return { success: result.success, error: result.error };
       } catch (error: any) {
-        return { success: false, error: error.message || 'Token refresh failed' };
+        return {
+          success: false,
+          error: error.message || 'Token refresh failed',
+        };
       }
     },
 

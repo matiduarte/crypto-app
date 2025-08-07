@@ -21,8 +21,8 @@ export const APP_DETAILS = {
 
 export const LoginScreen: React.FC = () => {
   // Use both the context (for backward compatibility) and direct React Query hook
-  const { error, clearError } = useAuth();
-  const signInMutation = useGoogleSignIn();
+  const { clearError } = useAuth();
+  const { mutateAsync, error, reset, isPending } = useGoogleSignIn();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -75,7 +75,7 @@ export const LoginScreen: React.FC = () => {
       clearError();
 
       // Use React Query mutation directly for better error handling
-      const result = await signInMutation.mutateAsync();
+      const result = await mutateAsync();
 
       if (!result.success) {
         // Error is now displayed in the UI via React Query error state
@@ -160,7 +160,7 @@ export const LoginScreen: React.FC = () => {
           </Animated.Text>
         </Animated.View>
         {/* Error Display - Shows errors from React Query mutation */}
-        {(error || signInMutation.error) && (
+        {error && (
           <Animated.View
             style={[
               styles.errorContainer,
@@ -171,13 +171,13 @@ export const LoginScreen: React.FC = () => {
             ]}
           >
             <Text style={styles.errorText}>
-              {error || signInMutation.error?.message || 'An error occurred'}
+              {error?.message || 'An error occurred'}
             </Text>
             <TouchableOpacity
               style={styles.clearErrorButton}
               onPress={() => {
                 clearError();
-                signInMutation.reset();
+                reset();
               }}
               accessibilityLabel="Dismiss error"
               accessibilityRole="button"
@@ -204,10 +204,7 @@ export const LoginScreen: React.FC = () => {
             },
           ]}
         >
-          <GoogleSignInButton
-            onPress={handleSignIn}
-            isLoading={signInMutation.isPending}
-          />
+          <GoogleSignInButton onPress={handleSignIn} isLoading={isPending} />
         </Animated.View>
       </Animated.View>
     </FixedScreen>

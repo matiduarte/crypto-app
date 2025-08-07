@@ -6,21 +6,14 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  Image,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { useCryptocurrencies, useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
-import { useCryptoStackNavigation } from '../../navigation/hooks';
-import { formatPriceUSD, formatPercentage, searchCryptos, sortCryptos } from '../../utils/helpers';
+import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
+import { searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
-
-// CryptoListItem Component Interface
-interface CryptoListItemProps {
-  item: Cryptocurrency;
-  onPress: (crypto: Cryptocurrency) => void;
-}
+import { CryptoListItem } from '../../components/common';
 
 // Item Separator Component
 const ItemSeparator: React.FC = () => <View style={styles.separator} />;
@@ -46,45 +39,6 @@ const SkeletonLoader: React.FC = () => (
   </View>
 );
 
-// Move CryptoListItem outside of render to avoid re-creation
-const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
-  ({ item, onPress }) => {
-    const isPositive = item.price_change_percentage_24h >= 0;
-    const changeColor = isPositive ? '#4CAF50' : '#f44336';
-
-    return (
-      <TouchableOpacity
-        style={styles.listItem}
-        onPress={() => onPress(item)}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.name} cryptocurrency details`}
-      >
-        <View style={styles.itemLeft}>
-          <Image source={{ uri: item.image }} style={styles.cryptoImage} />
-          <View style={styles.cryptoInfo}>
-            <Text style={styles.cryptoName} numberOfLines={1}>
-              {item.name}
-            </Text>
-            <Text style={styles.cryptoSymbol} numberOfLines={1}>
-              {item.symbol.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.itemRight}>
-          <Text style={styles.cryptoPrice}>
-            {formatPriceUSD(item.current_price)}
-          </Text>
-          <Text style={[styles.cryptoChange, { color: changeColor }]}>
-            {formatPercentage(item.price_change_percentage_24h)}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  },
-);
-
 // Sort options type
 type SortOption = {
   key: keyof Cryptocurrency;
@@ -100,7 +54,6 @@ const SORT_OPTIONS: SortOption[] = [
 ];
 
 export const CryptoListScreen: React.FC = () => {
-  const navigation = useCryptoStackNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<keyof Cryptocurrency>('market_cap_rank');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -127,7 +80,7 @@ export const CryptoListScreen: React.FC = () => {
   // Get the base crypto data from all pages
   const baseCryptoData = useMemo(() => {
     if (!infiniteData?.pages) return [];
-    
+
     return infiniteData.pages
       .filter(page => page.success)
       .flatMap(page => page.data)
@@ -137,36 +90,23 @@ export const CryptoListScreen: React.FC = () => {
   // Filter and sort crypto data based on search query and sort options (in memory)
   const cryptoData = useMemo(() => {
     let filteredData = baseCryptoData;
-    
+
     // Apply search filter if query exists
     if (searchQuery.trim().length > 0) {
       filteredData = searchCryptos(baseCryptoData, searchQuery.trim());
     }
-    
+
     // Apply sorting
     return sortCryptos(filteredData, sortBy, sortOrder);
   }, [baseCryptoData, searchQuery, sortBy, sortOrder]);
-
-  const handleItemPress = useCallback(
-    (crypto: Cryptocurrency) => {
-      navigation.navigate('CryptoDetail', {
-        cryptoId: crypto.id,
-        symbol: crypto.symbol,
-      });
-    },
-    [navigation],
-  );
 
   const handleRefresh = useCallback(() => {
     // Always refetch the main data, don't clear search
     refetch();
   }, [refetch]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Cryptocurrency }) => (
-      <CryptoListItem item={item} onPress={handleItemPress} />
-    ),
-    [handleItemPress],
+  const renderItem = ({ item }: { item: Cryptocurrency }) => (
+    <CryptoListItem item={item} />
   );
 
   const keyExtractor = useCallback((item: Cryptocurrency) => item.id, []);
@@ -226,17 +166,20 @@ export const CryptoListScreen: React.FC = () => {
   }, []);
 
   // Handle sort option selection
-  const handleSortChange = useCallback((newSortBy: keyof Cryptocurrency) => {
-    if (newSortBy === sortBy) {
-      // Toggle sort order if same field
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      // Change sort field and default to ascending
-      setSortBy(newSortBy);
-      setSortOrder('asc');
-    }
-    setShowSortModal(false);
-  }, [sortBy]);
+  const handleSortChange = useCallback(
+    (newSortBy: keyof Cryptocurrency) => {
+      if (newSortBy === sortBy) {
+        // Toggle sort order if same field
+        setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+      } else {
+        // Change sort field and default to ascending
+        setSortBy(newSortBy);
+        setSortOrder('asc');
+      }
+      setShowSortModal(false);
+    },
+    [sortBy],
+  );
 
   // Toggle sort modal
   const toggleSortModal = useCallback(() => {
@@ -256,15 +199,19 @@ export const CryptoListScreen: React.FC = () => {
     if (searchQuery.trim().length === 0 || isLoading) {
       return null;
     }
-    
+
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>🔍</Text>
         <Text style={styles.emptyTitle}>No Results Found</Text>
         <Text style={styles.emptySubtext}>
-          No cryptocurrencies match "{searchQuery}". Try a different search term.
+          No cryptocurrencies match "{searchQuery}". Try a different search
+          term.
         </Text>
-        <TouchableOpacity style={styles.clearSearchButton} onPress={handleClearSearch}>
+        <TouchableOpacity
+          style={styles.clearSearchButton}
+          onPress={handleClearSearch}
+        >
           <Text style={styles.clearSearchText}>Clear Search</Text>
         </TouchableOpacity>
       </View>
@@ -276,7 +223,7 @@ export const CryptoListScreen: React.FC = () => {
     if (!isFetchingNextPage || searchQuery.trim().length > 0) {
       return null;
     }
-    
+
     return (
       <View style={styles.paginationFooter}>
         <ActivityIndicator size="small" color="#FFD700" />
@@ -292,9 +239,11 @@ export const CryptoListScreen: React.FC = () => {
         <View style={styles.searchHeader}>
           <Text style={styles.title}>🍋 Cryptocurrency Market</Text>
           <Text style={styles.subtitle}>
-            {searchQuery ? `Search results for "${searchQuery}"` : 'Live USD prices and 24h changes'}
+            {searchQuery
+              ? `Search results for "${searchQuery}"`
+              : 'Live USD prices and 24h changes'}
           </Text>
-          
+
           <View style={styles.controlsRow}>
             <View style={styles.searchContainer}>
               <Text style={styles.searchIcon}>🔍</Text>
@@ -307,7 +256,6 @@ export const CryptoListScreen: React.FC = () => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="search"
-                clearButtonMode="while-editing" // iOS only
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity
@@ -319,7 +267,7 @@ export const CryptoListScreen: React.FC = () => {
                 </TouchableOpacity>
               )}
             </View>
-            
+
             <TouchableOpacity
               style={styles.sortButton}
               onPress={toggleSortModal}
@@ -345,21 +293,23 @@ export const CryptoListScreen: React.FC = () => {
                   <Text style={styles.sortModalClose}>✕</Text>
                 </TouchableOpacity>
               </View>
-              
-              {SORT_OPTIONS.map((option) => (
+
+              {SORT_OPTIONS.map(option => (
                 <TouchableOpacity
                   key={option.key}
                   style={[
                     styles.sortOption,
-                    sortBy === option.key && styles.sortOptionActive
+                    sortBy === option.key && styles.sortOptionActive,
                   ]}
                   onPress={() => handleSortChange(option.key)}
                 >
                   <Text style={styles.sortOptionIcon}>{option.icon}</Text>
-                  <Text style={[
-                    styles.sortOptionText,
-                    sortBy === option.key && styles.sortOptionTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.sortOptionText,
+                      sortBy === option.key && styles.sortOptionTextActive,
+                    ]}
+                  >
                     {option.label}
                   </Text>
                   {sortBy === option.key && (
@@ -719,54 +669,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#f1f3f4',
     marginHorizontal: 20,
-  },
-  // List Item Styles
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#ffffff',
-    minHeight: 72,
-  },
-  itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  cryptoImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 12,
-  },
-  cryptoInfo: {
-    flex: 1,
-  },
-  cryptoName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
-  },
-  cryptoSymbol: {
-    fontSize: 13,
-    color: '#6c757d',
-    textTransform: 'uppercase',
-  },
-  itemRight: {
-    alignItems: 'flex-end',
-  },
-  cryptoPrice: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
-  },
-  cryptoChange: {
-    fontSize: 13,
-    fontWeight: '500',
   },
   // Empty State
   emptyContainer: {
