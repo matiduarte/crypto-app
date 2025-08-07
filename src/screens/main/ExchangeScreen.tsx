@@ -24,6 +24,8 @@ import {
   formatFiatCurrency,
   formatCryptoAmount,
   safeParseFloat,
+  formatInputValue,
+  extractNumericValue,
 } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 
@@ -114,21 +116,11 @@ export const ExchangeScreen: React.FC = () => {
       prev === 'crypto-to-fiat' ? 'fiat-to-crypto' : 'crypto-to-fiat',
     );
 
-    // Extract numeric value from formatted toAmount for swapping
-    const extractNumericValue = (formattedAmount: string): string => {
-      // Remove currency symbols and suffixes like K, M
-      const cleaned = formattedAmount
-        .replace(/[$€S/]/g, '') // Remove currency symbols
-        .replace(/[KM]$/, '') // Remove K, M suffixes
-        .replace(/,/g, ''); // Remove thousands separators
-
-      const numValue = parseFloat(cleaned);
-      return isNaN(numValue) ? '0' : numValue.toString();
-    };
-
-    // Swap amounts with proper extraction
+    // Swap amounts with proper extraction and formatting
     const temp = fromAmount;
-    setFromAmount(extractNumericValue(toAmount || '0'));
+    const extractedValue = extractNumericValue(toAmount || '0');
+    const formattedValue = formatInputValue(extractedValue);
+    setFromAmount(formattedValue);
     setToAmount(temp);
   }, [fromAmount, toAmount]);
 
@@ -214,7 +206,10 @@ export const ExchangeScreen: React.FC = () => {
               <TextInput
                 style={styles.amountInput}
                 value={fromAmount}
-                onChangeText={setFromAmount}
+                onChangeText={(text) => {
+                  const formatted = formatInputValue(text);
+                  setFromAmount(formatted);
+                }}
                 placeholder="0.00"
                 keyboardType="numeric"
                 placeholderTextColor="#9e9e9e"
@@ -437,10 +432,10 @@ const styles = StyleSheet.create({
   },
   amountInput: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1a1a1a',
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     paddingVertical: 8,
   },
   readOnlyInput: {

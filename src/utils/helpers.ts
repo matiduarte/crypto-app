@@ -25,52 +25,63 @@ export const formatPriceUSD = (price: number): string => {
 
 // Enhanced fiat currency formatting with proper symbols and locale formatting
 export const formatFiatCurrency = (
-  amount: number, 
-  _currencyCode: string, 
-  currencySymbol: string
+  amount: number,
+  _currencyCode: string,
+  currencySymbol: string,
 ): string => {
-  // Handle very small amounts
-  if (amount < 0.01 && amount > 0) {
-    return `${currencySymbol}${amount.toFixed(6)}`;
-  }
-  
-  // Handle normal amounts with proper thousands separators
-  const formatAmount = (value: number, decimals: number = 2): string => {
-    return value.toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+  // Format with proper thousands separators while preserving full precision
+  const formatWithSeparators = (value: number): string => {
+    // Convert to string to preserve all decimal places
+    const numStr = value.toString();
+    const [integerPart, decimalPart] = numStr.split('.');
+
+    // Add thousands separators to integer part
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Combine with decimal part if it exists
+    return decimalPart
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
   };
 
-  // Format based on amount size
-  if (amount >= 1000000) {
-    return `${currencySymbol}${formatAmount(amount / 1000000, 2)}M`;
-  } else if (amount >= 1000) {
-    return `${currencySymbol}${formatAmount(amount / 1000, 2)}K`;
-  } else if (amount >= 1) {
-    return `${currencySymbol}${formatAmount(amount, 2)}`;
-  } else if (amount >= 0.01) {
-    return `${currencySymbol}${formatAmount(amount, 2)}`;
-  } else {
-    return `${currencySymbol}${amount.toFixed(6)}`;
+  // Handle zero or negative amounts
+  if (amount <= 0) {
+    return `${currencySymbol}0.00`;
   }
+
+  // Format the amount with proper separators, preserving full precision
+  const formattedAmount = formatWithSeparators(amount);
+  return `${currencySymbol}${formattedAmount}`;
 };
 
-// Format crypto amounts with proper precision
+// Format crypto amounts with proper precision (max 12 decimals)
 export const formatCryptoAmount = (amount: number, symbol: string): string => {
-  if (amount < 0.00000001 && amount > 0) {
-    return `${amount.toFixed(8)} ${symbol}`;
-  } else if (amount < 0.01 && amount > 0) {
-    return `${amount.toFixed(6)} ${symbol}`;
-  } else if (amount < 1) {
-    return `${amount.toFixed(4)} ${symbol}`;
-  } else if (amount >= 1000000) {
-    return `${(amount / 1000000).toFixed(2)}M ${symbol}`;
-  } else if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(2)}K ${symbol}`;
-  } else {
-    return `${amount.toFixed(2)} ${symbol}`;
+  // Format with proper thousands separators while limiting to max 12 decimals
+  const formatWithSeparators = (value: number): string => {
+    // Limit to 12 decimal places to prevent excessive precision
+    const limitedValue = parseFloat(value.toFixed(4));
+
+    // Convert to string to preserve decimal places
+    const numStr = limitedValue.toString();
+    const [integerPart, decimalPart] = numStr.split('.');
+
+    // Add thousands separators to integer part
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Combine with decimal part if it exists
+    return decimalPart
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
+  };
+
+  // Handle zero or negative amounts
+  if (amount <= 0) {
+    return `0 ${symbol}`;
   }
+
+  // Format the amount with proper separators, limiting to 12 decimals
+  const formattedAmount = formatWithSeparators(amount);
+  return `${formattedAmount} ${symbol}`;
 };
 
 export const formatPercentage = (percentage: number): string => {
@@ -96,7 +107,10 @@ export const formatVolume = (volume: number): string => {
 };
 
 // Date formatting utilities
-export const formatDate = (date: string | Date, formatString: string = 'PPp'): string => {
+export const formatDate = (
+  date: string | Date,
+  formatString: string = 'PPp',
+): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return format(dateObj, formatString);
 };
@@ -138,7 +152,9 @@ export const isValidEthereumAddress = (address: string): boolean => {
   return ethRegex.test(address);
 };
 
-export const detectWalletType = (address: string): 'bitcoin' | 'ethereum' | 'unknown' => {
+export const detectWalletType = (
+  address: string,
+): 'bitcoin' | 'ethereum' | 'unknown' => {
   if (isValidBitcoinAddress(address)) {
     return 'bitcoin';
   } else if (isValidEthereumAddress(address)) {
@@ -150,7 +166,7 @@ export const detectWalletType = (address: string): 'bitcoin' | 'ethereum' | 'unk
 // Search and filter utilities
 export const searchCryptos = <T extends { name: string; symbol: string }>(
   cryptos: T[],
-  query: string
+  query: string,
 ): T[] => {
   if (!query.trim()) {
     return cryptos;
@@ -160,14 +176,14 @@ export const searchCryptos = <T extends { name: string; symbol: string }>(
   return cryptos.filter(
     crypto =>
       crypto.name.toLowerCase().includes(lowerQuery) ||
-      crypto.symbol.toLowerCase().includes(lowerQuery)
+      crypto.symbol.toLowerCase().includes(lowerQuery),
   );
 };
 
 export const sortCryptos = <T extends Record<string, any>>(
   cryptos: T[],
   field: keyof T,
-  order: 'asc' | 'desc'
+  order: 'asc' | 'desc',
 ): T[] => {
   return [...cryptos].sort((a, b) => {
     const aValue = a[field];
@@ -190,7 +206,7 @@ export const sortCryptos = <T extends Record<string, any>>(
 // Debounce utility
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): T => {
   let timeout: NodeJS.Timeout;
 
@@ -219,9 +235,42 @@ export const getPriceChangeColor = (change: number): string => {
 export const convertCurrency = (
   amount: number,
   rate: number,
-  decimals: number = 6
+  decimals: number = 6,
 ): number => {
   return parseFloat((amount * rate).toFixed(decimals));
+};
+
+// Format input values with thousands separators as user types
+export const formatInputValue = (value: string): string => {
+  // Remove any existing commas and non-numeric characters except decimal point
+  const cleanValue = value.replace(/[^\d.]/g, '');
+
+  // Handle multiple decimal points - keep only the first one
+  const parts = cleanValue.split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts.length > 1 ? parts.slice(1).join('') : '';
+
+  // Add thousands separators to integer part
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  // Combine with decimal part if it exists
+  return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+};
+
+// Extract numeric value from formatted input
+export const extractNumericValue = (formattedValue: string): string => {
+  // Remove commas, currency symbols, and text, keep only digits and decimal point
+  const cleaned = formattedValue
+    .replace(/,/g, '') // Remove thousands separators
+    .replace(/[^\d.]/g, ''); // Keep only digits and decimal points
+
+  // Handle multiple decimal points - keep only the first one
+  const parts = cleaned.split('.');
+  const result =
+    parts.length > 1 ? `${parts[0]}.${parts.slice(1).join('')}` : parts[0];
+
+  const numValue = parseFloat(result);
+  return isNaN(numValue) ? '0' : result || '0';
 };
 
 // Safe parsing utilities
@@ -229,7 +278,7 @@ export const safeParseFloat = (value: string | number): number => {
   if (typeof value === 'number') {
     return isNaN(value) ? 0 : value;
   }
-  const parsed = parseFloat(value);
+  const parsed = parseFloat(value.replace(/,/g, '')); // Remove commas before parsing
   return isNaN(parsed) ? 0 : parsed;
 };
 
