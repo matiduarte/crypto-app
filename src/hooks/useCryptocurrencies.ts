@@ -1,4 +1,8 @@
-import { useQuery, useInfiniteQuery, UseQueryOptions } from '@tanstack/react-query';
+import {
+  useQuery,
+  useInfiniteQuery,
+  UseQueryOptions,
+} from '@tanstack/react-query';
 import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
 import { Cryptocurrency, APIResponse } from '../types';
@@ -13,7 +17,10 @@ export const useCryptocurrencies = (
     sparkline?: boolean;
     price_change_percentage?: string;
   } = {},
-  options?: Omit<UseQueryOptions<APIResponse<Cryptocurrency[]>>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<APIResponse<Cryptocurrency[]>>,
+    'queryKey' | 'queryFn'
+  >,
 ) => {
   return useQuery({
     queryKey: queryKeys.cryptos.list(params),
@@ -30,7 +37,7 @@ export const useInfiniteCryptocurrencies = (
     per_page?: number;
     sparkline?: boolean;
     price_change_percentage?: string;
-  } = {}
+  } = {},
 ) => {
   return useInfiniteQuery({
     queryKey: [...queryKeys.cryptos.lists(), 'infinite', params],
@@ -40,12 +47,12 @@ export const useInfiniteCryptocurrencies = (
       if (!lastPage.success || !lastPage.data || lastPage.data.length === 0) {
         return undefined;
       }
-      
+
       const perPage = params.per_page || 50;
       if (lastPage.data.length < perPage) {
         return undefined;
       }
-      
+
       return lastPageParam + 1;
     },
     initialPageParam: 1,
@@ -56,7 +63,7 @@ export const useInfiniteCryptocurrencies = (
 // Hook for fetching cryptocurrency details by ID
 export const useCryptocurrencyDetails = (
   id: string,
-  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: queryKeys.cryptos.detail(id),
@@ -69,7 +76,7 @@ export const useCryptocurrencyDetails = (
 // Hook for fetching multiple cryptocurrency details
 export const useMultipleCryptocurrencyDetails = (
   ids: string[],
-  options?: Omit<UseQueryOptions<APIResponse<any>[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<APIResponse<any>[]>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: [...queryKeys.cryptos.details(), 'multiple', ids.sort()],
@@ -85,13 +92,15 @@ export const useMultipleCryptocurrencyDetails = (
 // Hook for refreshing cryptocurrencies data
 export const useRefreshCryptocurrencies = () => {
   const { queryClient } = require('@tanstack/react-query');
-  
+
   return {
     refresh: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cryptos.all });
     },
     refreshList: (params: Record<string, any>) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cryptos.list(params) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.cryptos.list(params),
+      });
     },
     refreshDetail: (id: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cryptos.detail(id) });

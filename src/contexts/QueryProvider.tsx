@@ -8,8 +8,6 @@ interface QueryProviderProps {
 
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };

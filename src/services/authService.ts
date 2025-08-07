@@ -22,6 +22,7 @@ export interface SignInResult {
   user?: User;
   tokens?: AuthTokens;
   error?: string;
+  warning?: string;
 }
 
 export interface AuthServiceConfig {
@@ -180,11 +181,13 @@ class AuthService {
   }
 
   /**
-   * Sign out from Google
+   * Sign out from Google (without revoking tokens)
+   * This is a lighter version that just signs out locally
    */
   async signOut(): Promise<SignInResult> {
     try {
       await GoogleSignin.signOut();
+      console.log('Successfully signed out from Google');
 
       return {
         success: true,
@@ -200,20 +203,47 @@ class AuthService {
 
   /**
    * Revoke access and sign out
+   * Made more robust to handle token revocation failures gracefully
    */
   async revokeAccess(): Promise<SignInResult> {
+    let revokeSuccess = false;
+    let signOutSuccess = false;
+    let lastError: any = null;
+
+    // Try to revoke access first, but don't fail if it doesn't work
     try {
       await GoogleSignin.revokeAccess();
-      await GoogleSignin.signOut();
+      revokeSuccess = true;
+      console.log('Successfully revoked Google access');
+    } catch (error: any) {
+      console.warn('Failed to revoke Google access (non-critical):', error);
+      lastError = error;
+      // Don't return here - continue with sign out
+    }
 
+    // Always try to sign out, even if revoke failed
+    try {
+      await GoogleSignin.signOut();
+      signOutSuccess = true;
+      console.log('Successfully signed out from Google');
+    } catch (error: any) {
+      console.error('Failed to sign out from Google:', error);
+      lastError = error;
+    }
+
+    // Consider it successful if we managed to sign out, even if revoke failed
+    if (signOutSuccess) {
       return {
         success: true,
+        // Optionally include a warning about revoke failure
+        ...(revokeSuccess ? {} : { 
+          warning: 'Sign-out successful, but token revocation failed (non-critical)' 
+        }),
       };
-    } catch (error: any) {
-      console.error('Revoke access error:', error);
+    } else {
       return {
         success: false,
-        error: error?.message || 'Revoke access failed',
+        error: lastError?.message || 'Sign-out failed',
       };
     }
   }
@@ -400,8 +430,63 @@ export const authHelpers = {
 
   /**
    * Complete sign-out with cleanup
+   * Tries to revoke access first, falls back to regular sign-out if that fails
    */
   async completeSignOut(): Promise<SignInResult> {
-    return await authService.revokeAccess();
+    // First try the full revoke access approach
+    const revokeResult = await authService.revokeAccess();
+    
+    if (revokeResult.success) {
+      return revokeResult;
+    }
+
+    console.warn('Revoke access failed, attempting simple sign-out as fallback');
+    
+    // If revoke access fails, try simple sign-out as fallback
+    const signOutResult = await authService.signOut();
+    
+    if (signOutResult.success) {
+      return {
+        success: true,
+        warning: 'Sign-out successful using fallback method (token revocation failed)',
+      };
+    }
+
+    // If both fail, return the original error
+    return revokeResult;
+  },
+
+  /**
+   * Emergency sign-out that only does local cleanup
+   * Use this when Google services are not responding
+   */
+  async emergencySignOut(): Promise<SignInResult> {
+    try {
+      // Try simple sign-out first
+      const result = await authService.signOut();
+      
+      if (result.success) {
+        return {
+          success: true,
+          warning: 'Emergency sign-out completed (local only)',
+        };
+      }
+
+      // If even simple sign-out fails, we'll consider it successful
+      // since we're doing emergency cleanup
+      console.warn('Emergency sign-out: Google sign-out failed, but continuing with local cleanup');
+      
+      return {
+        success: true,
+        warning: 'Emergency sign-out completed (Google services unavailable)',
+      };
+    } catch (error: any) {
+      console.error('Emergency sign-out error:', error);
+      // Even in emergency, if everything fails, we should report it
+      return {
+        success: false,
+        error: error?.message || 'Emergency sign-out failed',
+      };
+    }
   },
 };

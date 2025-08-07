@@ -35,3 +35,16 @@ export {
   useWalletsByType,
   useClearAllWallets,
 } from './useWalletScanner';
+
+// Authentication hooks
+export {
+  useAuth,
+  useAuthSession,
+  useCurrentUser,
+  useGoogleSignIn,
+  useSignOut,
+  useRefreshTokens,
+  useIsAuthenticated,
+  useUserData,
+  useAuthTokens,
+} from './useAuth';

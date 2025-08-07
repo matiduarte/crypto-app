@@ -10,16 +10,16 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <QueryProvider>
-          <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            backgroundColor="transparent"
-            translucent
-          />
+      <QueryProvider>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor="transparent"
+          translucent
+        />
+        <AuthProvider>
           <RootNavigator />
-        </QueryProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </QueryProvider>
     </SafeAreaProvider>
   );
 }

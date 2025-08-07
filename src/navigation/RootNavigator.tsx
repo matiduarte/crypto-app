@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { APP_DETAILS } from '../screens/auth/LoginScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -17,9 +18,13 @@ export const RootNavigator: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
-          <Text style={styles.logoEmoji}>🪙</Text>
-          <Text style={styles.logoText}>CryptoApp</Text>
-          <ActivityIndicator size="large" color="#4285F4" style={styles.spinner} />
+          <Text style={styles.logoEmoji}>{APP_DETAILS.emoji}</Text>
+          <Text style={styles.logoText}>{APP_DETAILS.name}</Text>
+          <ActivityIndicator
+            size="large"
+            color="#4285F4"
+            style={styles.spinner}
+          />
           <Text style={styles.loadingText}>Initializing...</Text>
         </View>
       </View>
@@ -36,8 +41,8 @@ export const RootNavigator: React.FC = () => {
       >
         {isLoggedIn ? (
           // User is logged in - show main app
-          <Stack.Screen 
-            name="Main" 
+          <Stack.Screen
+            name="Main"
             component={MainStack}
             options={{
               animationTypeForReplace: 'push',
@@ -45,8 +50,8 @@ export const RootNavigator: React.FC = () => {
           />
         ) : (
           // User is not logged in - show auth flow
-          <Stack.Screen 
-            name="Auth" 
+          <Stack.Screen
+            name="Auth"
             component={AuthStack}
             options={{
               animationTypeForReplace: 'pop',

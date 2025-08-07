@@ -8,11 +8,21 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+
 import { useAuth } from '../../contexts/AuthContext';
-import { ScrollableScreen } from '../../components/common/ScreenWrapper';
+import { useGoogleSignIn } from '../../hooks/useAuth';
+import { FixedScreen } from '../../components/common/ScreenWrapper';
+import { GoogleSignInButton } from '../../components/auth';
+
+export const APP_DETAILS = {
+  name: 'Lemon',
+  emoji: '🍋',
+};
 
 export const LoginScreen: React.FC = () => {
-  const { signIn, isLoading, clearError } = useAuth();
+  // Use both the context (for backward compatibility) and direct React Query hook
+  const { error, clearError } = useAuth();
+  const signInMutation = useGoogleSignIn();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -60,46 +70,36 @@ export const LoginScreen: React.FC = () => {
     };
   }, [fadeAnim, scaleAnim, slideAnim, logoRotateAnim]);
 
-  // Button press animation
-  const buttonPressAnim = useRef(new Animated.Value(1)).current;
-
-  const handleButtonPressIn = () => {
-    Animated.spring(buttonPressAnim, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleButtonPressOut = () => {
-    Animated.spring(buttonPressAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  };
-
   const handleSignIn = async () => {
     try {
       clearError();
 
-      const result = await signIn();
+      // Use React Query mutation directly for better error handling
+      const result = await signInMutation.mutateAsync();
 
       if (!result.success) {
-        Alert.alert(
-          'Sign-In Failed',
-          result.error || 'Unable to sign in. Please try again.',
-          [{ text: 'OK' }],
-        );
+        // Error is now displayed in the UI via React Query error state
+        // Show alert for specific error types that need immediate attention
+        const errorMessage =
+          result.error || 'Unable to sign in. Please try again.';
+
+        if (
+          errorMessage.includes('network') ||
+          errorMessage.includes('cancelled')
+        ) {
+          Alert.alert('Sign-In Failed', errorMessage, [{ text: 'OK' }]);
+        }
       }
-      // Success is handled automatically by navigation state change
+      // Success is handled automatically by React Query and navigation state change
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'An unexpected error occurred.', [
-        { text: 'OK' },
-      ]);
+      // React Query will handle the error, but show alert for critical issues
+      const errorMessage = err.message || 'An unexpected error occurred.';
+      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
     }
   };
 
   return (
-    <ScrollableScreen>
+    <FixedScreen style={styles.scree}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         {/* Logo/Header Section */}
         <Animated.View
@@ -126,7 +126,7 @@ export const LoginScreen: React.FC = () => {
                 },
               ]}
             >
-              🍋
+              {APP_DETAILS.emoji}
             </Animated.Text>
             <Animated.Text
               style={[
@@ -144,7 +144,7 @@ export const LoginScreen: React.FC = () => {
                 },
               ]}
             >
-              CryptoApp
+              {APP_DETAILS.name}
             </Animated.Text>
           </View>
           <Animated.Text
@@ -159,6 +159,34 @@ export const LoginScreen: React.FC = () => {
             Your gateway to cryptocurrency tracking and exchange
           </Animated.Text>
         </Animated.View>
+        {/* Error Display - Shows errors from React Query mutation */}
+        {(error || signInMutation.error) && (
+          <Animated.View
+            style={[
+              styles.errorContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <Text style={styles.errorText}>
+              {error || signInMutation.error?.message || 'An error occurred'}
+            </Text>
+            <TouchableOpacity
+              style={styles.clearErrorButton}
+              onPress={() => {
+                clearError();
+                signInMutation.reset();
+              }}
+              accessibilityLabel="Dismiss error"
+              accessibilityRole="button"
+            >
+              <Text style={styles.clearErrorText}>Dismiss</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
         <Animated.View
           style={[
             styles.signInSection,
@@ -176,42 +204,27 @@ export const LoginScreen: React.FC = () => {
             },
           ]}
         >
-          <Animated.View style={{ transform: [{ scale: buttonPressAnim }] }}>
-            <TouchableOpacity
-              style={[
-                styles.signInButton,
-                isLoading && styles.signInButtonDisabled,
-              ]}
-              onPress={handleSignIn}
-              onPressIn={handleButtonPressIn}
-              onPressOut={handleButtonPressOut}
-              disabled={isLoading}
-              activeOpacity={0.8}
-              accessibilityLabel="Sign in with Google"
-              accessibilityHint="Tap to sign in using your Google account"
-              accessibilityRole="button"
-            >
-              <View style={styles.signInButtonContent}>
-                <Text style={styles.googleIcon}>G</Text>
-                <Text style={styles.signInButtonText}>
-                  {isLoading ? 'Signing in...' : 'Continue with Google'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
+          <GoogleSignInButton
+            onPress={handleSignIn}
+            isLoading={signInMutation.isPending}
+          />
         </Animated.View>
       </Animated.View>
-    </ScrollableScreen>
+    </FixedScreen>
   );
 };
 
 const styles = StyleSheet.create({
+  scree: {
+    flex: 1,
+    marginVertical: 15,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 20,
-    justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
+    justifyContent: 'space-evenly',
+    backgroundColor: '#fffef7', // Subtle lemon-tinted background
     minHeight: 600, // Ensure minimum height for proper layout
   },
   header: {
@@ -224,7 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   logoEmoji: {
-    fontSize: 64,
+    fontSize: 82,
     marginBottom: 8,
   },
   logoText: {
@@ -267,43 +280,5 @@ const styles = StyleSheet.create({
   },
   signInSection: {
     alignItems: 'center',
-  },
-  signInButton: {
-    backgroundColor: '#4285F4',
-    borderRadius: 12,
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-    width: '100%',
-    minHeight: 56, // Ensure minimum touch target size
-    shadowColor: '#4285F4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  signInButtonDisabled: {
-    backgroundColor: '#9e9e9e',
-    shadowOpacity: 0.1,
-  },
-  signInButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleIcon: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 12,
-    backgroundColor: '#db4437',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  signInButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });
