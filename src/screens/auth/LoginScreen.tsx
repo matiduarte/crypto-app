@@ -14,7 +14,7 @@ import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { GoogleSignInButton } from '../../components/auth';
 
 export const APP_DETAILS = {
-  name: 'Lemon',
+  name: 'Lime',
   emoji: '🍋',
 };
 
@@ -98,9 +98,15 @@ export const LoginScreen: React.FC = () => {
   };
 
   return (
-    <FixedScreen style={styles.scree}>
+    <FixedScreen style={styles.screen}>
+      {/* Background Elements */}
+      <View style={styles.backgroundElements}>
+        <View style={styles.circleTop} />
+        <View style={styles.circleBottom} />
+      </View>
+
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        {/* Logo/Header Section */}
+        {/* Header Section */}
         <Animated.View
           style={[
             styles.header,
@@ -109,56 +115,45 @@ export const LoginScreen: React.FC = () => {
             },
           ]}
         >
-          <View style={styles.logoContainer}>
-            <Animated.Text
-              style={[
-                styles.logoEmoji,
-                {
-                  transform: [
-                    {
-                      rotate: logoRotateAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              {APP_DETAILS.emoji}
-            </Animated.Text>
-            <Animated.Text
-              style={[
-                styles.logoText,
-                {
-                  transform: [
-                    {
-                      scale: scaleAnim.interpolate({
-                        inputRange: [0.8, 1],
-                        outputRange: [0.8, 1],
-                        extrapolate: 'clamp',
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              {APP_DETAILS.name}
-            </Animated.Text>
+          <View style={styles.appBrand}>
+            <View style={styles.iconContainer}>
+              <Animated.Text
+                style={[
+                  styles.appIcon,
+                  {
+                    transform: [
+                      {
+                        rotate: logoRotateAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {APP_DETAILS.emoji}
+              </Animated.Text>
+            </View>
           </View>
-          <Animated.Text
+
+          <Animated.View
             style={[
-              styles.tagline,
+              styles.welcomeSection,
               {
                 opacity: fadeAnim,
                 transform: [{ translateY: slideAnim }],
               },
             ]}
           >
-            Your gateway to cryptocurrency tracking and exchange
-          </Animated.Text>
+            <Text style={styles.welcomeTitle}>Welcome Back</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Sign in to continue to your crypto portfolio
+            </Text>
+          </Animated.View>
         </Animated.View>
-        {/* Error Display - Shows errors from React Query mutation */}
+
+        {/* Error Display */}
         {error && (
           <Animated.View
             style={[
@@ -186,6 +181,7 @@ export const LoginScreen: React.FC = () => {
           </Animated.View>
         )}
 
+        {/* Sign In Section */}
         <Animated.View
           style={[
             styles.signInSection,
@@ -211,70 +207,126 @@ export const LoginScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  scree: {
+  screen: {
     flex: 1,
-    marginVertical: 15,
+    backgroundColor: '#fafbfc', // Clean, modern background
+  },
+  backgroundElements: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  circleTop: {
+    position: 'absolute',
+    top: -100,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#4285f4',
+    opacity: 0.1,
+  },
+  circleBottom: {
+    position: 'absolute',
+    bottom: -120,
+    left: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#34a853',
+    opacity: 0.08,
   },
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    justifyContent: 'space-evenly',
-    backgroundColor: '#fffef7', // Subtle lemon-tinted background
-    minHeight: 600, // Ensure minimum height for proper layout
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+    justifyContent: 'center',
+    zIndex: 2,
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     alignItems: 'center',
-    marginTop: '10%',
-    marginBottom: '8%',
+    marginBottom: 60,
   },
-  logoContainer: {
+  appBrand: {
     alignItems: 'center',
+    marginBottom: 40,
+  },
+  iconContainer: {
+    backgroundColor: 'rgba(66, 133, 244, 0.1)',
+    borderRadius: 30,
+    padding: 20,
     marginBottom: 16,
   },
-  logoEmoji: {
-    fontSize: 82,
-    marginBottom: 8,
+  appIcon: {
+    fontSize: 60,
   },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+  appName: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#202124',
     letterSpacing: -0.5,
   },
-  tagline: {
-    fontSize: 16,
-    color: '#6c757d',
+  welcomeSection: {
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#202124',
+    marginBottom: 8,
     textAlign: 'center',
-    lineHeight: 24,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#5f6368',
+    textAlign: 'center',
+    lineHeight: 22,
     paddingHorizontal: 20,
   },
   errorContainer: {
-    backgroundColor: '#fff2f2',
+    backgroundColor: '#fef7f7',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ffcccb',
-    marginBottom: 20,
+    borderColor: '#fecaca',
+    marginBottom: 24,
+    marginHorizontal: 4,
   },
   errorText: {
-    color: '#d32f2f',
+    color: '#dc2626',
     fontSize: 14,
     marginBottom: 8,
     textAlign: 'center',
+    lineHeight: 20,
   },
   clearErrorButton: {
     alignSelf: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
     paddingHorizontal: 12,
+    borderRadius: 6,
   },
   clearErrorText: {
-    color: '#d32f2f',
-    fontSize: 12,
+    color: '#dc2626',
+    fontSize: 13,
     fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   signInSection: {
     alignItems: 'center',
+  },
+  signInFooter: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#9aa0a6',
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
