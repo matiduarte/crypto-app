@@ -12,7 +12,7 @@ import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
-import { Button, CryptoListItem } from '../../components/common';
+import { Button, CryptoListItem, CustomIcon } from '../../components/common';
 
 // Item Separator Component
 const ItemSeparator: React.FC = () => <View style={styles.separator} />;
@@ -242,7 +242,7 @@ export const CryptoListScreen: React.FC = () => {
 
           <View style={styles.controlsRow}>
             <View style={styles.searchContainer}>
-              <Text style={styles.searchIcon}>🔍</Text>
+              <CustomIcon name="search" size={24} color="#9e9e9e" />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search cryptocurrencies..."
@@ -259,7 +259,7 @@ export const CryptoListScreen: React.FC = () => {
                   onPress={handleClearSearch}
                   accessibilityLabel="Clear search"
                 >
-                  <Text style={styles.clearButtonText}>✕</Text>
+                  <CustomIcon name="close" size={24} color="#9e9e9e" />
                 </Button>
               )}
             </View>
@@ -272,9 +272,15 @@ export const CryptoListScreen: React.FC = () => {
               <Text style={styles.sortIcon}>
                 {SORT_OPTIONS.find(opt => opt.key === sortBy)?.icon || '📊'}
               </Text>
-              <Text style={styles.sortOrder}>
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </Text>
+              <CustomIcon
+                name={
+                  sortOrder === 'asc'
+                    ? 'keyboard-arrow-up'
+                    : 'keyboard-arrow-down'
+                }
+                size={18}
+                color="#6c757d"
+              />
             </Button>
           </View>
         </View>
@@ -286,7 +292,7 @@ export const CryptoListScreen: React.FC = () => {
               <View style={styles.sortModalHeader}>
                 <Text style={styles.sortModalTitle}>Sort by</Text>
                 <Button onPress={() => setShowSortModal(false)}>
-                  <Text style={styles.sortModalClose}>✕</Text>
+                  <CustomIcon name="close" size={24} color="#9e9e9e" />
                 </Button>
               </View>
 
@@ -309,9 +315,15 @@ export const CryptoListScreen: React.FC = () => {
                     {option.label}
                   </Text>
                   {sortBy === option.key && (
-                    <Text style={styles.sortOptionOrder}>
-                      {sortOrder === 'asc' ? '↑' : '↓'}
-                    </Text>
+                    <CustomIcon
+                      name={
+                        sortOrder === 'asc'
+                          ? 'keyboard-arrow-up'
+                          : 'keyboard-arrow-down'
+                      }
+                      size={18}
+                      color="#6c757d"
+                    />
                   )}
                 </Button>
               ))}

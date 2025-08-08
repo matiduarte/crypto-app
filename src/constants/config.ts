@@ -51,3 +51,7 @@ export const DEFAULT_CRYPTOS = [
   'cardano',
   'solana',
 ] as const;
+
+export const APP_DETAILS = {
+  emoji: '🍋',
+};

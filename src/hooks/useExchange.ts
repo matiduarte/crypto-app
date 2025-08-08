@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseQueryOptions,
+} from '@tanstack/react-query';
 import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
 import { APIResponse, ConversionResult } from '../types';
@@ -10,21 +15,21 @@ export const useSimplePrice = (
     vs_currencies: string;
     include_24hr_change?: boolean;
   },
-  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: queryKeys.prices.simple(params.ids, params.vs_currencies),
     queryFn: () => apiService.getSimplePrice(params),
     enabled: !!params.ids && !!params.vs_currencies,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time prices
-    staleTime: 1000 * 10, // Consider data stale after 10 seconds
+    refetchInterval: 60000, // Refetch every 60 seconds for real-time prices
+    staleTime: 1000 * 30, // Consider data stale after 30 seconds
     ...options,
   });
 };
 
 // Hook for getting exchange rates
 export const useExchangeRates = (
-  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: queryKeys.prices.rates(),
@@ -46,7 +51,7 @@ export const useCurrencyConversion = () => {
       amount: number;
     }) => {
       const { fromCurrency, toCurrency, amount } = params;
-      
+
       // Get the conversion rate
       const priceData = await apiService.getSimplePrice({
         ids: fromCurrency,
@@ -96,17 +101,18 @@ export const useCurrencyConversion = () => {
 export const useRealTimePrices = (
   cryptoIds: string[],
   vsCurrency: string = 'usd',
-  refetchInterval: number = 30000 // 30 seconds
+  refetchInterval: number = 30000, // 30 seconds
 ) => {
   const ids = cryptoIds.join(',');
-  
+
   return useQuery({
     queryKey: [...queryKeys.prices.simple(ids, vsCurrency), 'realtime'],
-    queryFn: () => apiService.getSimplePrice({
-      ids,
-      vs_currencies: vsCurrency,
-      include_24hr_change: true,
-    }),
+    queryFn: () =>
+      apiService.getSimplePrice({
+        ids,
+        vs_currencies: vsCurrency,
+        include_24hr_change: true,
+      }),
     enabled: cryptoIds.length > 0,
     refetchInterval,
     staleTime: 1000 * 5, // Consider data stale after 5 seconds
@@ -118,7 +124,7 @@ export const useRealTimePrices = (
 export const useHistoricalPrices = (
   cryptoId: string,
   days: number = 7,
-  options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: [...queryKeys.cryptos.detail(cryptoId), 'history', days],

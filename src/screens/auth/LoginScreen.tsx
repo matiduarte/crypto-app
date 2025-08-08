@@ -12,11 +12,7 @@ import {
 import { useAuth, useGoogleSignIn } from '../../hooks/useAuth';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { GoogleSignInButton } from '../../components/auth';
-
-export const APP_DETAILS = {
-  name: 'Lime',
-  emoji: '🍋',
-};
+import { APP_DETAILS } from '../../constants/config';
 
 export const LoginScreen: React.FC = () => {
   // Use both the context (for backward compatibility) and direct React Query hook

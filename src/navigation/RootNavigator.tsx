@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { APP_DETAILS } from '../screens/auth/LoginScreen';
+import { APP_DETAILS } from '../constants/config';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,7 +19,6 @@ export const RootNavigator: React.FC = () => {
       <View style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
           <Text style={styles.logoEmoji}>{APP_DETAILS.emoji}</Text>
-          <Text style={styles.logoText}>{APP_DETAILS.name}</Text>
           <ActivityIndicator
             size="large"
             color="#4285F4"
