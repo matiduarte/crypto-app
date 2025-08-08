@@ -1,26 +1,12 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Share,
-  TextInput,
-  Modal,
-} from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { CustomIcon } from '../common/CustomIcon';
 import { ScannedWallet } from '../../types';
 import {
   formatWalletAddress,
   getWalletTypeDisplayName,
-  getWalletTypeEmoji
 } from '../../utils/walletValidation';
-import {
-  useRemoveScannedWallet,
-  useToggleWalletFavorite,
-  useUpdateWalletLabel
-} from '../../hooks';
+import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
 
 interface WalletItemProps {
   item: ScannedWallet;
@@ -28,41 +14,15 @@ interface WalletItemProps {
 }
 
 export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editLabel, setEditLabel] = useState(item.label || '');
-  const [copied, setCopied] = useState(false);
-
   const removeWalletMutation = useRemoveScannedWallet();
   const toggleFavoriteMutation = useToggleWalletFavorite();
-  const updateLabelMutation = useUpdateWalletLabel();
-
-  const handleCopy = async () => {
-    try {
-      await Clipboard.setString(item.address);
-      setCopied(true);
-      Alert.alert('Copied!', 'Address copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to copy address');
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      const shareOptions = {
-        title: `${getWalletTypeDisplayName(item.type)} Wallet Address`,
-        message: `Here's a ${getWalletTypeDisplayName(item.type).toLowerCase()} wallet address:\n\n${item.address}`,
-      };
-      await Share.share(shareOptions);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to share address');
-    }
-  };
 
   const handleDelete = () => {
     Alert.alert(
       'Delete Wallet',
-      'Are you sure you want to delete this wallet address?',
+      `Are you sure you want to remove this ${getWalletTypeDisplayName(
+        item.type,
+      ).toLowerCase()} wallet from your list?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -71,13 +31,12 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
           onPress: async () => {
             try {
               await removeWalletMutation.mutateAsync(item.id);
-              Alert.alert('Success', 'Wallet deleted successfully');
             } catch (error) {
               Alert.alert('Error', 'Failed to delete wallet');
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -92,321 +51,158 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
     }
   };
 
-  const handleSaveLabel = async () => {
-    if (editLabel.trim() === item.label) {
-      setShowEditModal(false);
-      return;
-    }
-
-    try {
-      await updateLabelMutation.mutateAsync({
-        walletId: item.id,
-        label: editLabel.trim() || `${getWalletTypeDisplayName(item.type)} wallet`,
-      });
-      setShowEditModal(false);
-      Alert.alert('Success', 'Label updated successfully');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update label');
-    }
-  };
-
-  const showActionSheet = () => {
-    Alert.alert(
-      'Wallet Actions',
-      `Choose an action for this ${getWalletTypeDisplayName(item.type).toLowerCase()} wallet`,
-      [
-        {
-          text: 'Copy Address',
-          onPress: handleCopy,
-        },
-        {
-          text: 'Share Address',
-          onPress: handleShare,
-        },
-        {
-          text: item.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
-          onPress: handleToggleFavorite,
-        },
-        {
-          text: 'Edit Label',
-          onPress: () => setShowEditModal(true),
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: handleDelete,
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ]
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
+
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+      });
+    }
   };
 
   return (
-    <>
-      <TouchableOpacity
-        style={styles.container}
-        onPress={() => onPress?.(item)}
-        onLongPress={showActionSheet}
-        activeOpacity={0.7}
-      >
-        <View style={styles.header}>
-          <View style={styles.typeContainer}>
-            <Text style={styles.emoji}>
-              {getWalletTypeEmoji(item.type)}
-            </Text>
-            <View style={styles.info}>
-              <View style={styles.titleRow}>
-                <Text style={styles.label} numberOfLines={1}>
-                  {item.label || `${getWalletTypeDisplayName(item.type)} wallet`}
-                </Text>
-                {item.isFavorite && (
-                  <Text style={styles.favoriteIcon}>⭐</Text>
-                )}
-              </View>
-              <Text style={styles.type}>
-                {getWalletTypeDisplayName(item.type)}
+    <TouchableOpacity
+      style={[styles.container, item.isFavorite && styles.favoriteContainer]}
+      onPress={() => onPress?.(item)}
+      activeOpacity={0.7}
+    >
+      {/* Main content */}
+      <View style={styles.content}>
+        {/* Left side - Wallet info */}
+        <View style={styles.leftContent}>
+          <View style={styles.walletInfo}>
+            <View style={styles.titleRow}>
+              <Text style={styles.walletType} numberOfLines={1}>
+                {getWalletTypeDisplayName(item.type)} Wallet
               </Text>
             </View>
-          </View>
-          <View style={styles.dateContainer}>
-            <Text style={styles.date}>
-              {new Date(item.scannedAt).toLocaleDateString()}
+            <Text
+              style={styles.address}
+              numberOfLines={1}
+              ellipsizeMode="middle"
+            >
+              {formatWalletAddress(item.address, 36)}
             </Text>
+            <Text style={styles.date}>{formatDate(item.scannedAt)}</Text>
           </View>
         </View>
-        
-        <View style={styles.addressContainer}>
-          <Text style={styles.address} numberOfLines={1} ellipsizeMode="middle">
-            {formatWalletAddress(item.address, 32)}
-          </Text>
-        </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
+        {/* Right side - Actions */}
+        <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.quickAction}
-            onPress={handleCopy}
+            style={[styles.actionButton, styles.favoriteButton]}
+            onPress={handleToggleFavorite}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.quickActionIcon}>📋</Text>
-            <Text style={styles.quickActionText}>
-              {copied ? 'Copied!' : 'Copy'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickAction}
-            onPress={handleShare}
-          >
-            <Text style={styles.quickActionIcon}>📤</Text>
-            <Text style={styles.quickActionText}>Share</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickAction}
-            onPress={showActionSheet}
-          >
-            <Text style={styles.quickActionIcon}>⚙️</Text>
-            <Text style={styles.quickActionText}>More</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-
-      {/* Edit Label Modal */}
-      <Modal
-        visible={showEditModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEditModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Wallet Label</Text>
-            
-            <TextInput
-              style={styles.labelInput}
-              value={editLabel}
-              onChangeText={setEditLabel}
-              placeholder="Enter wallet label"
-              autoFocus
-              maxLength={50}
+            <CustomIcon
+              name={item.isFavorite ? 'favorite' : 'favorite-border'}
+              size={20}
+              color={item.isFavorite ? '#ff6b6b' : '#9e9e9e'}
             />
+          </TouchableOpacity>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowEditModal(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleSaveLabel}
-              >
-                <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={handleDelete}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <CustomIcon name="delete" size={20} color="#4285F4" />
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </>
+      </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    minHeight: 80,
   },
-  header: {
+  favoriteContainer: {
+    backgroundColor: '#fffbf0', // Slight golden tint for favorites
+  },
+  content: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
-  typeContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  leftContent: {
     flex: 1,
+    marginRight: 16,
   },
-  emoji: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  info: {
+  walletInfo: {
     flex: 1,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
-  label: {
+  walletType: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
     flex: 1,
   },
-  favoriteIcon: {
-    fontSize: 16,
+  favoriteIndicator: {
     marginLeft: 8,
   },
-  type: {
+  address: {
     fontSize: 14,
-    color: '#6c757d',
-    marginTop: 2,
-  },
-  dateContainer: {
-    alignItems: 'flex-end',
+    fontFamily: 'monospace',
+    color: '#495057',
+    marginBottom: 4,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   date: {
     fontSize: 12,
     color: '#9e9e9e',
+    marginTop: 2,
   },
-  addressContainer: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  address: {
-    fontSize: 13,
-    fontFamily: 'monospace',
-    color: '#495057',
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  quickAction: {
-    flex: 1,
+  actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  quickActionIcon: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  quickActionText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#495057',
-  },
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  labelInput: {
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#1a1a1a',
-    marginBottom: 24,
-  },
-  modalActions: {
-    flexDirection: 'row',
     gap: 12,
   },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  cancelButton: {
     backgroundColor: '#f8f9fa',
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
-  saveButton: {
-    backgroundColor: '#007AFF',
+  favoriteButton: {
+    // Additional styling for favorite button if needed
   },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6c757d',
+  deleteButton: {
+    // Additional styling for delete button if needed
   },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+  separator: {
+    height: 1,
+    backgroundColor: '#f1f3f4',
+    marginTop: 16,
   },
 });
