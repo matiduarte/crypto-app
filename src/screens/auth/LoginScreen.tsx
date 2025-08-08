@@ -9,8 +9,7 @@ import {
   Easing,
 } from 'react-native';
 
-import { useAuth } from '../../contexts/AuthContext';
-import { useGoogleSignIn } from '../../hooks/useAuth';
+import { useAuth, useGoogleSignIn } from '../../hooks/useAuth';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { GoogleSignInButton } from '../../components/auth';
 

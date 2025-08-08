@@ -134,21 +134,6 @@ export type CryptoStackParamList = {
 };
 
 // State Types
-export interface AuthState {
-  user: any | null; // Google User from @react-native-google-signin/google-signin
-  token: string | null;
-  refreshToken: string | null;
-  isLoggedIn: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface AuthContextType extends AuthState {
-  signIn: () => Promise<{ success: boolean; error?: string }>;
-  signOut: () => Promise<{ success: boolean; error?: string }>;
-  refreshTokens: () => Promise<{ success: boolean; error?: string }>;
-  clearError: () => void;
-}
 
 export interface CryptoState {
   cryptos: Cryptocurrency[];

@@ -7,7 +7,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
 
 export const ProfileScreen: React.FC = () => {

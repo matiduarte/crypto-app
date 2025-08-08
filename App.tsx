@@ -2,7 +2,6 @@ import React from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryProvider } from './src/contexts/QueryProvider';
-import { AuthProvider } from './src/contexts/AuthContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 function App() {
@@ -16,9 +15,7 @@ function App() {
           backgroundColor="transparent"
           translucent
         />
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
+        <RootNavigator />
       </QueryProvider>
     </SafeAreaProvider>
   );
