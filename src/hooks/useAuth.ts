@@ -54,30 +54,84 @@ export const useAuthSession = () => {
         // Initialize auth service
         const initialized = await authHelpers.initialize();
         if (!initialized) {
+          console.warn('Auth service initialization failed');
           return { user: null, tokens: null, isLoggedIn: false };
         }
 
-        // Try silent sign-in
-        const silentResult = await authHelpers.silentSignIn();
+        // Check if we have stored session data first (fallback for iOS)
+        const [storedUser, storedToken, storedRefreshToken, storedIsLoggedIn] =
+          await Promise.all([
+            storageService.getItem<User>(STORAGE_KEYS.USER),
+            storageService.getItem<string>(STORAGE_KEYS.TOKEN),
+            storageService.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN),
+            storageService.getItem<boolean>(STORAGE_KEYS.IS_LOGGED_IN),
+          ]);
 
-        if (silentResult.success && silentResult.user && silentResult.tokens) {
-          // Load additional stored auth data if any
-          const [storedUser, storedToken, storedRefreshToken] =
-            await Promise.all([
-              storageService.getItem<User>(STORAGE_KEYS.USER),
-              storageService.getItem<string>(STORAGE_KEYS.TOKEN),
-              storageService.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN),
-            ]);
+        // If we have stored login state, try to restore from Google Sign-in
+        if (storedIsLoggedIn && storedUser) {
+          console.log('Found stored auth data, attempting silent sign-in...');
+          
+          try {
+            // Try silent sign-in
+            const silentResult = await authHelpers.silentSignIn();
 
-          const user = storedUser || silentResult.user;
-          const tokens: AuthTokens = {
-            idToken: storedToken || silentResult.tokens.idToken,
-            accessToken: storedRefreshToken || silentResult.tokens.accessToken,
-          };
+            if (silentResult.success && silentResult.user && silentResult.tokens) {
+              console.log('Silent sign-in successful');
+              const tokens: AuthTokens = {
+                idToken: storedToken || silentResult.tokens.idToken,
+                accessToken: silentResult.tokens.accessToken, // Use fresh token from silent sign-in
+              };
 
-          return { user, tokens, isLoggedIn: true };
+              return { 
+                user: silentResult.user, // Use fresh user data
+                tokens, 
+                isLoggedIn: true 
+              };
+            } else {
+              console.warn('Silent sign-in failed, but we have stored data');
+              // If silent sign-in fails but we have stored data, try to use stored data as fallback
+              if (storedUser && storedToken) {
+                return {
+                  user: storedUser,
+                  tokens: {
+                    idToken: storedToken,
+                    accessToken: storedRefreshToken || '',
+                  },
+                  isLoggedIn: true,
+                };
+              }
+            }
+          } catch (silentError) {
+            console.warn('Silent sign-in error:', silentError);
+            // Fallback to stored data if available
+            if (storedUser && storedToken) {
+              console.log('Using stored auth data as fallback');
+              return {
+                user: storedUser,
+                tokens: {
+                  idToken: storedToken,
+                  accessToken: storedRefreshToken || '',
+                },
+                isLoggedIn: true,
+              };
+            }
+          }
+        } else {
+          // No stored login state, try fresh silent sign-in
+          console.log('No stored auth data, trying fresh silent sign-in...');
+          const silentResult = await authHelpers.silentSignIn();
+
+          if (silentResult.success && silentResult.user && silentResult.tokens) {
+            console.log('Fresh silent sign-in successful');
+            return { 
+              user: silentResult.user,
+              tokens: silentResult.tokens,
+              isLoggedIn: true 
+            };
+          }
         }
 
+        console.log('No valid session found');
         return { user: null, tokens: null, isLoggedIn: false };
       } catch (error) {
         console.error('Auth session query error:', error);

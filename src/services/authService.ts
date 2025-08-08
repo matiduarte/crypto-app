@@ -81,11 +81,25 @@ class AuthService {
 
   /**
    * Check if user is currently signed in
+   * Uses signInSilently() for better iOS compatibility after app restart
    */
   async isSignedIn(): Promise<boolean> {
     try {
-      const userInfo = GoogleSignin.getCurrentUser();
-      return userInfo !== null;
+      // First try to get current user (fast, cached)
+      const currentUser = GoogleSignin.getCurrentUser();
+      if (currentUser) {
+        return true;
+      }
+
+      // If no cached user, try silent sign-in (especially important for iOS)
+      try {
+        const silentSignInResult = await GoogleSignin.signInSilently();
+        return !!silentSignInResult;
+      } catch (silentError) {
+        // Silent sign-in failed - user is not signed in
+        console.log('Silent sign-in failed, user not signed in:', silentError.message);
+        return false;
+      }
     } catch (error) {
       console.error('Error checking sign-in status:', error);
       return false;
@@ -101,6 +115,32 @@ class AuthService {
       return userInfo ? userInfo.user : null;
     } catch (error) {
       console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get current user information with iOS session restoration
+   * This method will attempt to restore the session if needed
+   */
+  async getCurrentUserWithRestore(): Promise<User | null> {
+    try {
+      // First try to get cached user
+      const userInfo = GoogleSignin.getCurrentUser();
+      if (userInfo && userInfo.user) {
+        return userInfo.user;
+      }
+
+      // If no cached user, try silent sign-in for iOS compatibility
+      try {
+        const silentSignInResult = await GoogleSignin.signInSilently();
+        return silentSignInResult.user || null;
+      } catch (silentError) {
+        console.log('Silent user restoration failed:', silentError.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting current user with restore:', error);
       return null;
     }
   }
@@ -374,20 +414,28 @@ export const authHelpers = {
 
   /**
    * Silent sign-in (check existing session)
+   * Enhanced for iOS compatibility with proper session restoration
    */
   async silentSignIn(): Promise<SignInResult> {
     try {
-      const isValid = await authService.validateSession();
-
-      if (isValid) {
-        const user = authService.getCurrentUser();
+      // Try to restore user session (especially important for iOS)
+      const user = await authService.getCurrentUserWithRestore();
+      
+      if (user) {
+        // If we got the user, also try to get tokens
         const tokens = await authService.getCurrentTokens();
-
-        if (user && tokens) {
+        
+        if (tokens) {
           return {
             success: true,
             user: user,
             tokens,
+          };
+        } else {
+          console.warn('User found but no tokens available - partial session');
+          return {
+            success: false,
+            error: 'User found but authentication tokens are missing',
           };
         }
       }
@@ -397,6 +445,7 @@ export const authHelpers = {
         error: 'No valid session found',
       };
     } catch (error: any) {
+      console.error('Silent sign-in error:', error);
       return {
         success: false,
         error: error?.message || 'Silent sign-in failed',

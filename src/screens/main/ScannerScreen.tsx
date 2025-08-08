@@ -8,7 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { ScrollableScreen } from '../../components/common/ScreenWrapper';
+import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { QRScannerModal, WalletItem } from '../../components/scanner';
 import { useScannedWallets, useAddScannedWallet } from '../../hooks';
 import {
@@ -294,63 +294,84 @@ export const ScannerScreen: React.FC = () => {
   ), []);
 
 
-  return (
-    <ScrollableScreen>
-      <View style={styles.container}>
-        <Text style={styles.title}>📱 QR Scanner</Text>
-        <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
+  // Header content for FlatList
+  const headerContent = (
+    <View style={styles.header}>
+      <Text style={styles.title}>📱 QR Scanner</Text>
+      <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
 
-        {/* Scan Button */}
-        <TouchableOpacity
-          style={[
-            styles.scanButton,
-            state.isProcessing && styles.scanButtonDisabled
-          ]}
-          onPress={handleOpenScanner}
-          activeOpacity={0.8}
-          disabled={state.isProcessing}
-        >
-          {state.isProcessing ? (
-            <>
-              <ActivityIndicator size="large" color="#ffffff" style={styles.processingIndicator} />
-              <Text style={styles.scanButtonText}>Processing...</Text>
-              <Text style={styles.scanButtonSubtext}>{state.processingMessage}</Text>
-            </>
-          ) : (
-            <>
-              <Text style={styles.scanButtonIcon}>📷</Text>
-              <Text style={styles.scanButtonText}>Scan QR Code</Text>
-              <Text style={styles.scanButtonSubtext}>Tap to scan a wallet address</Text>
-            </>
-          )}
-        </TouchableOpacity>
+      {/* Scan Button */}
+      <TouchableOpacity
+        style={[
+          styles.scanButton,
+          state.isProcessing && styles.scanButtonDisabled
+        ]}
+        onPress={handleOpenScanner}
+        activeOpacity={0.8}
+        disabled={state.isProcessing}
+      >
+        {state.isProcessing ? (
+          <>
+            <ActivityIndicator size="large" color="#ffffff" style={styles.processingIndicator} />
+            <Text style={styles.scanButtonText}>Processing...</Text>
+            <Text style={styles.scanButtonSubtext}>{state.processingMessage}</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.scanButtonIcon}>📷</Text>
+            <Text style={styles.scanButtonText}>Scan QR Code</Text>
+            <Text style={styles.scanButtonSubtext}>Tap to scan a wallet address</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
 
-        {/* Scanned Wallets Section */}
-        <View style={styles.walletsSection}>
-          {walletsLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#4285F4" />
-              <Text style={styles.loadingText}>Loading wallets...</Text>
-            </View>
-          ) : scannedWallets.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🔍</Text>
-              <Text style={styles.emptyText}>No wallets scanned yet</Text>
-              <Text style={styles.emptySubtext}>
-                Scan a QR code to add your first wallet address
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={scannedWallets}
-              renderItem={renderWalletItem}
-              keyExtractor={item => item.id}
-              style={styles.walletsList}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.walletsListContent}
-            />
-          )}
+  // Empty state content for FlatList
+  const emptyContent = (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyIcon}>🔍</Text>
+      <Text style={styles.emptyText}>No wallets scanned yet</Text>
+      <Text style={styles.emptySubtext}>
+        Scan a QR code to add your first wallet address
+      </Text>
+    </View>
+  );
+
+  // Loading overlay when wallets are loading
+  if (walletsLoading) {
+    return (
+      <FixedScreen>
+        <View style={styles.container}>
+          {headerContent}
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4285F4" />
+            <Text style={styles.loadingText}>Loading wallets...</Text>
+          </View>
+          <QRScannerModal
+            visible={state.scannerVisible}
+            onClose={handleCloseScanner}
+            onScanSuccess={handleScanSuccess}
+            title="Scan Wallet QR Code"
+          />
         </View>
+      </FixedScreen>
+    );
+  }
+
+  return (
+    <FixedScreen>
+      <View style={styles.container}>
+        <FlatList
+          data={scannedWallets}
+          renderItem={renderWalletItem}
+          keyExtractor={item => item.id}
+          ListHeaderComponent={headerContent}
+          ListEmptyComponent={emptyContent}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.flatListContent}
+          style={styles.flatList}
+        />
 
         {/* QR Scanner Modal */}
         <QRScannerModal
@@ -360,15 +381,19 @@ export const ScannerScreen: React.FC = () => {
           title="Scan Wallet QR Code"
         />
       </View>
-    </ScrollableScreen>
+    </FixedScreen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f8f9fa',
+  },
+  // Header section styles
+  header: {
+    padding: 20,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -389,7 +414,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
     shadowColor: '#4285F4',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -418,14 +443,12 @@ const styles = StyleSheet.create({
   processingIndicator: {
     marginBottom: 12,
   },
-  // Wallets Section
-  walletsSection: {
+  // FlatList styles
+  flatList: {
     flex: 1,
   },
-  walletsList: {
-    flex: 1,
-  },
-  walletsListContent: {
+  flatListContent: {
+    flexGrow: 1,
     paddingBottom: 20,
   },
   // Loading/Empty States
@@ -441,10 +464,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   emptyContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyIcon: {
     fontSize: 64,
