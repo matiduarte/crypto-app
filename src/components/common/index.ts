@@ -18,3 +18,4 @@ export { CryptoListItem } from './CryptoListItem';
 export { SelectorModal } from './SelectorModal';
 export type { SelectorOption } from './SelectorModal';
 export { CustomIcon } from './CustomIcon';
+export { Button } from './Button';

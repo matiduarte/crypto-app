@@ -1,230 +1,361 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, FlatList, Share } from 'react-native';
+import React, { useReducer, useRef, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
-import { QRScannerModal, WalletItem, WalletSearchFilter } from '../../components/scanner';
+import { QRScannerModal, WalletItem } from '../../components/scanner';
 import { useScannedWallets, useAddScannedWallet } from '../../hooks';
-import { 
-  validateWalletAddress, 
+import {
+  validateWalletAddress,
   extractAddressFromQRData,
-  getWalletTypeDisplayName
+  getWalletTypeDisplayName,
 } from '../../utils/walletValidation';
 
+// Types for better state management
+interface ScannerState {
+  scannerVisible: boolean;
+  isProcessing: boolean;
+  processingMessage: string;
+}
+
+type ScannerAction =
+  | { type: 'SHOW_SCANNER' }
+  | { type: 'HIDE_SCANNER' }
+  | { type: 'START_PROCESSING'; message: string }
+  | { type: 'STOP_PROCESSING' }
+  | { type: 'RESET' };
+
+// State reducer for predictable state management
+const scannerReducer = (state: ScannerState, action: ScannerAction): ScannerState => {
+  switch (action.type) {
+    case 'SHOW_SCANNER':
+      return { ...state, scannerVisible: true, isProcessing: false };
+    case 'HIDE_SCANNER':
+      return { ...state, scannerVisible: false };
+    case 'START_PROCESSING':
+      return { 
+        ...state, 
+        scannerVisible: false, 
+        isProcessing: true, 
+        processingMessage: action.message 
+      };
+    case 'STOP_PROCESSING':
+      return { ...state, isProcessing: false, processingMessage: '' };
+    case 'RESET':
+      return { 
+        scannerVisible: false, 
+        isProcessing: false, 
+        processingMessage: '' 
+      };
+    default:
+      return state;
+  }
+};
+
+// Alert queue for preventing alert stacking
+interface AlertItem {
+  id: string;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
 export const ScannerScreen: React.FC = () => {
-  const [scannerVisible, setScannerVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'bitcoin' | 'ethereum' | 'favorites'>('all');
+
+  // State management with reducer
+  const [state, dispatch] = useReducer(scannerReducer, {
+    scannerVisible: false,
+    isProcessing: false,
+    processingMessage: '',
+  });
+
+  // Data hooks
   const { data: scannedWallets = [], isLoading: walletsLoading } = useScannedWallets();
   const addWalletMutation = useAddScannedWallet();
 
-  const handleScanSuccess = async (qrData: string) => {
+  // Refs for cleanup and preventing stale closures
+  const alertQueue = useRef<AlertItem[]>([]);
+  const isShowingAlert = useRef(false);
+  const abortController = useRef<AbortController | null>(null);
+  const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Alert queue processing to prevent stacking
+  const processAlertQueue = useCallback(() => {
+    if (isShowingAlert.current || alertQueue.current.length === 0) {
+      return;
+    }
+
+    const nextAlert = alertQueue.current.shift();
+    if (!nextAlert) return;
+
+    isShowingAlert.current = true;
+
+    Alert.alert(
+      nextAlert.title,
+      nextAlert.message,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            isShowingAlert.current = false;
+            // Process next alert after a brief delay
+            setTimeout(() => processAlertQueue(), 100);
+          },
+        },
+      ],
+      { 
+        cancelable: false, // Ensure alerts can't be dismissed accidentally
+        onDismiss: () => {
+          isShowingAlert.current = false;
+          setTimeout(() => processAlertQueue(), 100);
+        }
+      }
+    );
+  }, []);
+
+  // Queue an alert for processing
+  const queueAlert = useCallback((title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const alertId = `${Date.now()}-${Math.random()}`;
+    alertQueue.current.push({ id: alertId, title, message, type });
+    processAlertQueue();
+  }, [processAlertQueue]);
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    // Cancel any ongoing operations
+    if (abortController.current) {
+      abortController.current.abort();
+      abortController.current = null;
+    }
+
+    // Clear processing timeout
+    if (processingTimeoutRef.current) {
+      clearTimeout(processingTimeoutRef.current);
+      processingTimeoutRef.current = null;
+    }
+
+    // Clear alert queue
+    alertQueue.current = [];
+    isShowingAlert.current = false;
+
+    // Reset state
+    dispatch({ type: 'RESET' });
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
+
+  // Handle scan success with proper error handling and state management
+  const handleScanSuccess = useCallback(async (qrData: string) => {
     try {
+      // Start processing and close scanner immediately
+      dispatch({ type: 'START_PROCESSING', message: 'Processing QR code...' });
+
+      // Create new abort controller for this operation
+      abortController.current = new AbortController();
+      const { signal } = abortController.current;
+
+      // Add a timeout for the entire operation
+      processingTimeoutRef.current = setTimeout(() => {
+        if (abortController.current) {
+          abortController.current.abort();
+        }
+        dispatch({ type: 'STOP_PROCESSING' });
+        queueAlert('Timeout', 'The operation took too long and was cancelled.', 'error');
+      }, 10000); // 10 second timeout
+
       // Extract address from QR data
+      if (signal.aborted) return;
       const extractedAddress = extractAddressFromQRData(qrData);
       
+      console.log('QR Data:', qrData);
+      console.log('Extracted Address:', extractedAddress);
+
       // Validate the address
+      if (signal.aborted) return;
       const validation = validateWalletAddress(extractedAddress);
       
+      console.log('Validation Result:', validation);
+
       if (!validation.isValid) {
-        Alert.alert(
-          'Invalid QR Code',
-          validation.error || 'The scanned QR code does not contain a valid wallet address.',
-          [{ text: 'OK' }]
-        );
+        dispatch({ type: 'STOP_PROCESSING' });
+        
+        // Provide more specific error messages
+        let errorTitle = 'QR Code Not Supported';
+        let errorMessage = 'This QR code format is not supported.';
+        
+        if (validation.error === 'Unsupported wallet address format') {
+          errorTitle = 'Unsupported Wallet';
+          errorMessage = 'This wallet address format is not currently supported. We only support Bitcoin and Ethereum addresses.';
+        } else if (validation.error === 'Invalid wallet address format') {
+          errorTitle = 'Invalid QR Code';
+          errorMessage = 'This QR code does not contain a valid cryptocurrency wallet address.';
+        } else if (validation.error === 'Invalid input') {
+          errorTitle = 'Invalid QR Code';
+          errorMessage = 'The scanned QR code appears to be empty or invalid.';
+        } else if (validation.error) {
+          errorMessage = validation.error;
+        }
+        
+        queueAlert(errorTitle, errorMessage, 'error');
         return;
       }
 
       // Check if wallet already exists
+      if (signal.aborted) return;
       const existingWallet = scannedWallets.find(
         wallet => wallet.address === validation.address
       );
 
       if (existingWallet) {
-        Alert.alert(
+        dispatch({ type: 'STOP_PROCESSING' });
+        queueAlert(
           'Wallet Already Added',
           `This ${getWalletTypeDisplayName(validation.type)} address is already in your list.`,
-          [{ text: 'OK' }]
+          'info'
         );
         return;
       }
 
       // Add the wallet
+      if (signal.aborted) return;
+      dispatch({ type: 'START_PROCESSING', message: 'Adding wallet...' });
+      
       const result = await addWalletMutation.mutateAsync({
         address: validation.address,
         qrData: qrData,
         label: `${getWalletTypeDisplayName(validation.type)} wallet`,
       });
 
+      if (signal.aborted) return;
+
+      dispatch({ type: 'STOP_PROCESSING' });
+      
       if (result) {
-        Alert.alert(
+        queueAlert(
           'Wallet Added Successfully!',
           `${getWalletTypeDisplayName(validation.type)} address has been added to your list.`,
-          [{ text: 'OK' }]
+          'success'
         );
+      } else {
+        queueAlert('Failed to Add Wallet', 'Unable to add the wallet. Please try again.', 'error');
       }
+
     } catch (error: any) {
-      Alert.alert(
+      dispatch({ type: 'STOP_PROCESSING' });
+      
+      // Don't show error if operation was aborted
+      if (error.name === 'AbortError' || abortController.current?.signal.aborted) {
+        return;
+      }
+
+      queueAlert(
         'Error',
-        error.message || 'An unexpected error occurred.',
-        [{ text: 'OK' }]
+        error.message || 'An unexpected error occurred while processing the QR code.',
+        'error'
       );
+    } finally {
+      // Clean up timeout and abort controller
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+        processingTimeoutRef.current = null;
+      }
+      if (abortController.current) {
+        abortController.current = null;
+      }
     }
-  };
+  }, [scannedWallets, addWalletMutation, queueAlert]);
 
-  // Filter and search wallets
-  const filteredWallets = React.useMemo(() => {
-    let filtered = scannedWallets;
-
-    // Apply type filter
-    if (filterType === 'bitcoin') {
-      filtered = filtered.filter(wallet => wallet.type === 'bitcoin');
-    } else if (filterType === 'ethereum') {
-      filtered = filtered.filter(wallet => wallet.type === 'ethereum');
-    } else if (filterType === 'favorites') {
-      filtered = filtered.filter(wallet => wallet.isFavorite);
-    }
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(wallet => 
-        wallet.address.toLowerCase().includes(query) ||
-        (wallet.label && wallet.label.toLowerCase().includes(query)) ||
-        getWalletTypeDisplayName(wallet.type).toLowerCase().includes(query)
-      );
-    }
-
-    return filtered.sort((a, b) => {
-      // Sort favorites first, then by date
-      if (a.isFavorite && !b.isFavorite) return -1;
-      if (!a.isFavorite && b.isFavorite) return 1;
-      return new Date(b.scannedAt).getTime() - new Date(a.scannedAt).getTime();
-    });
-  }, [scannedWallets, searchQuery, filterType]);
-
-  const handleExportWallets = async () => {
-    if (filteredWallets.length === 0) {
-      Alert.alert('No Wallets', 'No wallets to export');
+  // Handle scanner open
+  const handleOpenScanner = useCallback(() => {
+    if (state.isProcessing) {
+      queueAlert('Please Wait', 'Please wait for the current operation to complete.', 'info');
       return;
     }
+    dispatch({ type: 'SHOW_SCANNER' });
+  }, [state.isProcessing, queueAlert]);
 
-    try {
-      const exportData = filteredWallets.map((wallet, index) => {
-        return `${index + 1}. ${getWalletTypeDisplayName(wallet.type)} - ${wallet.label || 'Unnamed'}
-Address: ${wallet.address}
-Scanned: ${new Date(wallet.scannedAt).toLocaleDateString()}
-Favorite: ${wallet.isFavorite ? 'Yes' : 'No'}
-`;
-      }).join('\n');
+  // Handle scanner close
+  const handleCloseScanner = useCallback(() => {
+    dispatch({ type: 'HIDE_SCANNER' });
+  }, []);
 
-      const shareContent = `My Cryptocurrency Wallets Export
-Generated on ${new Date().toLocaleDateString()}
-
-${exportData}
-
-Total Wallets: ${filteredWallets.length}
-Exported via Lemon Crypto App`;
-
-      await Share.share({
-        title: 'Wallet Export',
-        message: shareContent,
-      });
-    } catch (error) {
-      Alert.alert('Export Failed', 'Unable to export wallets');
-    }
-  };
-
-  const renderWalletItem = ({ item }: { item: any }) => (
+  // Render wallet item
+  const renderWalletItem = useCallback(({ item }: { item: any }) => (
     <WalletItem item={item} />
-  );
+  ), []);
+
 
   return (
     <ScrollableScreen>
       <View style={styles.container}>
         <Text style={styles.title}>📱 QR Scanner</Text>
-        <Text style={styles.subtitle}>
-          Scan cryptocurrency wallet QR codes
-        </Text>
-        
+        <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
+
         {/* Scan Button */}
         <TouchableOpacity
-          style={styles.scanButton}
-          onPress={() => setScannerVisible(true)}
+          style={[
+            styles.scanButton,
+            state.isProcessing && styles.scanButtonDisabled
+          ]}
+          onPress={handleOpenScanner}
           activeOpacity={0.8}
+          disabled={state.isProcessing}
         >
-          <Text style={styles.scanButtonIcon}>📷</Text>
-          <Text style={styles.scanButtonText}>Scan QR Code</Text>
-          <Text style={styles.scanButtonSubtext}>
-            Tap to scan a wallet address
-          </Text>
+          {state.isProcessing ? (
+            <>
+              <ActivityIndicator size="large" color="#ffffff" style={styles.processingIndicator} />
+              <Text style={styles.scanButtonText}>Processing...</Text>
+              <Text style={styles.scanButtonSubtext}>{state.processingMessage}</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.scanButtonIcon}>📷</Text>
+              <Text style={styles.scanButtonText}>Scan QR Code</Text>
+              <Text style={styles.scanButtonSubtext}>Tap to scan a wallet address</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* Scanned Wallets Section */}
         <View style={styles.walletsSection}>
           {walletsLoading ? (
             <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4285F4" />
               <Text style={styles.loadingText}>Loading wallets...</Text>
             </View>
           ) : scannedWallets.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                No wallets scanned yet
-              </Text>
+              <Text style={styles.emptyIcon}>🔍</Text>
+              <Text style={styles.emptyText}>No wallets scanned yet</Text>
               <Text style={styles.emptySubtext}>
                 Scan a QR code to add your first wallet address
               </Text>
             </View>
           ) : (
-            <>
-              {/* Search and Filter */}
-              <WalletSearchFilter
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                filterType={filterType}
-                onFilterChange={setFilterType}
-                walletsCount={filteredWallets.length}
-              />
-
-              {/* Export Button */}
-              {filteredWallets.length > 0 && (
-                <View style={styles.exportContainer}>
-                  <TouchableOpacity
-                    style={styles.exportButton}
-                    onPress={handleExportWallets}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.exportButtonIcon}>📁</Text>
-                    <Text style={styles.exportButtonText}>Export Wallets</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {filteredWallets.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>
-                    No wallets found
-                  </Text>
-                  <Text style={styles.emptySubtext}>
-                    Try adjusting your search or filter criteria
-                  </Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={filteredWallets}
-                  renderItem={renderWalletItem}
-                  keyExtractor={(item) => item.id}
-                  style={styles.walletsList}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.walletsListContent}
-                />
-              )}
-            </>
+            <FlatList
+              data={scannedWallets}
+              renderItem={renderWalletItem}
+              keyExtractor={item => item.id}
+              style={styles.walletsList}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.walletsListContent}
+            />
           )}
         </View>
 
         {/* QR Scanner Modal */}
         <QRScannerModal
-          visible={scannerVisible}
-          onClose={() => setScannerVisible(false)}
+          visible={state.scannerVisible}
+          onClose={handleCloseScanner}
           onScanSuccess={handleScanSuccess}
           title="Scan Wallet QR Code"
         />
@@ -254,16 +385,20 @@ const styles = StyleSheet.create({
   },
   // Scan Button
   scanButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#4285F4',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     marginBottom: 30,
-    shadowColor: '#007AFF',
+    shadowColor: '#4285F4',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+  },
+  scanButtonDisabled: {
+    backgroundColor: '#9e9e9e',
+    opacity: 0.7,
   },
   scanButtonIcon: {
     fontSize: 48,
@@ -278,37 +413,43 @@ const styles = StyleSheet.create({
   scanButtonSubtext: {
     fontSize: 14,
     color: '#ffffff',
-    opacity: 0.8,
+    opacity: 0.9,
+  },
+  processingIndicator: {
+    marginBottom: 12,
   },
   // Wallets Section
   walletsSection: {
     flex: 1,
   },
-  walletsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 16,
-  },
   walletsList: {
     flex: 1,
+  },
+  walletsListContent: {
+    paddingBottom: 20,
   },
   // Loading/Empty States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 60,
   },
   loadingText: {
     fontSize: 16,
     color: '#6c757d',
+    marginTop: 16,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 24,
+    opacity: 0.5,
   },
   emptyText: {
     fontSize: 18,
@@ -319,37 +460,9 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#bdbdbd',
+    color: '#9e9e9e',
     textAlign: 'center',
     lineHeight: 20,
-  },
-  walletsListContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  // Export Button
-  exportContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  exportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#28a745',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  exportButtonIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
-  exportButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    opacity: 0.8,
   },
 });

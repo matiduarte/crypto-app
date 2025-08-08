@@ -1,11 +1,6 @@
 import React, { useRef } from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  View,
-  StyleSheet,
-  Animated,
-} from 'react-native';
+import { Text, View, StyleSheet, Animated } from 'react-native';
+import { Button } from '../common';
 
 interface GoogleSignInButtonProps {
   onPress: () => void;
@@ -36,7 +31,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <TouchableOpacity
+      <Button
         style={[
           styles.signInButton,
           (isLoading || disabled) && styles.signInButtonDisabled,
@@ -66,7 +61,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
             <View style={styles.loadingDot} />
           </View>
         )}
-      </TouchableOpacity>
+      </Button>
     </Animated.View>
   );
 };

@@ -1,18 +1,11 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, Image, Alert } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
-import { QRCodeDisplay } from '../../components/profile';
+import { Button } from '../../components/common';
 
 export const ProfileScreen: React.FC = () => {
-  const { user, signOut, isLoading, refreshTokens } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
 
   const handleSignOut = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -28,16 +21,6 @@ export const ProfileScreen: React.FC = () => {
         },
       },
     ]);
-  };
-
-  const handleRefreshTokens = async () => {
-    const result = await refreshTokens();
-    Alert.alert(
-      result.success ? 'Success' : 'Error',
-      result.success
-        ? 'Tokens refreshed successfully!'
-        : result.error || 'Failed to refresh tokens',
-    );
   };
 
   return (
@@ -56,27 +39,8 @@ export const ProfileScreen: React.FC = () => {
           </View>
         )}
 
-        {/* QR Code Section */}
-        <View style={styles.qrSection}>
-          <QRCodeDisplay
-            address="bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
-            size={180}
-            label="Your Bitcoin Address"
-          />
-        </View>
-
         <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.button, styles.refreshButton]}
-            onPress={handleRefreshTokens}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? '🔄 Refreshing...' : '🔄 Refresh Tokens'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
+          <Button
             style={[styles.button, styles.signOutButton]}
             onPress={handleSignOut}
             disabled={isLoading}
@@ -84,7 +48,7 @@ export const ProfileScreen: React.FC = () => {
             <Text style={styles.buttonText}>
               {isLoading ? '🚪 Signing Out...' : '🚪 Sign Out'}
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
     </ScrollableScreen>

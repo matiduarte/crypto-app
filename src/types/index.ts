@@ -119,7 +119,7 @@ export type AuthStackParamList = {
 };
 
 export type MainTabParamList = {
-  CryptoList: undefined;
+  Crypto: undefined;
   Exchange: undefined;
   Scanner: undefined;
   Profile: undefined;
@@ -127,10 +127,6 @@ export type MainTabParamList = {
 
 export type CryptoStackParamList = {
   CryptoList: undefined;
-  CryptoDetail: {
-    cryptoId: string;
-    symbol: string;
-  };
 };
 
 // State Types

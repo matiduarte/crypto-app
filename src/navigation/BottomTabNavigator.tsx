@@ -53,7 +53,7 @@ export const BottomTabNavigator: React.FC = () => {
       }}
     >
       <Tab.Screen
-        name="CryptoList"
+        name="Crypto"
         component={CryptoListScreen}
         options={{
           title: 'Markets',

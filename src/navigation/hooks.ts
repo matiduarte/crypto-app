@@ -28,7 +28,7 @@ export type CryptoStackNavigationProp =
 export type LoginScreenRouteProp = RouteProp<AuthStackParamList, 'Login'>;
 export type CryptoListScreenRouteProp = RouteProp<
   MainTabParamList,
-  'CryptoList'
+  'Crypto'
 >;
 export type ExchangeScreenRouteProp = RouteProp<MainTabParamList, 'Exchange'>;
 export type ScannerScreenRouteProp = RouteProp<MainTabParamList, 'Scanner'>;
@@ -87,10 +87,10 @@ export const navigationActions = {
   // Navigate to crypto detail from list
   navigateToCryptoDetail: (
     navigation: CryptoStackNavigationProp,
-    cryptoId: string,
-    symbol: string,
+    _cryptoId: string,
+    _symbol: string,
   ) => {
-    navigation.navigate('CryptoDetail', { cryptoId, symbol });
+    navigation.navigate('CryptoList');
   },
 
   // Navigate between tabs

@@ -36,21 +36,11 @@ interface SignOutResult {
   warning?: string;
 }
 
-interface RefreshTokensResult {
-  success: boolean;
-  tokens?: AuthTokens;
-  error?: string;
-}
-
 interface AuthSession {
   user: User | null;
   tokens: AuthTokens | null;
   isLoggedIn: boolean;
 }
-
-// ============================================================================
-// QUERIES
-// ============================================================================
 
 /**
  * Query to get current user session
@@ -119,10 +109,6 @@ export const useCurrentUser = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
-
-// ============================================================================
-// MUTATIONS
-// ============================================================================
 
 /**
  * Mutation for Google Sign-In
@@ -270,76 +256,6 @@ export const useSignOut = () => {
 };
 
 /**
- * Mutation for refreshing authentication tokens
- */
-export const useRefreshTokens = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (): Promise<RefreshTokensResult> => {
-      try {
-        const result = await authService.refreshTokens();
-
-        if (result.success && result.tokens) {
-          // Update stored tokens
-          await Promise.all([
-            storageService.setItem(STORAGE_KEYS.TOKEN, result.tokens.idToken),
-            storageService.setItem(
-              STORAGE_KEYS.REFRESH_TOKEN,
-              result.tokens.accessToken,
-            ),
-          ]);
-
-          return {
-            success: true,
-            tokens: result.tokens,
-          };
-        }
-
-        return {
-          success: false,
-          error: result.error || 'Token refresh failed',
-        };
-      } catch (error: any) {
-        console.error('Token refresh mutation error:', error);
-        return {
-          success: false,
-          error: error?.message || 'Token refresh failed',
-        };
-      }
-    },
-    onSuccess: result => {
-      if (result.success && result.tokens) {
-        // Update session cache with new tokens
-        const currentSession = queryClient.getQueryData<AuthSession>(
-          AUTH_QUERY_KEYS.session,
-        );
-        if (currentSession) {
-          queryClient.setQueryData(AUTH_QUERY_KEYS.session, {
-            ...currentSession,
-            tokens: result.tokens,
-          });
-        }
-      }
-    },
-    onError: error => {
-      console.error('Token refresh mutation error:', error);
-      // On refresh failure, user might need to sign in again
-      // Clear auth state
-      queryClient.setQueryData(AUTH_QUERY_KEYS.session, {
-        user: null,
-        tokens: null,
-        isLoggedIn: false,
-      });
-    },
-  });
-};
-
-// ============================================================================
-// UTILITY HOOKS
-// ============================================================================
-
-/**
  * Hook that provides authentication state and actions
  */
 export const useAuth = () => {
@@ -350,7 +266,6 @@ export const useAuth = () => {
   } = useAuthSession();
   const signInMutation = useGoogleSignIn();
   const signOutMutation = useSignOut();
-  const refreshTokensMutation = useRefreshTokens();
 
   return {
     // State
@@ -368,24 +283,20 @@ export const useAuth = () => {
     // Actions
     signIn: signInMutation.mutateAsync,
     signOut: signOutMutation.mutateAsync,
-    refreshTokens: refreshTokensMutation.mutateAsync,
 
     // Mutation states
     isSigningIn: signInMutation.isPending,
     isSigningOut: signOutMutation.isPending,
-    isRefreshingTokens: refreshTokensMutation.isPending,
 
     // Clear error function
     clearError: () => {
       signInMutation.reset();
       signOutMutation.reset();
-      refreshTokensMutation.reset();
     },
 
     // Raw mutations for advanced usage
     signInMutation,
     signOutMutation,
-    refreshTokensMutation,
   };
 };
 

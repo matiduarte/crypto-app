@@ -6,14 +6,13 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  TouchableOpacity,
   TextInput,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
-import { CryptoListItem } from '../../components/common';
+import { Button, CryptoListItem } from '../../components/common';
 
 // Item Separator Component
 const ItemSeparator: React.FC = () => <View style={styles.separator} />;
@@ -144,13 +143,13 @@ export const CryptoListScreen: React.FC = () => {
         <Text style={styles.errorSubtext}>
           Please check your internet connection and try again.
         </Text>
-        <TouchableOpacity
+        <Button
           style={styles.retryButton}
           onPress={handleRefresh}
           activeOpacity={0.7}
         >
           <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+        </Button>
       </View>
     );
   };
@@ -208,12 +207,9 @@ export const CryptoListScreen: React.FC = () => {
           No cryptocurrencies match "{searchQuery}". Try a different search
           term.
         </Text>
-        <TouchableOpacity
-          style={styles.clearSearchButton}
-          onPress={handleClearSearch}
-        >
+        <Button style={styles.clearSearchButton} onPress={handleClearSearch}>
           <Text style={styles.clearSearchText}>Clear Search</Text>
-        </TouchableOpacity>
+        </Button>
       </View>
     );
   }, [searchQuery, isLoading, handleClearSearch]);
@@ -258,17 +254,17 @@ export const CryptoListScreen: React.FC = () => {
                 returnKeyType="search"
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity
+                <Button
                   style={styles.clearButton}
                   onPress={handleClearSearch}
                   accessibilityLabel="Clear search"
                 >
                   <Text style={styles.clearButtonText}>✕</Text>
-                </TouchableOpacity>
+                </Button>
               )}
             </View>
 
-            <TouchableOpacity
+            <Button
               style={styles.sortButton}
               onPress={toggleSortModal}
               accessibilityLabel="Sort options"
@@ -279,7 +275,7 @@ export const CryptoListScreen: React.FC = () => {
               <Text style={styles.sortOrder}>
                 {sortOrder === 'asc' ? '↑' : '↓'}
               </Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
 
@@ -289,13 +285,13 @@ export const CryptoListScreen: React.FC = () => {
             <View style={styles.sortModalContent}>
               <View style={styles.sortModalHeader}>
                 <Text style={styles.sortModalTitle}>Sort by</Text>
-                <TouchableOpacity onPress={() => setShowSortModal(false)}>
+                <Button onPress={() => setShowSortModal(false)}>
                   <Text style={styles.sortModalClose}>✕</Text>
-                </TouchableOpacity>
+                </Button>
               </View>
 
               {SORT_OPTIONS.map(option => (
-                <TouchableOpacity
+                <Button
                   key={option.key}
                   style={[
                     styles.sortOption,
@@ -317,7 +313,7 @@ export const CryptoListScreen: React.FC = () => {
                       {sortOrder === 'asc' ? '↑' : '↓'}
                     </Text>
                   )}
-                </TouchableOpacity>
+                </Button>
               ))}
             </View>
           </View>

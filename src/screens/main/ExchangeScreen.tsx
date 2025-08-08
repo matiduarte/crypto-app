@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
@@ -28,6 +27,7 @@ import {
   extractNumericValue,
 } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
+import { Button } from '../../components/common';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
 
@@ -145,7 +145,6 @@ export const ExchangeScreen: React.FC = () => {
     setShowFiatSelector(false);
   }, []);
 
-
   // Filter cryptos based on search
   const filteredCryptos = useMemo(() => {
     if (!cryptoData?.success || !cryptoData.data) return [];
@@ -207,7 +206,7 @@ export const ExchangeScreen: React.FC = () => {
               <TextInput
                 style={styles.amountInput}
                 value={fromAmount}
-                onChangeText={(text) => {
+                onChangeText={text => {
                   const formatted = formatInputValue(text);
                   setFromAmount(formatted);
                 }}
@@ -215,7 +214,7 @@ export const ExchangeScreen: React.FC = () => {
                 keyboardType="numeric"
                 placeholderTextColor="#9e9e9e"
               />
-              <TouchableOpacity
+              <Button
                 style={styles.currencySelector}
                 onPress={() => {
                   if (direction === 'crypto-to-fiat') {
@@ -242,14 +241,14 @@ export const ExchangeScreen: React.FC = () => {
                   size={16}
                   color="#6c757d"
                 />
-              </TouchableOpacity>
+              </Button>
             </View>
           </View>
 
           {/* Swap Button */}
-          <TouchableOpacity style={styles.swapButton} onPress={toggleDirection}>
+          <Button style={styles.swapButton} onPress={toggleDirection}>
             <CustomIcon name="swap-vert" size={24} color="#1a1a1a" />
-          </TouchableOpacity>
+          </Button>
 
           {/* To Section */}
           <View style={styles.currencySection}>
@@ -262,7 +261,7 @@ export const ExchangeScreen: React.FC = () => {
                 editable={false}
                 placeholderTextColor="#9e9e9e"
               />
-              <TouchableOpacity
+              <Button
                 style={styles.currencySelector}
                 onPress={() => {
                   if (direction === 'crypto-to-fiat') {
@@ -289,7 +288,7 @@ export const ExchangeScreen: React.FC = () => {
                   size={16}
                   color="#6c757d"
                 />
-              </TouchableOpacity>
+              </Button>
             </View>
           </View>
 

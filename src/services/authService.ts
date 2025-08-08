@@ -236,41 +236,17 @@ class AuthService {
       return {
         success: true,
         // Optionally include a warning about revoke failure
-        ...(revokeSuccess ? {} : { 
-          warning: 'Sign-out successful, but token revocation failed (non-critical)' 
-        }),
+        ...(revokeSuccess
+          ? {}
+          : {
+              warning:
+                'Sign-out successful, but token revocation failed (non-critical)',
+            }),
       };
     } else {
       return {
         success: false,
         error: lastError?.message || 'Sign-out failed',
-      };
-    }
-  }
-
-  /**
-   * Refresh authentication tokens
-   */
-  async refreshTokens(): Promise<SignInResult> {
-    try {
-      const tokens = await this.getCurrentTokens();
-
-      if (!tokens) {
-        return {
-          success: false,
-          error: 'Unable to refresh tokens - no valid session',
-        };
-      }
-
-      return {
-        success: true,
-        tokens,
-      };
-    } catch (error: any) {
-      console.error('Token refresh error:', error);
-      return {
-        success: false,
-        error: error?.message || 'Token refresh failed',
       };
     }
   }
@@ -435,20 +411,23 @@ export const authHelpers = {
   async completeSignOut(): Promise<SignInResult> {
     // First try the full revoke access approach
     const revokeResult = await authService.revokeAccess();
-    
+
     if (revokeResult.success) {
       return revokeResult;
     }
 
-    console.warn('Revoke access failed, attempting simple sign-out as fallback');
-    
+    console.warn(
+      'Revoke access failed, attempting simple sign-out as fallback',
+    );
+
     // If revoke access fails, try simple sign-out as fallback
     const signOutResult = await authService.signOut();
-    
+
     if (signOutResult.success) {
       return {
         success: true,
-        warning: 'Sign-out successful using fallback method (token revocation failed)',
+        warning:
+          'Sign-out successful using fallback method (token revocation failed)',
       };
     }
 
@@ -464,7 +443,7 @@ export const authHelpers = {
     try {
       // Try simple sign-out first
       const result = await authService.signOut();
-      
+
       if (result.success) {
         return {
           success: true,
@@ -474,8 +453,10 @@ export const authHelpers = {
 
       // If even simple sign-out fails, we'll consider it successful
       // since we're doing emergency cleanup
-      console.warn('Emergency sign-out: Google sign-out failed, but continuing with local cleanup');
-      
+      console.warn(
+        'Emergency sign-out: Google sign-out failed, but continuing with local cleanup',
+      );
+
       return {
         success: true,
         warning: 'Emergency sign-out completed (Google services unavailable)',

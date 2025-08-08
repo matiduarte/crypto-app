@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   StatusBar,
-  Platform,
+  Dimensions,
 } from 'react-native';
 import {
   Camera,
@@ -17,7 +17,8 @@ import {
 } from 'react-native-vision-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Screen dimensions removed as they're not used in this component
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
 
 interface QRScannerModalProps {
   visible: boolean;
@@ -35,93 +36,156 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   const insets = useSafeAreaInsets();
   const devices = useCameraDevices();
   const device = devices.find(d => d.position === 'back');
-  const [cameraPermission, setCameraPermission] = useState<CameraPermissionStatus>('not-determined');
-  const [scanned, setScanned] = useState(false);
-  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // States
+  const [permission, setPermission] = useState<CameraPermissionStatus>('not-determined');
+  const [isScanning, setIsScanning] = useState(false);
+  const [hasScanned, setHasScanned] = useState(false);
+  
+  // Refs
+  const hasProcessedScan = useRef(false);
+  const processingTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Request camera permission
+  // Initialize camera permission when modal opens
   useEffect(() => {
-    const requestCameraPermission = async () => {
-      const permission = await Camera.requestCameraPermission();
-      setCameraPermission(permission);
-      
-      if (permission === 'denied') {
-        Alert.alert(
-          'Camera Permission',
-          'Camera access is required to scan QR codes.',
-          [{ text: 'OK', onPress: onClose }]
-        );
+    if (!visible) return;
+    
+    let isMounted = true;
+    
+    const initializeCamera = async () => {
+      try {
+        // Reset states when modal opens
+        setHasScanned(false);
+        setIsScanning(true);
+        hasProcessedScan.current = false;
+        
+        // Clear any existing timeout
+        if (processingTimeout.current) {
+          clearTimeout(processingTimeout.current);
+          processingTimeout.current = null;
+        }
+
+        // Check current permission
+        const currentPermission = await Camera.getCameraPermissionStatus();
+        
+        if (currentPermission === 'not-determined') {
+          const requestedPermission = await Camera.requestCameraPermission();
+          if (isMounted) {
+            setPermission(requestedPermission);
+          }
+        } else {
+          if (isMounted) {
+            setPermission(currentPermission);
+          }
+        }
+
+        if (currentPermission === 'denied') {
+          Alert.alert(
+            'Camera Permission Required',
+            'Please enable camera access in your device settings to scan QR codes.',
+            [
+              { text: 'Cancel', onPress: onClose },
+              {
+                text: 'Settings',
+                onPress: () => {
+                  // In a real app, you'd open settings here
+                  onClose();
+                },
+              },
+            ]
+          );
+        }
+      } catch (error) {
+        console.error('Camera initialization error:', error);
+        if (isMounted) {
+          Alert.alert(
+            'Camera Error',
+            'Unable to initialize camera. Please try again.',
+            [{ text: 'OK', onPress: onClose }]
+          );
+        }
       }
     };
 
-    if (visible) {
-      requestCameraPermission();
-      setScanned(false);
-    }
+    initializeCamera();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [visible, onClose]);
 
-  // Reset scanned state when modal closes
+  // Cleanup when modal closes
   useEffect(() => {
     if (!visible) {
-      setScanned(false);
-      if (scanTimeoutRef.current) {
-        clearTimeout(scanTimeoutRef.current);
+      setIsScanning(false);
+      setHasScanned(false);
+      hasProcessedScan.current = false;
+      
+      if (processingTimeout.current) {
+        clearTimeout(processingTimeout.current);
+        processingTimeout.current = null;
       }
     }
   }, [visible]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (processingTimeout.current) {
+        clearTimeout(processingTimeout.current);
+      }
+    };
+  }, []);
+
+  // Code scanner configuration
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: (codes) => {
-      if (scanned || codes.length === 0) return;
+      // Prevent multiple scans
+      if (!isScanning || hasScanned || hasProcessedScan.current || codes.length === 0) {
+        return;
+      }
 
       const code = codes[0];
-      if (code.value) {
-        setScanned(true);
-        
-        // Add a small delay to show the scan feedback
-        scanTimeoutRef.current = setTimeout(() => {
-          onScanSuccess(code.value!);
-          onClose();
-        }, 500);
-      }
+      if (!code.value) return;
+
+      // Mark as processed immediately to prevent duplicates
+      hasProcessedScan.current = true;
+      setHasScanned(true);
+      setIsScanning(false);
+
+      // Process the scan result
+      processingTimeout.current = setTimeout(() => {
+        onScanSuccess(code.value!);
+      }, 100);
     },
   });
 
+  // Handle manual close
+  const handleClose = () => {
+    setIsScanning(false);
+    setHasScanned(false);
+    onClose();
+  };
+
+  // Don't render if not visible
   if (!visible) {
     return null;
   }
 
-  if (cameraPermission !== 'granted') {
+  // Permission denied state
+  if (permission === 'denied') {
     return (
-      <Modal visible={visible} animationType="slide" statusBarTranslucent>
-        <View style={styles.permissionContainer}>
-          <StatusBar barStyle="light-content" backgroundColor="transparent" />
-          <View style={[styles.permissionContent, { paddingTop: insets.top + 20 }]}>
-            <Text style={styles.permissionTitle}>Camera Permission Required</Text>
-            <Text style={styles.permissionText}>
-              We need camera access to scan QR codes for cryptocurrency wallet addresses.
-            </Text>
-            <TouchableOpacity style={styles.permissionButton} onPress={onClose}>
-              <Text style={styles.permissionButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-
-  if (!device) {
-    return (
-      <Modal visible={visible} animationType="slide" statusBarTranslucent>
+      <Modal visible={true} animationType="slide" statusBarTranslucent>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" />
         <View style={styles.errorContainer}>
-          <StatusBar barStyle="light-content" backgroundColor="transparent" />
-          <View style={[styles.errorContent, { paddingTop: insets.top + 20 }]}>
-            <Text style={styles.errorTitle}>Camera Not Available</Text>
+          <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
+            <Text style={styles.errorIcon}>📷</Text>
+            <Text style={styles.errorTitle}>Camera Access Required</Text>
             <Text style={styles.errorText}>
-              Unable to access the camera. Please check your device settings.
+              We need camera permission to scan QR codes. Please enable camera access in your device settings.
             </Text>
-            <TouchableOpacity style={styles.errorButton} onPress={onClose}>
+            <TouchableOpacity style={styles.errorButton} onPress={handleClose}>
               <Text style={styles.errorButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -130,51 +194,85 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     );
   }
 
+  // No camera device available
+  if (!device) {
+    return (
+      <Modal visible={true} animationType="slide" statusBarTranslucent>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" />
+        <View style={styles.errorContainer}>
+          <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
+            <Text style={styles.errorIcon}>❌</Text>
+            <Text style={styles.errorTitle}>Camera Not Available</Text>
+            <Text style={styles.errorText}>
+              Unable to access the camera. Please check your device settings.
+            </Text>
+            <TouchableOpacity style={styles.errorButton} onPress={handleClose}>
+              <Text style={styles.errorButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  // Main scanner interface
   return (
-    <Modal visible={visible} animationType="slide" statusBarTranslucent>
+    <Modal visible={true} animationType="slide" statusBarTranslucent>
       <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <View style={styles.container}>
-        {/* Camera View */}
-        <Camera
-          style={styles.camera}
-          device={device}
-          isActive={visible && !scanned}
-          codeScanner={codeScanner}
-        />
+        {/* Camera */}
+        {permission === 'granted' && (
+          <Camera
+            style={styles.camera}
+            device={device}
+            isActive={isScanning && !hasScanned}
+            codeScanner={codeScanner}
+          />
+        )}
 
         {/* Overlay */}
         <View style={styles.overlay}>
           {/* Header */}
-          <View style={[styles.header, { paddingTop: insets.top }]}>
+          <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>×</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+              <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Scan Area */}
-          <View style={styles.scanArea}>
+          {/* Scanning Area */}
+          <View style={styles.scanningArea}>
             <View style={styles.scanBox}>
+              {/* Corner indicators */}
               <View style={[styles.corner, styles.topLeft]} />
               <View style={[styles.corner, styles.topRight]} />
               <View style={[styles.corner, styles.bottomLeft]} />
               <View style={[styles.corner, styles.bottomRight]} />
               
-              {scanned && (
-                <View style={styles.scanSuccessOverlay}>
-                  <Text style={styles.scanSuccessText}>✓</Text>
+              {/* Success indicator */}
+              {hasScanned && (
+                <View style={styles.successOverlay}>
+                  <Text style={styles.successIcon}>✓</Text>
+                  <Text style={styles.successText}>Scanned!</Text>
                 </View>
               )}
             </View>
             
             <Text style={styles.instructionText}>
-              Position the QR code within the frame
+              {hasScanned 
+                ? 'Processing scan...' 
+                : 'Position the QR code within the frame'
+              }
             </Text>
           </View>
 
-          {/* Bottom Section */}
-          <View style={styles.bottom}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+          {/* Bottom Actions */}
+          <View style={[styles.bottomActions, { paddingBottom: insets.bottom + 20 }]}>
+            <TouchableOpacity 
+              style={styles.cancelButton} 
+              onPress={handleClose}
+              disabled={hasScanned}
+            >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -184,9 +282,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   );
 };
 
-const SCAN_BOX_SIZE = 250;
-
 const styles = StyleSheet.create({
+  // Main container
   container: {
     flex: 1,
     backgroundColor: '#000000',
@@ -196,8 +293,10 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
+
+  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -211,19 +310,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
-    fontSize: 24,
+    fontSize: 20,
     color: '#ffffff',
-    fontWeight: '300',
+    fontWeight: '500',
   },
-  scanArea: {
+
+  // Scanning area
+  scanningArea: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -239,7 +340,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderColor: '#ffffff',
-    borderWidth: 3,
+    borderWidth: 4,
   },
   topLeft: {
     top: 0,
@@ -265,27 +366,35 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderTopWidth: 0,
   },
-  scanSuccessOverlay: {
+  successOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(40, 167, 69, 0.8)',
+    backgroundColor: 'rgba(76, 175, 80, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
   },
-  scanSuccessText: {
-    fontSize: 48,
+  successIcon: {
+    fontSize: 40,
     color: '#ffffff',
     fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  successText: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '600',
   },
   instructionText: {
     fontSize: 16,
     color: '#ffffff',
     textAlign: 'center',
-    opacity: 0.8,
+    opacity: 0.9,
+    paddingHorizontal: 40,
   },
-  bottom: {
+
+  // Bottom actions
+  bottomActions: {
     paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   cancelButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -298,43 +407,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
   },
-  // Permission/Error states
-  permissionContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  permissionContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  permissionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  permissionText: {
-    fontSize: 16,
-    color: '#ffffff',
-    textAlign: 'center',
-    opacity: 0.8,
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  permissionButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-  },
-  permissionButtonText: {
-    fontSize: 18,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
+
+  // Error states
   errorContainer: {
     flex: 1,
     backgroundColor: '#000000',
@@ -344,6 +418,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+  },
+  errorIcon: {
+    fontSize: 64,
+    marginBottom: 24,
   },
   errorTitle: {
     fontSize: 24,
@@ -356,7 +434,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#ffffff',
     textAlign: 'center',
-    opacity: 0.8,
+    opacity: 0.9,
     lineHeight: 24,
     marginBottom: 40,
   },
@@ -365,10 +443,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
+    minWidth: 120,
   },
   errorButtonText: {
     fontSize: 18,
     color: '#ffffff',
     fontWeight: '600',
+    textAlign: 'center',
   },
 });

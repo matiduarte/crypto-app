@@ -57,8 +57,18 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
   }
 
   const address = input.trim();
+  
+  // Check for empty string after trim
+  if (!address) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address: '',
+      error: 'Invalid input',
+    };
+  }
 
-  // Check for Bitcoin address patterns
+  // Check for Bitcoin address patterns first
   if (validateBitcoinAddress(address)) {
     return {
       isValid: true,
@@ -76,13 +86,82 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
     };
   }
 
-  // If it looks like it could be an address but doesn't match known patterns
+  // Handle common non-crypto QR codes that people might scan by mistake
+  if (address.startsWith('http://') || address.startsWith('https://')) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This appears to be a website URL, not a cryptocurrency wallet address.',
+    };
+  }
+
+  if (address.includes('@') && address.includes('.')) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This appears to be an email address, not a cryptocurrency wallet address.',
+    };
+  }
+
+  // Check for phone numbers
+  if (/^[+]?[0-9\s\-()]{10,}$/.test(address)) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This appears to be a phone number, not a cryptocurrency wallet address.',
+    };
+  }
+
+  // Check for social media handles or usernames
+  if (address.startsWith('@') || address.startsWith('#')) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This appears to be a social media handle, not a cryptocurrency wallet address.',
+    };
+  }
+
+  // Check for WiFi QR codes
+  if (address.startsWith('WIFI:')) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This is a WiFi QR code, not a cryptocurrency wallet address.',
+    };
+  }
+
+  // Check for other common QR code types
+  if (address.startsWith('BEGIN:VCARD') || address.includes('VERSION:')) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This is a contact card (vCard), not a cryptocurrency wallet address.',
+    };
+  }
+
+  // If it looks like it could be a crypto address but doesn't match known patterns
   if (address.length > 20 && /^[a-zA-Z0-9]+$/.test(address)) {
     return {
       isValid: false,
       type: 'unknown',
       address,
-      error: 'Unsupported wallet address format',
+      error: 'Unsupported wallet address format. We only support Bitcoin and Ethereum addresses.',
+    };
+  }
+
+  // For very short strings or strings with special characters that don't match any pattern
+  if (address.length < 20) {
+    return {
+      isValid: false,
+      type: 'unknown',
+      address,
+      error: 'This QR code does not contain a valid cryptocurrency wallet address.',
     };
   }
 
@@ -90,7 +169,7 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
     isValid: false,
     type: 'unknown',
     address,
-    error: 'Invalid wallet address format',
+    error: 'This QR code format is not supported. We only support Bitcoin and Ethereum wallet addresses.',
   };
 };
 
@@ -101,26 +180,50 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
 export const extractAddressFromQRData = (qrData: string): string => {
   if (!qrData) return '';
 
+  const data = qrData.trim();
+
   // Handle bitcoin: URI format
-  if (qrData.startsWith('bitcoin:')) {
+  if (data.startsWith('bitcoin:')) {
     // Extract address from bitcoin:address?amount=0.1&label=example
-    const match = qrData.match(/^bitcoin:([a-zA-Z0-9]+)/);
+    const match = data.match(/^bitcoin:([13bc1][a-zA-HJ-NP-Z0-9]{25,87})/);
     if (match && match[1]) {
       return match[1];
+    }
+    // Fallback: try to extract any alphanumeric sequence after bitcoin:
+    const fallbackMatch = data.match(/^bitcoin:([a-zA-Z0-9]+)/);
+    if (fallbackMatch && fallbackMatch[1]) {
+      return fallbackMatch[1];
     }
   }
 
   // Handle ethereum: URI format
-  if (qrData.startsWith('ethereum:')) {
+  if (data.startsWith('ethereum:')) {
     // Extract address from ethereum:0x...
-    const match = qrData.match(/^ethereum:(0x[a-fA-F0-9]{40})/);
+    const match = data.match(/^ethereum:(0x[a-fA-F0-9]{40})/);
     if (match && match[1]) {
       return match[1];
+    }
+    // Fallback: try to extract any 0x address after ethereum:
+    const fallbackMatch = data.match(/^ethereum:(0x[a-fA-F0-9]+)/);
+    if (fallbackMatch && fallbackMatch[1]) {
+      return fallbackMatch[1];
+    }
+  }
+
+  // Handle other cryptocurrency URI schemes
+  if (data.includes(':') && !data.startsWith('http') && !data.startsWith('WIFI:') && !data.startsWith('BEGIN:')) {
+    const parts = data.split(':');
+    if (parts.length >= 2 && parts[1]) {
+      // Extract the part after the first colon, but before any query parameters
+      const addressPart = parts[1].split('?')[0].split('&')[0];
+      if (addressPart) {
+        return addressPart.trim();
+      }
     }
   }
 
   // Return as-is if it's likely a plain address
-  return qrData.trim();
+  return data;
 };
 
 /**

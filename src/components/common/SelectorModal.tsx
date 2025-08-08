@@ -51,7 +51,7 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
   onClose,
   onSelect,
   onSearchChange,
-  keyExtractor = (item) => item.id,
+  keyExtractor = item => item.id,
   renderRightContent,
 }) => {
   const renderItem = ({ item }: { item: SelectorOption }) => (

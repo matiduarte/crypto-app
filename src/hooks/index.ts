@@ -8,10 +8,7 @@ export {
 } from './useCryptocurrencies';
 
 // Search hooks
-export {
-  useSearchCryptocurrencies,
-  useDebouncedSearch,
-} from './useSearch';
+export { useSearchCryptocurrencies, useDebouncedSearch } from './useSearch';
 
 // Exchange hooks
 export {
@@ -43,7 +40,6 @@ export {
   useCurrentUser,
   useGoogleSignIn,
   useSignOut,
-  useRefreshTokens,
   useIsAuthenticated,
   useUserData,
   useAuthTokens,

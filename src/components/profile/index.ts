@@ -1,1 +1,0 @@
-export { QRCodeDisplay } from './QRCodeDisplay';
