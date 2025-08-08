@@ -16,6 +16,7 @@ import {
   CameraPermissionStatus,
 } from 'react-native-vision-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CustomIcon } from '../common/CustomIcon';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
@@ -180,7 +181,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <StatusBar barStyle="light-content" backgroundColor="transparent" />
         <View style={styles.errorContainer}>
           <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
-            <Text style={styles.errorIcon}>📷</Text>
+            <View style={styles.errorIcon}>
+              <CustomIcon name="camera" size={48} color="#6c757d" />
+            </View>
             <Text style={styles.errorTitle}>Camera Access Required</Text>
             <Text style={styles.errorText}>
               We need camera permission to scan QR codes. Please enable camera access in your device settings.
@@ -201,7 +204,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <StatusBar barStyle="light-content" backgroundColor="transparent" />
         <View style={styles.errorContainer}>
           <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
-            <Text style={styles.errorIcon}>❌</Text>
+            <View style={styles.errorIcon}>
+              <CustomIcon name="error" size={48} color="#dc3545" />
+            </View>
             <Text style={styles.errorTitle}>Camera Not Available</Text>
             <Text style={styles.errorText}>
               Unable to access the camera. Please check your device settings.
@@ -420,7 +425,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorIcon: {
-    fontSize: 64,
     marginBottom: 24,
   },
   errorTitle: {

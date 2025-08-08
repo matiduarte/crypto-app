@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, Alert } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
 import { Button } from '../../components/common';
+import { CustomIcon } from '../../components/common/CustomIcon';
 
 export const ProfileScreen: React.FC = () => {
   const { user, signOut, isLoading } = useAuth();
@@ -45,9 +46,12 @@ export const ProfileScreen: React.FC = () => {
             onPress={handleSignOut}
             disabled={isLoading}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? '🚪 Signing Out...' : '🚪 Sign Out'}
-            </Text>
+            <View style={styles.buttonContent}>
+              <CustomIcon name="logout" size={20} color="white" />
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Signing Out...' : 'Sign Out'}
+              </Text>
+            </View>
           </Button>
         </View>
       </View>
@@ -130,9 +134,15 @@ const styles = StyleSheet.create({
   signOutButton: {
     backgroundColor: '#dc3545',
   },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
   },
 });

@@ -42,14 +42,14 @@ const SkeletonLoader: React.FC = () => (
 type SortOption = {
   key: keyof Cryptocurrency;
   label: string;
-  icon: string;
+  iconName: string;
 };
 
 const SORT_OPTIONS: SortOption[] = [
-  { key: 'market_cap_rank', label: 'Market Cap', icon: '📊' },
-  { key: 'current_price', label: 'Price', icon: '💰' },
-  { key: 'price_change_percentage_24h', label: '24h Change', icon: '📈' },
-  { key: 'name', label: 'Name', icon: '🔤' },
+  { key: 'market_cap_rank', label: 'Market Cap', iconName: 'show-chart' },
+  { key: 'current_price', label: 'Price', iconName: 'attach-money' },
+  { key: 'price_change_percentage_24h', label: '24h Change', iconName: 'trending-up' },
+  { key: 'name', label: 'Name', iconName: 'sort-by-alpha' },
 ];
 
 export const CryptoListScreen: React.FC = () => {
@@ -120,7 +120,9 @@ export const CryptoListScreen: React.FC = () => {
 
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>📊</Text>
+        <View style={styles.emptyIcon}>
+          <CustomIcon name="bar-chart" size={48} color="#9e9e9e" />
+        </View>
         <Text style={styles.emptyTitle}>No Data Available</Text>
         <Text style={styles.emptySubtext}>
           Unable to load cryptocurrency data. Pull down to refresh.
@@ -140,7 +142,9 @@ export const CryptoListScreen: React.FC = () => {
 
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorEmoji}>⚠️</Text>
+        <View style={styles.errorIcon}>
+          <CustomIcon name="error-outline" size={48} color="#f44336" />
+        </View>
         <Text style={styles.errorTitle}>Unable to Load Data</Text>
         <Text style={styles.errorSubtext}>
           Please check your internet connection and try again.
@@ -203,7 +207,9 @@ export const CryptoListScreen: React.FC = () => {
 
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>🔍</Text>
+        <View style={styles.emptyIcon}>
+          <CustomIcon name="search" size={48} color="#9e9e9e" />
+        </View>
         <Text style={styles.emptyTitle}>No Results Found</Text>
         <Text style={styles.emptySubtext}>
           No cryptocurrencies match "{searchQuery}". Try a different search
@@ -235,7 +241,10 @@ export const CryptoListScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Search Header */}
         <View style={styles.searchHeader}>
-          <Text style={styles.title}>🍋 Cryptocurrency Market</Text>
+          <View style={styles.titleContainer}>
+            <CustomIcon name="currency-bitcoin" size={24} color="#FFD700" />
+            <Text style={styles.title}>Cryptocurrency Market</Text>
+          </View>
           <Text style={styles.subtitle}>
             {searchQuery
               ? `Search results for "${searchQuery}"`
@@ -271,9 +280,11 @@ export const CryptoListScreen: React.FC = () => {
               onPress={toggleSortModal}
               accessibilityLabel="Sort options"
             >
-              <Text style={styles.sortIcon}>
-                {SORT_OPTIONS.find(opt => opt.key === sortBy)?.icon || '📊'}
-              </Text>
+              <CustomIcon 
+                name={SORT_OPTIONS.find(opt => opt.key === sortBy)?.iconName || 'show-chart'}
+                size={18}
+                color="#6c757d"
+              />
               <CustomIcon
                 name={
                   sortOrder === 'asc'
@@ -307,7 +318,9 @@ export const CryptoListScreen: React.FC = () => {
                   ]}
                   onPress={() => handleSortChange(option.key)}
                 >
-                  <Text style={styles.sortOptionIcon}>{option.icon}</Text>
+                  <View style={styles.sortOptionIcon}>
+                    <CustomIcon name={option.iconName} size={20} color="#6c757d" />
+                  </View>
                   <Text
                     style={[
                       styles.sortOptionText,
@@ -392,12 +405,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 4,
-    textAlign: 'center',
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 13,
@@ -431,10 +449,6 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
     minWidth: 60,
     justifyContent: 'center',
-  },
-  sortIcon: {
-    fontSize: 16,
-    marginRight: 4,
   },
   sortOrder: {
     fontSize: 16,
@@ -527,7 +541,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffbf0',
   },
   sortOptionIcon: {
-    fontSize: 20,
     marginRight: 12,
   },
   sortOptionText: {
@@ -636,8 +649,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  errorEmoji: {
-    fontSize: 48,
+  errorIcon: {
+    marginBottom: 16,
+  },
+  emptyIcon: {
     marginBottom: 16,
   },
   errorTitle: {
@@ -686,10 +701,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 40,
-  },
-  emptyText: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 18,

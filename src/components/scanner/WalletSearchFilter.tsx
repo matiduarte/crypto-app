@@ -24,10 +24,10 @@ export const WalletSearchFilter: React.FC<WalletSearchFilterProps> = ({
   walletsCount,
 }) => {
   const filterOptions = [
-    { key: 'all', label: 'All', icon: '💼', color: '#6c757d' },
-    { key: 'favorites', label: 'Favorites', icon: '⭐', color: '#ffc107' },
-    { key: 'bitcoin', label: 'Bitcoin', icon: '₿', color: '#f7931a' },
-    { key: 'ethereum', label: 'Ethereum', icon: 'Ξ', color: '#627eea' },
+    { key: 'all', label: 'All', iconName: 'account-balance-wallet', color: '#6c757d' },
+    { key: 'favorites', label: 'Favorites', iconName: 'star', color: '#ffc107' },
+    { key: 'bitcoin', label: 'Bitcoin', iconName: 'currency-bitcoin', color: '#f7931a' },
+    { key: 'ethereum', label: 'Ethereum', iconName: 'currency-eth', color: '#627eea' },
   ] as const;
 
   return (
@@ -65,7 +65,13 @@ export const WalletSearchFilter: React.FC<WalletSearchFilterProps> = ({
             onPress={() => onFilterChange(option.key)}
             activeOpacity={0.7}
           >
-            <Text style={styles.filterIcon}>{option.icon}</Text>
+            <View style={styles.filterIcon}>
+              <CustomIcon 
+                name={option.iconName} 
+                size={18} 
+                color={filterType === option.key ? option.color : '#9e9e9e'} 
+              />
+            </View>
             <Text
               style={[
                 styles.filterText,
@@ -136,7 +142,6 @@ const styles = StyleSheet.create({
     borderColor: '#007AFF',
   },
   filterIcon: {
-    fontSize: 14,
     marginRight: 4,
   },
   filterText: {

@@ -53,5 +53,6 @@ export const DEFAULT_CRYPTOS = [
 ] as const;
 
 export const APP_DETAILS = {
-  emoji: '🍋',
+  name: 'Lime',
+  iconName: 'currency-bitcoin',
 };

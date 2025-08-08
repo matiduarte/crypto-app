@@ -12,6 +12,7 @@ import {
 import { useAuth, useGoogleSignIn } from '../../hooks/useAuth';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { GoogleSignInButton } from '../../components/auth';
+import { CustomIcon } from '../../components/common/CustomIcon';
 import { APP_DETAILS } from '../../constants/config';
 
 export const LoginScreen: React.FC = () => {
@@ -113,9 +114,9 @@ export const LoginScreen: React.FC = () => {
         >
           <View style={styles.appBrand}>
             <View style={styles.iconContainer}>
-              <Animated.Text
+              <Animated.View
                 style={[
-                  styles.appIcon,
+                  styles.appIconContainer,
                   {
                     transform: [
                       {
@@ -128,8 +129,8 @@ export const LoginScreen: React.FC = () => {
                   },
                 ]}
               >
-                {APP_DETAILS.emoji}
-              </Animated.Text>
+                <CustomIcon name={APP_DETAILS.iconName} size={60} color="#4285F4" />
+              </Animated.View>
             </View>
           </View>
 
@@ -259,8 +260,9 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 16,
   },
-  appIcon: {
-    fontSize: 60,
+  appIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   appName: {
     fontSize: 28,

@@ -166,7 +166,10 @@ export const ExchangeScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>💱 Currency Exchange</Text>
+          <View style={styles.titleContainer}>
+            <CustomIcon name="swap-horiz" size={24} color="#4285F4" />
+            <Text style={styles.title}>Currency Exchange</Text>
+          </View>
           <Text style={styles.subtitle}>
             Convert between cryptocurrencies and fiat currencies
           </Text>
@@ -349,12 +352,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 8,
-    textAlign: 'center',
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 14,

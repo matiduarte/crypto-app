@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { CustomIcon } from '../components/common/CustomIcon';
 import { APP_DETAILS } from '../constants/config';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -18,7 +19,9 @@ export const RootNavigator: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
-          <Text style={styles.logoEmoji}>{APP_DETAILS.emoji}</Text>
+          <View style={styles.logoContainer}>
+            <CustomIcon name={APP_DETAILS.iconName} size={64} color="#4285F4" />
+          </View>
           <ActivityIndicator
             size="large"
             color="#4285F4"
@@ -73,8 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  logoEmoji: {
-    fontSize: 80,
+  logoContainer: {
     marginBottom: 16,
   },
   logoText: {

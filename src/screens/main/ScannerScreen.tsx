@@ -336,7 +336,10 @@ export const ScannerScreen: React.FC = () => {
   // Header content for FlatList
   const headerContent = (
     <View style={styles.header}>
-      <Text style={styles.title}>📱 QR Scanner</Text>
+      <View style={styles.titleContainer}>
+        <CustomIcon name="qr-code-scanner" size={24} color="#4285F4" />
+        <Text style={styles.title}>QR Scanner</Text>
+      </View>
       <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
 
       {/* Scan Button */}
@@ -387,7 +390,9 @@ export const ScannerScreen: React.FC = () => {
   // Empty state content for FlatList
   const emptyContent = (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>🔍</Text>
+      <View style={styles.emptyIcon}>
+        <CustomIcon name="search" size={64} color="#9e9e9e" />
+      </View>
       <Text style={styles.emptyText}>No wallets scanned yet</Text>
       <Text style={styles.emptySubtext}>
         Scan a QR code to add your first wallet address
@@ -452,12 +457,17 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 10,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 8,
-    textAlign: 'center',
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -556,7 +566,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyIcon: {
-    fontSize: 64,
     marginBottom: 24,
     opacity: 0.5,
   },
