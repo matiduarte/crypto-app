@@ -145,6 +145,7 @@ export const ExchangeScreen: React.FC = () => {
     setShowFiatSelector(false);
   }, []);
 
+
   // Filter cryptos based on search
   const filteredCryptos = useMemo(() => {
     if (!cryptoData?.success || !cryptoData.data) return [];

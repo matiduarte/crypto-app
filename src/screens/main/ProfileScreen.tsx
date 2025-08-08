@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
+import { QRCodeDisplay } from '../../components/profile';
 
 export const ProfileScreen: React.FC = () => {
   const { user, signOut, isLoading, refreshTokens } = useAuth();
@@ -54,6 +55,15 @@ export const ProfileScreen: React.FC = () => {
             </View>
           </View>
         )}
+
+        {/* QR Code Section */}
+        <View style={styles.qrSection}>
+          <QRCodeDisplay
+            address="bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+            size={180}
+            label="Your Bitcoin Address"
+          />
+        </View>
 
         <View style={styles.actions}>
           <TouchableOpacity
@@ -125,6 +135,16 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 16,
     color: '#6c757d',
+  },
+  qrSection: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   actions: {
     marginBottom: 20,
