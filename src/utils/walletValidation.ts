@@ -46,7 +46,9 @@ export const validateEthereumAddress = (address: string): boolean => {
 /**
  * Determines wallet type and validates address
  */
-export const validateWalletAddress = (input: string): WalletValidationResult => {
+export const validateWalletAddress = (
+  input: string,
+): WalletValidationResult => {
   if (!input || typeof input !== 'string') {
     return {
       isValid: false,
@@ -57,7 +59,7 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
   }
 
   const address = input.trim();
-  
+
   // Check for empty string after trim
   if (!address) {
     return {
@@ -92,7 +94,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This appears to be a website URL, not a cryptocurrency wallet address.',
+      error:
+        'This appears to be a website URL, not a cryptocurrency wallet address.',
     };
   }
 
@@ -101,7 +104,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This appears to be an email address, not a cryptocurrency wallet address.',
+      error:
+        'This appears to be an email address, not a cryptocurrency wallet address.',
     };
   }
 
@@ -111,7 +115,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This appears to be a phone number, not a cryptocurrency wallet address.',
+      error:
+        'This appears to be a phone number, not a cryptocurrency wallet address.',
     };
   }
 
@@ -121,7 +126,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This appears to be a social media handle, not a cryptocurrency wallet address.',
+      error:
+        'This appears to be a social media handle, not a cryptocurrency wallet address.',
     };
   }
 
@@ -141,7 +147,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This is a contact card (vCard), not a cryptocurrency wallet address.',
+      error:
+        'This is a contact card (vCard), not a cryptocurrency wallet address.',
     };
   }
 
@@ -151,7 +158,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'Unsupported wallet address format. We only support Bitcoin and Ethereum addresses.',
+      error:
+        'Unsupported wallet address format. We only support Bitcoin and Ethereum addresses.',
     };
   }
 
@@ -161,7 +169,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
       isValid: false,
       type: 'unknown',
       address,
-      error: 'This QR code does not contain a valid cryptocurrency wallet address.',
+      error:
+        'This QR code does not contain a valid cryptocurrency wallet address.',
     };
   }
 
@@ -169,7 +178,8 @@ export const validateWalletAddress = (input: string): WalletValidationResult => 
     isValid: false,
     type: 'unknown',
     address,
-    error: 'This QR code format is not supported. We only support Bitcoin and Ethereum wallet addresses.',
+    error:
+      'This QR code format is not supported. We only support Bitcoin and Ethereum wallet addresses.',
   };
 };
 
@@ -211,7 +221,12 @@ export const extractAddressFromQRData = (qrData: string): string => {
   }
 
   // Handle other cryptocurrency URI schemes
-  if (data.includes(':') && !data.startsWith('http') && !data.startsWith('WIFI:') && !data.startsWith('BEGIN:')) {
+  if (
+    data.includes(':') &&
+    !data.startsWith('http') &&
+    !data.startsWith('WIFI:') &&
+    !data.startsWith('BEGIN:')
+  ) {
     const parts = data.split(':');
     if (parts.length >= 2 && parts[1]) {
       // Extract the part after the first colon, but before any query parameters
@@ -229,7 +244,10 @@ export const extractAddressFromQRData = (qrData: string): string => {
 /**
  * Formats wallet address for display (shortens long addresses)
  */
-export const formatWalletAddress = (address: string, maxLength: number = 20): string => {
+export const formatWalletAddress = (
+  address: string,
+  maxLength: number = 20,
+): string => {
   if (!address || address.length <= maxLength) {
     return address;
   }
@@ -242,7 +260,9 @@ export const formatWalletAddress = (address: string, maxLength: number = 20): st
 /**
  * Gets wallet type display name
  */
-export const getWalletTypeDisplayName = (type: 'bitcoin' | 'ethereum' | 'unknown'): string => {
+export const getWalletTypeDisplayName = (
+  type: 'bitcoin' | 'ethereum' | 'unknown',
+): string => {
   switch (type) {
     case 'bitcoin':
       return 'Bitcoin';
@@ -250,19 +270,5 @@ export const getWalletTypeDisplayName = (type: 'bitcoin' | 'ethereum' | 'unknown
       return 'Ethereum';
     default:
       return 'Unknown';
-  }
-};
-
-/**
- * Gets wallet type emoji
- */
-export const getWalletTypeEmoji = (type: 'bitcoin' | 'ethereum' | 'unknown'): string => {
-  switch (type) {
-    case 'bitcoin':
-      return '₿';
-    case 'ethereum':
-      return 'Ξ';
-    default:
-      return '❓';
   }
 };

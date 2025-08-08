@@ -95,9 +95,9 @@ class AuthService {
       try {
         const silentSignInResult = await GoogleSignin.signInSilently();
         return !!silentSignInResult;
-      } catch (silentError) {
+      } catch (silentError: any) {
         // Silent sign-in failed - user is not signed in
-        console.log('Silent sign-in failed, user not signed in:', silentError.message);
+        console.log('Silent sign-in failed, user not signed in:', silentError?.message || 'Unknown error');
         return false;
       }
     } catch (error) {
@@ -134,9 +134,12 @@ class AuthService {
       // If no cached user, try silent sign-in for iOS compatibility
       try {
         const silentSignInResult = await GoogleSignin.signInSilently();
-        return silentSignInResult.user || null;
-      } catch (silentError) {
-        console.log('Silent user restoration failed:', silentError.message);
+        if (silentSignInResult.type === 'success') {
+          return silentSignInResult.data.user || null;
+        }
+        return null;
+      } catch (silentError: any) {
+        console.log('Silent user restoration failed:', silentError?.message || 'Unknown error');
         return null;
       }
     } catch (error) {

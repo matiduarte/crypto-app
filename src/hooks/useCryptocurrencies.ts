@@ -43,7 +43,7 @@ export const useInfiniteCryptocurrencies = (
     queryKey: [...queryKeys.cryptos.lists(), 'infinite', params],
     queryFn: ({ pageParam = 1 }) =>
       apiService.getCryptocurrencies({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       if (!lastPage.success || !lastPage.data || lastPage.data.length === 0) {
         return undefined;
       }

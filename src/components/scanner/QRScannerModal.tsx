@@ -66,7 +66,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         }
 
         // Check current permission
-        const currentPermission = await Camera.getCameraPermissionStatus();
+        const currentPermission = Camera.getCameraPermissionStatus();
         
         if (currentPermission === 'not-determined') {
           const requestedPermission = await Camera.requestCameraPermission();

@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Alert,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
+import { Button } from '../../components/common';
 import { QRScannerModal, WalletItem } from '../../components/scanner';
+import { CustomIcon } from '../../components/common/CustomIcon';
 import { useScannedWallets, useAddScannedWallet } from '../../hooks';
 import {
   validateWalletAddress,
@@ -32,26 +33,29 @@ type ScannerAction =
   | { type: 'RESET' };
 
 // State reducer for predictable state management
-const scannerReducer = (state: ScannerState, action: ScannerAction): ScannerState => {
+const scannerReducer = (
+  state: ScannerState,
+  action: ScannerAction,
+): ScannerState => {
   switch (action.type) {
     case 'SHOW_SCANNER':
       return { ...state, scannerVisible: true, isProcessing: false };
     case 'HIDE_SCANNER':
       return { ...state, scannerVisible: false };
     case 'START_PROCESSING':
-      return { 
-        ...state, 
-        scannerVisible: false, 
-        isProcessing: true, 
-        processingMessage: action.message 
+      return {
+        ...state,
+        scannerVisible: false,
+        isProcessing: true,
+        processingMessage: action.message,
       };
     case 'STOP_PROCESSING':
       return { ...state, isProcessing: false, processingMessage: '' };
     case 'RESET':
-      return { 
-        scannerVisible: false, 
-        isProcessing: false, 
-        processingMessage: '' 
+      return {
+        scannerVisible: false,
+        isProcessing: false,
+        processingMessage: '',
       };
     default:
       return state;
@@ -67,7 +71,6 @@ interface AlertItem {
 }
 
 export const ScannerScreen: React.FC = () => {
-
   // State management with reducer
   const [state, dispatch] = useReducer(scannerReducer, {
     scannerVisible: false,
@@ -76,7 +79,8 @@ export const ScannerScreen: React.FC = () => {
   });
 
   // Data hooks
-  const { data: scannedWallets = [], isLoading: walletsLoading } = useScannedWallets();
+  const { data: scannedWallets = [], isLoading: walletsLoading } =
+    useScannedWallets();
   const addWalletMutation = useAddScannedWallet();
 
   // Refs for cleanup and preventing stale closures
@@ -109,22 +113,29 @@ export const ScannerScreen: React.FC = () => {
           },
         },
       ],
-      { 
+      {
         cancelable: false, // Ensure alerts can't be dismissed accidentally
         onDismiss: () => {
           isShowingAlert.current = false;
           setTimeout(() => processAlertQueue(), 100);
-        }
-      }
+        },
+      },
     );
   }, []);
 
   // Queue an alert for processing
-  const queueAlert = useCallback((title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    const alertId = `${Date.now()}-${Math.random()}`;
-    alertQueue.current.push({ id: alertId, title, message, type });
-    processAlertQueue();
-  }, [processAlertQueue]);
+  const queueAlert = useCallback(
+    (
+      title: string,
+      message: string,
+      type: 'success' | 'error' | 'info' = 'info',
+    ) => {
+      const alertId = `${Date.now()}-${Math.random()}`;
+      alertQueue.current.push({ id: alertId, title, message, type });
+      processAlertQueue();
+    },
+    [processAlertQueue],
+  );
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -154,130 +165,158 @@ export const ScannerScreen: React.FC = () => {
   }, [cleanup]);
 
   // Handle scan success with proper error handling and state management
-  const handleScanSuccess = useCallback(async (qrData: string) => {
-    try {
-      // Start processing and close scanner immediately
-      dispatch({ type: 'START_PROCESSING', message: 'Processing QR code...' });
+  const handleScanSuccess = useCallback(
+    async (qrData: string) => {
+      try {
+        // Start processing and close scanner immediately
+        dispatch({
+          type: 'START_PROCESSING',
+          message: 'Processing QR code...',
+        });
 
-      // Create new abort controller for this operation
-      abortController.current = new AbortController();
-      const { signal } = abortController.current;
+        // Create new abort controller for this operation
+        abortController.current = new AbortController();
+        const { signal } = abortController.current;
 
-      // Add a timeout for the entire operation
-      processingTimeoutRef.current = setTimeout(() => {
+        // Add a timeout for the entire operation
+        processingTimeoutRef.current = setTimeout(() => {
+          if (abortController.current) {
+            abortController.current.abort();
+          }
+          dispatch({ type: 'STOP_PROCESSING' });
+          queueAlert(
+            'Timeout',
+            'The operation took too long and was cancelled.',
+            'error',
+          );
+        }, 10000); // 10 second timeout
+
+        // Extract address from QR data
+        if (signal.aborted) return;
+        const extractedAddress = extractAddressFromQRData(qrData);
+
+        console.log('QR Data:', qrData);
+        console.log('Extracted Address:', extractedAddress);
+
+        // Validate the address
+        if (signal.aborted) return;
+        const validation = validateWalletAddress(extractedAddress);
+
+        console.log('Validation Result:', validation);
+
+        if (!validation.isValid) {
+          dispatch({ type: 'STOP_PROCESSING' });
+
+          // Provide more specific error messages
+          let errorTitle = 'QR Code Not Supported';
+          let errorMessage = 'This QR code format is not supported.';
+
+          if (validation.error === 'Unsupported wallet address format') {
+            errorTitle = 'Unsupported Wallet';
+            errorMessage =
+              'This wallet address format is not currently supported. We only support Bitcoin and Ethereum addresses.';
+          } else if (validation.error === 'Invalid wallet address format') {
+            errorTitle = 'Invalid QR Code';
+            errorMessage =
+              'This QR code does not contain a valid cryptocurrency wallet address.';
+          } else if (validation.error === 'Invalid input') {
+            errorTitle = 'Invalid QR Code';
+            errorMessage =
+              'The scanned QR code appears to be empty or invalid.';
+          } else if (validation.error) {
+            errorMessage = validation.error;
+          }
+
+          queueAlert(errorTitle, errorMessage, 'error');
+          return;
+        }
+
+        // Check if wallet already exists
+        if (signal.aborted) return;
+        const existingWallet = scannedWallets.find(
+          wallet => wallet.address === validation.address,
+        );
+
+        if (existingWallet) {
+          dispatch({ type: 'STOP_PROCESSING' });
+          queueAlert(
+            'Wallet Already Added',
+            `This ${getWalletTypeDisplayName(
+              validation.type,
+            )} address is already in your list.`,
+            'info',
+          );
+          return;
+        }
+
+        // Add the wallet
+        if (signal.aborted) return;
+        dispatch({ type: 'START_PROCESSING', message: 'Adding wallet...' });
+
+        const result = await addWalletMutation.mutateAsync({
+          address: validation.address,
+          qrData: qrData,
+          label: `${getWalletTypeDisplayName(validation.type)} wallet`,
+        });
+
+        if (signal.aborted) return;
+
+        dispatch({ type: 'STOP_PROCESSING' });
+
+        if (result) {
+          queueAlert(
+            'Wallet Added Successfully!',
+            `${getWalletTypeDisplayName(
+              validation.type,
+            )} address has been added to your list.`,
+            'success',
+          );
+        } else {
+          queueAlert(
+            'Failed to Add Wallet',
+            'Unable to add the wallet. Please try again.',
+            'error',
+          );
+        }
+      } catch (error: any) {
+        dispatch({ type: 'STOP_PROCESSING' });
+
+        // Don't show error if operation was aborted
+        if (
+          error.name === 'AbortError' ||
+          abortController.current?.signal.aborted
+        ) {
+          return;
+        }
+
+        queueAlert(
+          'Error',
+          error.message ||
+            'An unexpected error occurred while processing the QR code.',
+          'error',
+        );
+      } finally {
+        // Clean up timeout and abort controller
+        if (processingTimeoutRef.current) {
+          clearTimeout(processingTimeoutRef.current);
+          processingTimeoutRef.current = null;
+        }
         if (abortController.current) {
-          abortController.current.abort();
+          abortController.current = null;
         }
-        dispatch({ type: 'STOP_PROCESSING' });
-        queueAlert('Timeout', 'The operation took too long and was cancelled.', 'error');
-      }, 10000); // 10 second timeout
-
-      // Extract address from QR data
-      if (signal.aborted) return;
-      const extractedAddress = extractAddressFromQRData(qrData);
-      
-      console.log('QR Data:', qrData);
-      console.log('Extracted Address:', extractedAddress);
-
-      // Validate the address
-      if (signal.aborted) return;
-      const validation = validateWalletAddress(extractedAddress);
-      
-      console.log('Validation Result:', validation);
-
-      if (!validation.isValid) {
-        dispatch({ type: 'STOP_PROCESSING' });
-        
-        // Provide more specific error messages
-        let errorTitle = 'QR Code Not Supported';
-        let errorMessage = 'This QR code format is not supported.';
-        
-        if (validation.error === 'Unsupported wallet address format') {
-          errorTitle = 'Unsupported Wallet';
-          errorMessage = 'This wallet address format is not currently supported. We only support Bitcoin and Ethereum addresses.';
-        } else if (validation.error === 'Invalid wallet address format') {
-          errorTitle = 'Invalid QR Code';
-          errorMessage = 'This QR code does not contain a valid cryptocurrency wallet address.';
-        } else if (validation.error === 'Invalid input') {
-          errorTitle = 'Invalid QR Code';
-          errorMessage = 'The scanned QR code appears to be empty or invalid.';
-        } else if (validation.error) {
-          errorMessage = validation.error;
-        }
-        
-        queueAlert(errorTitle, errorMessage, 'error');
-        return;
       }
-
-      // Check if wallet already exists
-      if (signal.aborted) return;
-      const existingWallet = scannedWallets.find(
-        wallet => wallet.address === validation.address
-      );
-
-      if (existingWallet) {
-        dispatch({ type: 'STOP_PROCESSING' });
-        queueAlert(
-          'Wallet Already Added',
-          `This ${getWalletTypeDisplayName(validation.type)} address is already in your list.`,
-          'info'
-        );
-        return;
-      }
-
-      // Add the wallet
-      if (signal.aborted) return;
-      dispatch({ type: 'START_PROCESSING', message: 'Adding wallet...' });
-      
-      const result = await addWalletMutation.mutateAsync({
-        address: validation.address,
-        qrData: qrData,
-        label: `${getWalletTypeDisplayName(validation.type)} wallet`,
-      });
-
-      if (signal.aborted) return;
-
-      dispatch({ type: 'STOP_PROCESSING' });
-      
-      if (result) {
-        queueAlert(
-          'Wallet Added Successfully!',
-          `${getWalletTypeDisplayName(validation.type)} address has been added to your list.`,
-          'success'
-        );
-      } else {
-        queueAlert('Failed to Add Wallet', 'Unable to add the wallet. Please try again.', 'error');
-      }
-
-    } catch (error: any) {
-      dispatch({ type: 'STOP_PROCESSING' });
-      
-      // Don't show error if operation was aborted
-      if (error.name === 'AbortError' || abortController.current?.signal.aborted) {
-        return;
-      }
-
-      queueAlert(
-        'Error',
-        error.message || 'An unexpected error occurred while processing the QR code.',
-        'error'
-      );
-    } finally {
-      // Clean up timeout and abort controller
-      if (processingTimeoutRef.current) {
-        clearTimeout(processingTimeoutRef.current);
-        processingTimeoutRef.current = null;
-      }
-      if (abortController.current) {
-        abortController.current = null;
-      }
-    }
-  }, [scannedWallets, addWalletMutation, queueAlert]);
+    },
+    [scannedWallets, addWalletMutation, queueAlert],
+  );
 
   // Handle scanner open
   const handleOpenScanner = useCallback(() => {
     if (state.isProcessing) {
-      queueAlert('Please Wait', 'Please wait for the current operation to complete.', 'info');
+      queueAlert(
+        'Please Wait',
+        'Please wait for the current operation to complete.',
+        'info',
+      );
       return;
     }
     dispatch({ type: 'SHOW_SCANNER' });
@@ -289,10 +328,10 @@ export const ScannerScreen: React.FC = () => {
   }, []);
 
   // Render wallet item
-  const renderWalletItem = useCallback(({ item }: { item: any }) => (
-    <WalletItem item={item} />
-  ), []);
-
+  const renderWalletItem = useCallback(
+    ({ item }: { item: any }) => <WalletItem item={item} />,
+    [],
+  );
 
   // Header content for FlatList
   const headerContent = (
@@ -301,29 +340,47 @@ export const ScannerScreen: React.FC = () => {
       <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
 
       {/* Scan Button */}
-      <TouchableOpacity
+      <Button
         style={[
           styles.scanButton,
-          state.isProcessing && styles.scanButtonDisabled
+          state.isProcessing && styles.scanButtonDisabled,
         ]}
         onPress={handleOpenScanner}
-        activeOpacity={0.8}
         disabled={state.isProcessing}
       >
-        {state.isProcessing ? (
-          <>
-            <ActivityIndicator size="large" color="#ffffff" style={styles.processingIndicator} />
-            <Text style={styles.scanButtonText}>Processing...</Text>
-            <Text style={styles.scanButtonSubtext}>{state.processingMessage}</Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.scanButtonIcon}>📷</Text>
-            <Text style={styles.scanButtonText}>Scan QR Code</Text>
-            <Text style={styles.scanButtonSubtext}>Tap to scan a wallet address</Text>
-          </>
-        )}
-      </TouchableOpacity>
+        <View style={styles.scanButtonContent}>
+          {state.isProcessing ? (
+            <>
+              <ActivityIndicator
+                size="large"
+                color="#ffffff"
+                style={styles.processingIndicator}
+              />
+              <View style={styles.buttonTextContainer}>
+                <Text style={styles.scanButtonText}>Processing...</Text>
+                <Text style={styles.scanButtonSubtext}>
+                  {state.processingMessage}
+                </Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.iconContainer}>
+                <CustomIcon name="qr-code-scanner" size={32} color="#ffffff" />
+                <View style={styles.iconBadge}>
+                  <CustomIcon name="add" size={16} color="#4285F4" />
+                </View>
+              </View>
+              <View style={styles.buttonTextContainer}>
+                <Text style={styles.scanButtonText}>Scan QR Code</Text>
+                <Text style={styles.scanButtonSubtext}>
+                  Tap to scan a wallet address
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+      </Button>
     </View>
   );
 
@@ -411,37 +468,66 @@ const styles = StyleSheet.create({
   // Scan Button
   scanButton: {
     backgroundColor: '#4285F4',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
+    borderRadius: 20,
+    padding: 0, // Remove default padding since we'll use content padding
     marginBottom: 20,
     shadowColor: '#4285F4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(66, 133, 244, 0.3)',
   },
   scanButtonDisabled: {
     backgroundColor: '#9e9e9e',
     opacity: 0.7,
+    shadowOpacity: 0.1,
   },
-  scanButtonIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+  scanButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    minHeight: 80,
+  },
+  iconContainer: {
+    position: 'relative',
+    marginRight: 16,
+  },
+  iconBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#4285F4',
+  },
+  buttonTextContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   scanButtonText: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ffffff',
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   scanButtonSubtext: {
     fontSize: 14,
     color: '#ffffff',
-    opacity: 0.9,
+    opacity: 0.85,
+    fontWeight: '500',
   },
   processingIndicator: {
-    marginBottom: 12,
+    marginRight: 16,
   },
   // FlatList styles
   flatList: {
