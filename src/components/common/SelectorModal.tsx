@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  TextInput,
 } from 'react-native';
 
 export interface SelectorOption {
@@ -31,12 +30,8 @@ interface SelectorModalProps {
   visible: boolean;
   title: string;
   data: SelectorOption[];
-  searchValue?: string;
-  searchPlaceholder?: string;
-  showSearch?: boolean;
   onClose: () => void;
   onSelect: (option: SelectorOption) => void;
-  onSearchChange?: (text: string) => void;
   keyExtractor?: (item: SelectorOption) => string;
   renderRightContent?: (item: SelectorOption) => React.ReactNode;
 }
@@ -45,12 +40,8 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
   visible,
   title,
   data,
-  searchValue = '',
-  searchPlaceholder = 'Search...',
-  showSearch = false,
   onClose,
   onSelect,
-  onSearchChange,
   keyExtractor = item => item.id,
   renderRightContent,
 }) => {
@@ -89,21 +80,6 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
             <Text style={styles.closeButton}>✕</Text>
           </TouchableOpacity>
         </View>
-
-        {showSearch && (
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder={searchPlaceholder}
-              placeholderTextColor="#9e9e9e"
-              value={searchValue}
-              onChangeText={onSearchChange}
-              autoCapitalize="none"
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-            />
-          </View>
-        )}
 
         <FlatList
           data={data}

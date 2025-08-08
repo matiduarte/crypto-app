@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
-import { searchCryptos, sortCryptos } from '../../utils/helpers';
+import { debounce, searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 import { Button, CryptoListItem, CustomIcon } from '../../components/common';
 
@@ -100,9 +100,11 @@ export const CryptoListScreen: React.FC = () => {
   }, [baseCryptoData, searchQuery, sortBy, sortOrder]);
 
   const handleRefresh = useCallback(() => {
-    // Always refetch the main data, don't clear search
     refetch();
   }, [refetch]);
+
+  // Prevent user from triggering multiple fetches
+  const debouncedRefetch = debounce(() => refetch(), 1000);
 
   const renderItem = ({ item }: { item: Cryptocurrency }) => (
     <CryptoListItem item={item} />
@@ -349,7 +351,7 @@ export const CryptoListScreen: React.FC = () => {
             refreshControl={
               <RefreshControl
                 refreshing={isFetching}
-                onRefresh={handleRefresh}
+                onRefresh={debouncedRefetch}
                 colors={['#FFD700']} // Android
                 tintColor="#FFD700" // iOS
               />

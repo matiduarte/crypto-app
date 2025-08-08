@@ -88,7 +88,25 @@ export const useAuthSession = () => {
                 isLoggedIn: true 
               };
             } else {
-              console.warn('Silent sign-in failed, but we have stored data');
+              console.warn('Silent sign-in failed, checking if tokens expired');
+              
+              // Check if the error indicates expired tokens
+              if (silentResult.error?.includes('expired') || silentResult.error?.includes('Authentication session has expired')) {
+                console.log('Tokens have expired, clearing stored auth data');
+                // Clear expired session data
+                try {
+                  await Promise.all([
+                    storageService.removeItem(STORAGE_KEYS.USER),
+                    storageService.removeItem(STORAGE_KEYS.TOKEN),
+                    storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+                    storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
+                  ]);
+                } catch (clearError) {
+                  console.warn('Failed to clear expired auth data:', clearError);
+                }
+                return { user: null, tokens: null, isLoggedIn: false };
+              }
+              
               // If silent sign-in fails but we have stored data, try to use stored data as fallback
               if (storedUser && storedToken) {
                 return {
@@ -138,7 +156,7 @@ export const useAuthSession = () => {
         return { user: null, tokens: null, isLoggedIn: false };
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes - shorter stale time to catch expired tokens sooner
     gcTime: 1000 * 60 * 10, // 10 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

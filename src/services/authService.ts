@@ -97,7 +97,10 @@ class AuthService {
         return !!silentSignInResult;
       } catch (silentError: any) {
         // Silent sign-in failed - user is not signed in
-        console.log('Silent sign-in failed, user not signed in:', silentError?.message || 'Unknown error');
+        console.log(
+          'Silent sign-in failed, user not signed in:',
+          silentError?.message || 'Unknown error',
+        );
         return false;
       }
     } catch (error) {
@@ -139,7 +142,10 @@ class AuthService {
         }
         return null;
       } catch (silentError: any) {
-        console.log('Silent user restoration failed:', silentError?.message || 'Unknown error');
+        console.log(
+          'Silent user restoration failed:',
+          silentError?.message || 'Unknown error',
+        );
         return null;
       }
     } catch (error) {
@@ -149,7 +155,7 @@ class AuthService {
   }
 
   /**
-   * Get current authentication tokens
+   * Get current authentication tokens with expiration handling
    */
   async getCurrentTokens(): Promise<AuthTokens | null> {
     try {
@@ -158,10 +164,44 @@ class AuthService {
         idToken: tokens.idToken,
         accessToken: tokens.accessToken,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting tokens:', error);
+
+      // Check if this is a token expiration error
+      if (this.isTokenExpiredError(error)) {
+        console.warn('Tokens have expired, clearing session');
+        // Silently clear the session since tokens are invalid
+        try {
+          await GoogleSignin.signOut();
+          console.log('Session cleared due to expired tokens');
+        } catch (signOutError) {
+          console.warn(
+            'Failed to clear session after token expiration:',
+            signOutError,
+          );
+        }
+      }
+
       return null;
     }
+  }
+
+  /**
+   * Check if an error indicates token expiration/revocation
+   */
+  private isTokenExpiredError(error: any): boolean {
+    const errorString = error?.message || '';
+    const errorCode = error?.code || '';
+
+    // Check for specific Google token expiration indicators
+    return (
+      errorString.includes('invalid_grant') ||
+      errorString.includes('Token has been expired or revoked') ||
+      errorString.includes('expired') ||
+      errorString.includes('revoked') ||
+      errorCode === 'invalid_grant' ||
+      errorCode === -10 // OAuth token error code
+    );
   }
 
   /**
@@ -324,7 +364,7 @@ class AuthService {
   }
 
   /**
-   * Validate user session
+   * Validate user session with token expiration handling
    */
   async validateSession(): Promise<boolean> {
     try {
@@ -333,6 +373,14 @@ class AuthService {
 
       const userInfo = this.getCurrentUser();
       const tokens = await this.getCurrentTokens();
+
+      // If getCurrentTokens returned null due to expiration, session is invalid
+      if (!tokens || !tokens.idToken) {
+        console.warn(
+          'Session validation failed: tokens are invalid or expired',
+        );
+        return false;
+      }
 
       return !!(userInfo && tokens && tokens.idToken);
     } catch (error) {
@@ -417,17 +465,17 @@ export const authHelpers = {
 
   /**
    * Silent sign-in (check existing session)
-   * Enhanced for iOS compatibility with proper session restoration
+   * Enhanced for iOS compatibility with proper session restoration and token expiration handling
    */
   async silentSignIn(): Promise<SignInResult> {
     try {
       // Try to restore user session (especially important for iOS)
       const user = await authService.getCurrentUserWithRestore();
-      
+
       if (user) {
         // If we got the user, also try to get tokens
         const tokens = await authService.getCurrentTokens();
-        
+
         if (tokens) {
           return {
             success: true,
@@ -435,10 +483,13 @@ export const authHelpers = {
             tokens,
           };
         } else {
-          console.warn('User found but no tokens available - partial session');
+          console.warn(
+            'User found but tokens are invalid/expired - session cleared',
+          );
+          // Session was automatically cleared by getCurrentTokens() if tokens were expired
           return {
             success: false,
-            error: 'User found but authentication tokens are missing',
+            error: 'Authentication session has expired. Please sign in again.',
           };
         }
       }

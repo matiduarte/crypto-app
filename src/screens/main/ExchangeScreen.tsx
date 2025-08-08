@@ -53,13 +53,12 @@ export const ExchangeScreen: React.FC = () => {
   >(FIAT_CURRENCIES[0]); // USD
   const [showCryptoSelector, setShowCryptoSelector] = useState(false);
   const [showFiatSelector, setShowFiatSelector] = useState(false);
-  const [cryptoSearch, setCryptoSearch] = useState('');
 
   // Get cryptocurrency data for selection
   const { data: cryptoData } = useCryptocurrencies({
     vs_currency: 'usd',
     order: 'market_cap_desc',
-    per_page: 15,
+    per_page: 8,
     sparkline: false,
   });
 
@@ -67,7 +66,7 @@ export const ExchangeScreen: React.FC = () => {
   const { data: priceData, isLoading: isPriceLoading } = useRealTimePrices(
     [selectedCrypto.id],
     selectedFiat.code.toLowerCase(),
-    10000, // Update every 10 seconds
+    60000, // Update every minute
   );
 
   // Get conversion hook
@@ -133,7 +132,6 @@ export const ExchangeScreen: React.FC = () => {
       image: crypto.image,
     });
     setShowCryptoSelector(false);
-    setCryptoSearch('');
   }, []);
 
   // Handle fiat selection
@@ -146,29 +144,21 @@ export const ExchangeScreen: React.FC = () => {
   }, []);
 
   // Filter cryptos based on search
-  const filteredCryptos = useMemo(() => {
+  const cryptos = useMemo(() => {
     if (!cryptoData?.success || !cryptoData.data) return [];
 
-    const cryptos = cryptoData.data;
-    if (!cryptoSearch.trim()) return cryptos;
-
-    const query = cryptoSearch.toLowerCase();
-    return cryptos.filter(
-      crypto =>
-        crypto.name.toLowerCase().includes(query) ||
-        crypto.symbol.toLowerCase().includes(query),
-    );
-  }, [cryptoData, cryptoSearch]);
+    return cryptoData.data;
+  }, [cryptoData]);
 
   // Handle crypto selection from modal
   const handleCryptoSelectFromModal = useCallback(
     (option: SelectorOption) => {
-      const crypto = filteredCryptos.find(c => c.id === option.id);
+      const crypto = cryptos.find(c => c.id === option.id);
       if (crypto) {
         handleCryptoSelect(crypto);
       }
     },
-    [filteredCryptos, handleCryptoSelect],
+    [cryptos, handleCryptoSelect],
   );
 
   return (
@@ -305,19 +295,15 @@ export const ExchangeScreen: React.FC = () => {
         <SelectorModal
           visible={showCryptoSelector}
           title="Select Cryptocurrency"
-          data={filteredCryptos.map(crypto => ({
+          data={cryptos.map(crypto => ({
             id: crypto.id,
             symbol: crypto.symbol.toUpperCase(),
             name: crypto.name,
           }))}
-          searchValue={cryptoSearch}
-          searchPlaceholder="Search cryptocurrencies..."
-          showSearch={true}
           onClose={() => setShowCryptoSelector(false)}
           onSelect={handleCryptoSelectFromModal}
-          onSearchChange={setCryptoSearch}
           renderRightContent={option => {
-            const crypto = filteredCryptos.find(c => c.id === option.id);
+            const crypto = cryptos.find(c => c.id === option.id);
             return crypto ? (
               <Text style={styles.currencyOptionPrice}>
                 {formatPriceUSD(crypto.current_price)}
