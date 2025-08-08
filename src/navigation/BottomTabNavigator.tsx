@@ -1,11 +1,11 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../types';
 import { CryptoListScreen } from '../screens/main/CryptoListScreen';
 import { ExchangeScreen } from '../screens/main/ExchangeScreen';
 import { ScannerScreen } from '../screens/main/ScannerScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
+import { CustomIcon } from '../components/common';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -57,10 +57,10 @@ export const BottomTabNavigator: React.FC = () => {
         component={CryptoListScreen}
         options={{
           title: 'Markets',
-          headerTitle: '📊 Cryptocurrency Markets',
+          headerTitle: 'Cryptocurrency Markets',
           tabBarLabel: 'Markets',
           tabBarIcon: ({ focused }) =>
-            TabIconComponent({ focused, icon: '📊' }),
+            TabIcon({ focused, iconName: 'show-chart' }),
         }}
       />
 
@@ -69,10 +69,10 @@ export const BottomTabNavigator: React.FC = () => {
         component={ExchangeScreen}
         options={{
           title: 'Exchange',
-          headerTitle: '💱 Currency Exchange',
+          headerTitle: 'Currency Exchange',
           tabBarLabel: 'Exchange',
           tabBarIcon: ({ focused }) =>
-            TabIconComponent({ focused, icon: '💱' }),
+            TabIcon({ focused, iconName: 'swap-horiz' }),
         }}
       />
 
@@ -81,10 +81,10 @@ export const BottomTabNavigator: React.FC = () => {
         component={ScannerScreen}
         options={{
           title: 'Scanner',
-          headerTitle: '📱 QR Code Scanner',
+          headerTitle: 'QR Code Scanner',
           tabBarLabel: 'Scanner',
           tabBarIcon: ({ focused }) =>
-            TabIconComponent({ focused, icon: '📱' }),
+            TabIcon({ focused, iconName: 'qr-code-scanner' }),
         }}
       />
 
@@ -93,10 +93,9 @@ export const BottomTabNavigator: React.FC = () => {
         component={ProfileScreen}
         options={{
           title: 'Profile',
-          headerTitle: '👤 Profile',
+          headerTitle: 'Profile',
           tabBarLabel: 'Profile',
-          tabBarIcon: ({ focused }) =>
-            TabIconComponent({ focused, icon: '👤' }),
+          tabBarIcon: ({ focused }) => TabIcon({ focused, iconName: 'person' }),
         }}
       />
     </Tab.Navigator>
@@ -104,19 +103,14 @@ export const BottomTabNavigator: React.FC = () => {
 };
 
 interface TabIconProps {
-  icon: string;
+  iconName: string;
   focused: boolean;
 }
 
-const TabIconComponent = ({ icon, focused }: TabIconProps) => (
-  <TabIcon icon={icon} focused={focused} />
+const TabIcon = ({ iconName, focused }: TabIconProps) => (
+  <CustomIcon
+    name={iconName}
+    size={focused ? 26 : 22}
+    color={focused ? '#4285F4' : '#9e9e9e'}
+  />
 );
-
-const getTextStyle = (focused: boolean) => ({
-  fontSize: focused ? 24 : 20,
-  opacity: focused ? 1 : 0.7,
-});
-
-const TabIcon: React.FC<TabIconProps> = ({ icon, focused }) => {
-  return <Text style={getTextStyle(focused)}>{icon}</Text>;
-};
