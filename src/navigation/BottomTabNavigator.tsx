@@ -16,7 +16,7 @@ export const BottomTabNavigator: React.FC = () => {
       screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.primary,
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
@@ -26,7 +26,7 @@ export const BottomTabNavigator: React.FC = () => {
         headerTitleStyle: {
           fontSize: 18,
           fontWeight: '600',
-          color: colors.textPrimary,
+          color: colors.surface,
         },
         tabBarStyle: {
           backgroundColor: colors.surface,

@@ -19,14 +19,21 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={onPress}
-        disabled={isLoading} // Disable if needed
+        disabled={isLoading}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  // Google Logo styles
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  button: { width: 200, height: 48 },
+  container: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
+    width: '100%',
+  },
+  button: {
+    width: 250,
+    height: 48,
+  },
 });

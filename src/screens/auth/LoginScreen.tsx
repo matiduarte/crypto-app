@@ -196,6 +196,7 @@ export const LoginScreen: React.FC = () => {
               ],
             },
           ]}
+          pointerEvents="auto"
         >
           <GoogleSignInButton onPress={handleSignIn} isLoading={isPending} />
         </Animated.View>
@@ -317,6 +318,8 @@ const styles = StyleSheet.create({
   },
   signInSection: {
     alignItems: 'center',
+    width: '100%',
+    zIndex: 10,
   },
   signInFooter: {
     marginTop: 32,
