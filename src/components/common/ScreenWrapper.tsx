@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, ScrollViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../../constants/colors';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ interface ScreenWrapperProps {
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   children,
-  backgroundColor = '#f5f5f5',
+  backgroundColor = colors.backgroundDark,
   style,
   contentContainerStyle,
   scrollable = false,

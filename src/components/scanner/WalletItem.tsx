@@ -7,6 +7,7 @@ import {
   getWalletTypeDisplayName,
 } from '../../utils/walletValidation';
 import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
+import { colors } from '../../constants/colors';
 
 interface WalletItemProps {
   item: ScannedWallet;
@@ -110,7 +111,7 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
             <CustomIcon
               name={item.isFavorite ? 'favorite' : 'favorite-border'}
               size={20}
-              color={item.isFavorite ? '#ff6b6b' : '#9e9e9e'}
+              color={item.isFavorite ? colors.favorite : colors.textTertiary}
             />
           </TouchableOpacity>
 
@@ -119,7 +120,7 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
             onPress={handleDelete}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <CustomIcon name="delete" size={20} color="#4285F4" />
+            <CustomIcon name="delete" size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -129,13 +130,13 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     paddingHorizontal: 20,
     paddingVertical: 16,
     minHeight: 80,
   },
   favoriteContainer: {
-    backgroundColor: '#fffbf0', // Slight golden tint for favorites
+    backgroundColor: colors.favoriteBackground,
   },
   content: {
     flexDirection: 'row',
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
   walletType: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     flex: 1,
   },
   favoriteIndicator: {
@@ -166,9 +167,9 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 14,
     fontFamily: 'monospace',
-    color: '#495057',
+    color: colors.textMuted,
     marginBottom: 4,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
-    color: '#9e9e9e',
+    color: colors.textTertiary,
     marginTop: 2,
   },
   actions: {
@@ -190,9 +191,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   favoriteButton: {
     // Additional styling for favorite button if needed
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     marginTop: 16,
   },
 });

@@ -6,6 +6,7 @@ import { ExchangeScreen } from '../screens/main/ExchangeScreen';
 import { ScannerScreen } from '../screens/main/ScannerScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
 import { CustomIcon } from '../components/common';
+import { colors } from '../constants/colors';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -15,8 +16,8 @@ export const BottomTabNavigator: React.FC = () => {
       screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#fff',
-          shadowColor: '#000',
+          backgroundColor: colors.surface,
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
@@ -25,23 +26,23 @@ export const BottomTabNavigator: React.FC = () => {
         headerTitleStyle: {
           fontSize: 18,
           fontWeight: '600',
-          color: '#1a1a1a',
+          color: colors.textPrimary,
         },
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface,
           borderTopWidth: 1,
-          borderTopColor: '#f1f3f4',
+          borderTopColor: colors.borderLight,
           paddingTop: 2,
           paddingBottom: 12,
           height: 85,
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 8,
         },
-        tabBarActiveTintColor: '#4285F4',
-        tabBarInactiveTintColor: '#9e9e9e',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.inactive,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
@@ -111,6 +112,6 @@ const TabIcon = ({ iconName, focused }: TabIconProps) => (
   <CustomIcon
     name={iconName}
     size={focused ? 26 : 22}
-    color={focused ? '#4285F4' : '#9e9e9e'}
+    color={focused ? colors.primary : colors.inactive}
   />
 );

@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
 import { Button } from '../../components/common';
 import { CustomIcon } from '../../components/common/CustomIcon';
+import { colors } from '../../constants/colors';
 
 export const ProfileScreen: React.FC = () => {
   const { user, signOut, isLoading } = useAuth();
@@ -47,7 +48,7 @@ export const ProfileScreen: React.FC = () => {
             disabled={isLoading}
           >
             <View style={styles.buttonContent}>
-              <CustomIcon name="logout" size={20} color="white" />
+              <CustomIcon name="logout" size={20} color={colors.white} />
               <Text style={styles.buttonText}>
                 {isLoading ? 'Signing Out...' : 'Sign Out'}
               </Text>
@@ -63,22 +64,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 30,
     textAlign: 'center',
   },
   userSection: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -97,18 +98,18 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
   qrSection: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 12,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -122,17 +123,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginBottom: 12,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   refreshButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: colors.success,
   },
   signOutButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: colors.error,
   },
   buttonContent: {
     flexDirection: 'row',
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

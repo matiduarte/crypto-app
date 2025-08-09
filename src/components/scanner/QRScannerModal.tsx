@@ -17,6 +17,7 @@ import {
 } from 'react-native-vision-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomIcon } from '../common/CustomIcon';
+import { colors } from '../../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
@@ -182,7 +183,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <View style={styles.errorContainer}>
           <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
             <View style={styles.errorIcon}>
-              <CustomIcon name="camera" size={48} color="#6c757d" />
+              <CustomIcon name="camera" size={48} color={colors.textSecondary} />
             </View>
             <Text style={styles.errorTitle}>Camera Access Required</Text>
             <Text style={styles.errorText}>
@@ -205,7 +206,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <View style={styles.errorContainer}>
           <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
             <View style={styles.errorIcon}>
-              <CustomIcon name="error" size={48} color="#dc3545" />
+              <CustomIcon name="error" size={48} color={colors.error} />
             </View>
             <Text style={styles.errorTitle}>Camera Not Available</Text>
             <Text style={styles.errorText}>
@@ -241,7 +242,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
             <Text style={styles.title}>{title}</Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
           </View>
 
@@ -291,14 +292,14 @@ const styles = StyleSheet.create({
   // Main container
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: colors.black,
   },
   camera: {
     flex: 1,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: colors.overlayTransparent,
   },
 
   // Header
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#ffffff',
+    color: colors.white,
   },
   closeButton: {
     width: 40,
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 20,
-    color: '#ffffff',
+    color: colors.white,
     fontWeight: '500',
   },
 
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 30,
     height: 30,
-    borderColor: '#ffffff',
+    borderColor: colors.white,
     borderWidth: 4,
   },
   topLeft: {
@@ -380,18 +381,18 @@ const styles = StyleSheet.create({
   },
   successIcon: {
     fontSize: 40,
-    color: '#ffffff',
+    color: colors.white,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   successText: {
     fontSize: 16,
-    color: '#ffffff',
+    color: colors.white,
     fontWeight: '600',
   },
   instructionText: {
     fontSize: 16,
-    color: '#ffffff',
+    color: colors.white,
     textAlign: 'center',
     opacity: 0.9,
     paddingHorizontal: 40,
@@ -409,14 +410,14 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 18,
-    color: '#ffffff',
+    color: colors.white,
     fontWeight: '600',
   },
 
   // Error states
   errorContainer: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: colors.black,
   },
   errorContent: {
     flex: 1,
@@ -430,20 +431,20 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: colors.white,
     textAlign: 'center',
     marginBottom: 16,
   },
   errorText: {
     fontSize: 16,
-    color: '#ffffff',
+    color: colors.white,
     textAlign: 'center',
     opacity: 0.9,
     lineHeight: 24,
     marginBottom: 40,
   },
   errorButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: colors.error,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
   },
   errorButtonText: {
     fontSize: 18,
-    color: '#ffffff',
+    color: colors.white,
     fontWeight: '600',
     textAlign: 'center',
   },

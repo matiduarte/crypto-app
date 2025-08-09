@@ -8,6 +8,7 @@ import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { CustomIcon } from '../components/common/CustomIcon';
 import { APP_DETAILS } from '../constants/config';
+import { colors } from '../constants/colors';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -20,11 +21,11 @@ export const RootNavigator: React.FC = () => {
       <View style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
           <View style={styles.logoContainer}>
-            <CustomIcon name={APP_DETAILS.iconName} size={64} color="#4285F4" />
+            <CustomIcon name={APP_DETAILS.iconName} size={64} color={colors.primary} />
           </View>
           <ActivityIndicator
             size="large"
-            color="#4285F4"
+            color={colors.primary}
             style={styles.spinner}
           />
           <Text style={styles.loadingText}>Initializing...</Text>
@@ -38,7 +39,7 @@ export const RootNavigator: React.FC = () => {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#f8f9fa' },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         {isLoggedIn ? (
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   loadingContent: {
     alignItems: 'center',
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     letterSpacing: -0.5,
     marginBottom: 40,
   },
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
 });

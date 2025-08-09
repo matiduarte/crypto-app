@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
+import { colors } from '../../constants/colors';
 
 export interface SelectorOption {
   id: string;
@@ -19,7 +20,7 @@ export interface SelectorOption {
 // Separator styles constant
 const separatorStyle = {
   height: 1,
-  backgroundColor: '#f1f3f4',
+  backgroundColor: colors.borderLight,
   marginHorizontal: 20,
 };
 
@@ -77,7 +78,7 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>{title}</Text>
           <TouchableOpacity onPress={onClose} accessibilityLabel="Close modal">
-            <Text style={styles.closeButton}>✕</Text>
+            <Text style={styles.closeButton}>×</Text>
           </TouchableOpacity>
         </View>
 
@@ -97,7 +98,7 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -106,17 +107,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-    backgroundColor: '#ffffff',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   closeButton: {
     fontSize: 20,
-    color: '#6c757d',
+    color: colors.textSecondary,
     fontWeight: 'bold',
     padding: 4,
   },
@@ -124,18 +125,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f4',
-    backgroundColor: '#ffffff',
+    borderBottomColor: colors.borderLight,
+    backgroundColor: colors.surface,
   },
   searchInput: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   currencyOption: {
     flexDirection: 'row',
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
   },
   currencyOptionLeft: {
     flex: 1,
@@ -154,21 +155,21 @@ const styles = StyleSheet.create({
   currencyOptionSymbol: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   currencyOptionName: {
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
   currencyOptionSubtitle: {
     fontSize: 12,
-    color: '#9e9e9e',
+    color: colors.textTertiary,
     marginTop: 2,
   },
   separator: {
     height: 1,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     marginHorizontal: 20,
   },
 });

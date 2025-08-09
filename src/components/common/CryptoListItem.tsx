@@ -2,6 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { formatPercentage, formatPriceUSD } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
+import { colors } from '../../constants/colors';
 
 interface CryptoListItemProps {
   item: Cryptocurrency;
@@ -10,7 +11,7 @@ interface CryptoListItemProps {
 export const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
   ({ item }) => {
     const isPositive = item.price_change_percentage_24h >= 0;
-    const changeColor = isPositive ? '#4CAF50' : '#f44336';
+    const changeColor = isPositive ? colors.success : colors.errorLight;
 
     return (
       <View style={styles.listItem}>
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     minHeight: 72,
   },
   itemLeft: {
@@ -66,12 +67,12 @@ const styles = StyleSheet.create({
   cryptoName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   cryptoSymbol: {
     fontSize: 13,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textTransform: 'uppercase',
   },
   itemRight: {
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   cryptoPrice: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   cryptoChange: {

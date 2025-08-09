@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
+import { colors } from '../../constants/colors';
 
 interface SafeAreaWrapperProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ interface SafeAreaWrapperProps {
 
 export const SafeAreaWrapper: React.FC<SafeAreaWrapperProps> = ({
   children,
-  backgroundColor = '#f5f5f5',
+  backgroundColor = colors.backgroundDark,
   edges = ['top', 'bottom', 'left', 'right'],
   style,
 }) => {

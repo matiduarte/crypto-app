@@ -14,6 +14,7 @@ import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { GoogleSignInButton } from '../../components/auth';
 import { CustomIcon } from '../../components/common/CustomIcon';
 import { APP_DETAILS } from '../../constants/config';
+import { colors } from '../../constants/colors';
 
 export const LoginScreen: React.FC = () => {
   // Use both the context (for backward compatibility) and direct React Query hook
@@ -129,7 +130,7 @@ export const LoginScreen: React.FC = () => {
                   },
                 ]}
               >
-                <CustomIcon name={APP_DETAILS.iconName} size={60} color="#4285F4" />
+                <CustomIcon name={APP_DETAILS.iconName} size={60} color={colors.primary} />
               </Animated.View>
             </View>
           </View>
@@ -206,7 +207,7 @@ export const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fafbfc', // Clean, modern background
+    backgroundColor: colors.backgroundLight, // Clean, modern background
   },
   backgroundElements: {
     position: 'absolute',
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#4285f4',
+    backgroundColor: colors.primary,
     opacity: 0.1,
   },
   circleBottom: {
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: '#34a853',
+    backgroundColor: colors.successLight,
     opacity: 0.08,
   },
   container: {
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   iconContainer: {
-    backgroundColor: 'rgba(66, 133, 244, 0.1)',
+    backgroundColor: colors.primaryLight,
     borderRadius: 30,
     padding: 20,
     marginBottom: 16,
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#202124',
+    color: colors.textGoogle,
     letterSpacing: -0.5,
   },
   welcomeSection: {
@@ -276,28 +277,28 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#202124',
+    color: colors.textGoogle,
     marginBottom: 8,
     textAlign: 'center',
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#5f6368',
+    color: colors.textGoogleSecondary,
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 20,
   },
   errorContainer: {
-    backgroundColor: '#fef7f7',
+    backgroundColor: colors.errorBackground,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#fecaca',
+    borderColor: colors.errorBorder,
     marginBottom: 24,
     marginHorizontal: 4,
   },
   errorText: {
-    color: '#dc2626',
+    color: colors.textError,
     fontSize: 14,
     marginBottom: 8,
     textAlign: 'center',
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   clearErrorText: {
-    color: '#dc2626',
+    color: colors.textError,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#9aa0a6',
+    color: colors.textLight,
     textAlign: 'center',
     lineHeight: 18,
   },

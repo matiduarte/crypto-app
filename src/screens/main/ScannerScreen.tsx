@@ -17,6 +17,7 @@ import {
   extractAddressFromQRData,
   getWalletTypeDisplayName,
 } from '../../utils/walletValidation';
+import { colors } from '../../constants/colors';
 
 // Types for better state management
 interface ScannerState {
@@ -337,7 +338,7 @@ export const ScannerScreen: React.FC = () => {
   const headerContent = (
     <View style={styles.header}>
       <View style={styles.titleContainer}>
-        <CustomIcon name="qr-code-scanner" size={24} color="#4285F4" />
+        <CustomIcon name="qr-code-scanner" size={24} color={colors.primary} />
         <Text style={styles.title}>QR Scanner</Text>
       </View>
       <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
@@ -356,7 +357,7 @@ export const ScannerScreen: React.FC = () => {
             <>
               <ActivityIndicator
                 size="large"
-                color="#ffffff"
+                color={colors.white}
                 style={styles.processingIndicator}
               />
               <View style={styles.buttonTextContainer}>
@@ -369,9 +370,9 @@ export const ScannerScreen: React.FC = () => {
           ) : (
             <>
               <View style={styles.iconContainer}>
-                <CustomIcon name="qr-code-scanner" size={32} color="#ffffff" />
+                <CustomIcon name="qr-code-scanner" size={32} color={colors.white} />
                 <View style={styles.iconBadge}>
-                  <CustomIcon name="add" size={16} color="#4285F4" />
+                  <CustomIcon name="add" size={16} color={colors.primary} />
                 </View>
               </View>
               <View style={styles.buttonTextContainer}>
@@ -391,7 +392,7 @@ export const ScannerScreen: React.FC = () => {
   const emptyContent = (
     <View style={styles.emptyContainer}>
       <View style={styles.emptyIcon}>
-        <CustomIcon name="search" size={64} color="#9e9e9e" />
+        <CustomIcon name="search" size={64} color={colors.textTertiary} />
       </View>
       <Text style={styles.emptyText}>No wallets scanned yet</Text>
       <Text style={styles.emptySubtext}>
@@ -407,7 +408,7 @@ export const ScannerScreen: React.FC = () => {
         <View style={styles.container}>
           {headerContent}
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4285F4" />
+            <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.loadingText}>Loading wallets...</Text>
           </View>
           <QRScannerModal
@@ -450,7 +451,7 @@ export const ScannerScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   // Header section styles
   header: {
@@ -466,31 +467,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginLeft: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 30,
   },
   // Scan Button
   scanButton: {
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
     borderRadius: 20,
     padding: 0, // Remove default padding since we'll use content padding
     marginBottom: 20,
-    shadowColor: '#4285F4',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(66, 133, 244, 0.3)',
+    borderColor: colors.primaryLight,
   },
   scanButtonDisabled: {
-    backgroundColor: '#9e9e9e',
+    backgroundColor: colors.inactive,
     opacity: 0.7,
     shadowOpacity: 0.1,
   },
@@ -510,14 +511,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.white,
     borderRadius: 12,
     width: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#4285F4',
+    borderColor: colors.primary,
   },
   buttonTextContainer: {
     flex: 1,
@@ -526,13 +527,13 @@ const styles = StyleSheet.create({
   scanButtonText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.white,
     marginBottom: 4,
     letterSpacing: -0.3,
   },
   scanButtonSubtext: {
     fontSize: 14,
-    color: '#ffffff',
+    color: colors.white,
     opacity: 0.85,
     fontWeight: '500',
   },
@@ -556,7 +557,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
     marginTop: 16,
   },
   emptyContainer: {
@@ -572,13 +573,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#9e9e9e',
+    color: colors.textTertiary,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#9e9e9e',
+    color: colors.textTertiary,
     textAlign: 'center',
     lineHeight: 20,
     opacity: 0.8,

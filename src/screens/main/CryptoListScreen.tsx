@@ -13,6 +13,7 @@ import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { debounce, searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 import { Button, CryptoListItem, CustomIcon } from '../../components/common';
+import { colors } from '../../constants/colors';
 
 // Item Separator Component
 const ItemSeparator: React.FC = () => <View style={styles.separator} />;
@@ -121,7 +122,7 @@ export const CryptoListScreen: React.FC = () => {
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIcon}>
-          <CustomIcon name="bar-chart" size={48} color="#9e9e9e" />
+          <CustomIcon name="bar-chart" size={48} color={colors.textTertiary} />
         </View>
         <Text style={styles.emptyTitle}>No Data Available</Text>
         <Text style={styles.emptySubtext}>
@@ -143,7 +144,7 @@ export const CryptoListScreen: React.FC = () => {
     return (
       <View style={styles.errorContainer}>
         <View style={styles.errorIcon}>
-          <CustomIcon name="error-outline" size={48} color="#f44336" />
+          <CustomIcon name="error-outline" size={48} color={colors.errorLight} />
         </View>
         <Text style={styles.errorTitle}>Unable to Load Data</Text>
         <Text style={styles.errorSubtext}>
@@ -208,7 +209,7 @@ export const CryptoListScreen: React.FC = () => {
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIcon}>
-          <CustomIcon name="search" size={48} color="#9e9e9e" />
+          <CustomIcon name="search" size={48} color={colors.textTertiary} />
         </View>
         <Text style={styles.emptyTitle}>No Results Found</Text>
         <Text style={styles.emptySubtext}>
@@ -230,7 +231,7 @@ export const CryptoListScreen: React.FC = () => {
 
     return (
       <View style={styles.paginationFooter}>
-        <ActivityIndicator size="small" color="#FFD700" />
+        <ActivityIndicator size="small" color={colors.crypto} />
         <Text style={styles.paginationText}>Loading more...</Text>
       </View>
     );
@@ -242,7 +243,7 @@ export const CryptoListScreen: React.FC = () => {
         {/* Search Header */}
         <View style={styles.searchHeader}>
           <View style={styles.titleContainer}>
-            <CustomIcon name="currency-bitcoin" size={24} color="#FFD700" />
+            <CustomIcon name="currency-bitcoin" size={24} color={colors.crypto} />
             <Text style={styles.title}>Cryptocurrency Market</Text>
           </View>
           <Text style={styles.subtitle}>
@@ -253,11 +254,11 @@ export const CryptoListScreen: React.FC = () => {
 
           <View style={styles.controlsRow}>
             <View style={styles.searchContainer}>
-              <CustomIcon name="search" size={24} color="#9e9e9e" />
+              <CustomIcon name="search" size={24} color={colors.textTertiary} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search cryptocurrencies..."
-                placeholderTextColor="#9e9e9e"
+                placeholderTextColor={colors.textTertiary}
                 value={searchQuery}
                 onChangeText={handleSearchChange}
                 autoCapitalize="none"
@@ -270,7 +271,7 @@ export const CryptoListScreen: React.FC = () => {
                   onPress={handleClearSearch}
                   accessibilityLabel="Clear search"
                 >
-                  <CustomIcon name="close" size={24} color="#9e9e9e" />
+                  <CustomIcon name="close" size={24} color={colors.textTertiary} />
                 </Button>
               )}
             </View>
@@ -283,7 +284,7 @@ export const CryptoListScreen: React.FC = () => {
               <CustomIcon 
                 name={SORT_OPTIONS.find(opt => opt.key === sortBy)?.iconName || 'show-chart'}
                 size={18}
-                color="#6c757d"
+                color={colors.textSecondary}
               />
               <CustomIcon
                 name={
@@ -292,7 +293,7 @@ export const CryptoListScreen: React.FC = () => {
                     : 'keyboard-arrow-down'
                 }
                 size={18}
-                color="#6c757d"
+                color={colors.textSecondary}
               />
             </Button>
           </View>
@@ -305,7 +306,7 @@ export const CryptoListScreen: React.FC = () => {
               <View style={styles.sortModalHeader}>
                 <Text style={styles.sortModalTitle}>Sort by</Text>
                 <Button onPress={() => setShowSortModal(false)}>
-                  <CustomIcon name="close" size={24} color="#9e9e9e" />
+                  <CustomIcon name="close" size={24} color={colors.textTertiary} />
                 </Button>
               </View>
 
@@ -319,7 +320,7 @@ export const CryptoListScreen: React.FC = () => {
                   onPress={() => handleSortChange(option.key)}
                 >
                   <View style={styles.sortOptionIcon}>
-                    <CustomIcon name={option.iconName} size={20} color="#6c757d" />
+                    <CustomIcon name={option.iconName} size={20} color={colors.textSecondary} />
                   </View>
                   <Text
                     style={[
@@ -337,7 +338,7 @@ export const CryptoListScreen: React.FC = () => {
                           : 'keyboard-arrow-down'
                       }
                       size={18}
-                      color="#6c757d"
+                      color={colors.textSecondary}
                     />
                   )}
                 </Button>
@@ -365,8 +366,8 @@ export const CryptoListScreen: React.FC = () => {
               <RefreshControl
                 refreshing={isFetching}
                 onRefresh={debouncedRefetch}
-                colors={['#FFD700']} // Android
-                tintColor="#FFD700" // iOS
+                colors={[colors.crypto]} // Android
+                tintColor={colors.crypto} // iOS
               />
             }
             ListEmptyComponent={EmptyComponent}
@@ -394,16 +395,16 @@ export const CryptoListScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   // Search Header
   searchHeader: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: colors.border,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -414,12 +415,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginLeft: 8,
   },
   subtitle: {
     fontSize: 13,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -432,39 +433,39 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
     minWidth: 60,
     justifyContent: 'center',
   },
   sortOrder: {
     fontSize: 16,
-    color: '#FFD700',
+    color: colors.crypto,
     fontWeight: 'bold',
   },
   searchIcon: {
     fontSize: 16,
     marginRight: 8,
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
   searchInput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   clearButton: {
     padding: 4,
@@ -472,11 +473,11 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
     fontWeight: 'bold',
   },
   clearSearchButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.crypto,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
@@ -485,7 +486,7 @@ const styles = StyleSheet.create({
   clearSearchText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   // Sort Modal Styles
   sortModal: {
@@ -494,18 +495,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: colors.overlayTransparent,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
   sortModalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     paddingVertical: 20,
     marginHorizontal: 20,
     minWidth: 280,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -518,16 +519,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f4',
+    borderBottomColor: colors.borderLight,
   },
   sortModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   sortModalClose: {
     fontSize: 18,
-    color: '#6c757d',
+    color: colors.textSecondary,
     fontWeight: 'bold',
     padding: 4,
   },
@@ -538,7 +539,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sortOptionActive: {
-    backgroundColor: '#fffbf0',
+    backgroundColor: colors.favoriteBackground,
   },
   sortOptionIcon: {
     marginRight: 12,
@@ -546,15 +547,15 @@ const styles = StyleSheet.create({
   sortOptionText: {
     flex: 1,
     fontSize: 16,
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   sortOptionTextActive: {
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     fontWeight: '600',
   },
   sortOptionOrder: {
     fontSize: 18,
-    color: '#FFD700',
+    color: colors.crypto,
     fontWeight: 'bold',
   },
   // Pagination Styles
@@ -563,17 +564,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
   },
   paginationText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
   // Skeleton Loader Styles
   skeletonContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
   },
   skeletonItem: {
     flexDirection: 'row',
@@ -581,9 +582,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f4',
+    borderBottomColor: colors.borderLight,
   },
   skeletonLeft: {
     flexDirection: 'row',
@@ -594,7 +595,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     marginRight: 12,
   },
   skeletonTextContainer: {
@@ -602,14 +603,14 @@ const styles = StyleSheet.create({
   },
   skeletonTitle: {
     height: 16,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     borderRadius: 8,
     marginBottom: 6,
     width: '70%',
   },
   skeletonSubtitle: {
     height: 12,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     borderRadius: 6,
     width: '40%',
   },
@@ -619,14 +620,14 @@ const styles = StyleSheet.create({
   skeletonPrice: {
     height: 16,
     width: 80,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     borderRadius: 8,
     marginBottom: 6,
   },
   skeletonChange: {
     height: 12,
     width: 60,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     borderRadius: 6,
   },
   // Loading State
@@ -639,7 +640,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   // Error State
@@ -658,19 +659,19 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center',
   },
   errorSubtext: {
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.crypto,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -678,7 +679,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   // List Styles
   list: {
@@ -692,7 +693,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#f1f3f4',
+    backgroundColor: colors.borderLight,
     marginHorizontal: 20,
   },
   // Empty State
@@ -705,13 +706,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

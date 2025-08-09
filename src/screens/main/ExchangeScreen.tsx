@@ -28,6 +28,7 @@ import {
 } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 import { Button } from '../../components/common';
+import { colors } from '../../constants/colors';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
 
@@ -167,7 +168,7 @@ export const ExchangeScreen: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <CustomIcon name="swap-horiz" size={24} color="#4285F4" />
+            <CustomIcon name="swap-horiz" size={24} color={colors.primary} />
             <Text style={styles.title}>Currency Exchange</Text>
           </View>
           <Text style={styles.subtitle}>
@@ -184,7 +185,8 @@ export const ExchangeScreen: React.FC = () => {
                 )}
               </Text>
               <View style={styles.rateIndicator}>
-                <Text style={styles.liveText}>🔴 LIVE</Text>
+                <View style={styles.liveIndicator} />
+                <Text style={styles.liveText}>LIVE</Text>
               </View>
             </View>
           )}
@@ -205,7 +207,7 @@ export const ExchangeScreen: React.FC = () => {
                 }}
                 placeholder="0.00"
                 keyboardType="numeric"
-                placeholderTextColor="#9e9e9e"
+                placeholderTextColor={colors.textTertiary}
               />
               <Button
                 style={styles.currencySelector}
@@ -232,7 +234,7 @@ export const ExchangeScreen: React.FC = () => {
                 <CustomIcon
                   name="keyboard-arrow-down"
                   size={16}
-                  color="#6c757d"
+                  color={colors.textSecondary}
                 />
               </Button>
             </View>
@@ -240,7 +242,7 @@ export const ExchangeScreen: React.FC = () => {
 
           {/* Swap Button */}
           <Button style={styles.swapButton} onPress={toggleDirection}>
-            <CustomIcon name="swap-vert" size={24} color="#1a1a1a" />
+            <CustomIcon name="swap-vert" size={24} color={colors.textPrimary} />
           </Button>
 
           {/* To Section */}
@@ -252,7 +254,7 @@ export const ExchangeScreen: React.FC = () => {
                 value={toAmount}
                 placeholder="0.00"
                 editable={false}
-                placeholderTextColor="#9e9e9e"
+                placeholderTextColor={colors.textTertiary}
               />
               <Button
                 style={styles.currencySelector}
@@ -279,7 +281,7 @@ export const ExchangeScreen: React.FC = () => {
                 <CustomIcon
                   name="keyboard-arrow-down"
                   size={16}
-                  color="#6c757d"
+                  color={colors.textSecondary}
                 />
               </Button>
             </View>
@@ -288,7 +290,7 @@ export const ExchangeScreen: React.FC = () => {
           {/* Loading Indicator */}
           {(isPriceLoading || isConverting) && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#FFD700" />
+              <ActivityIndicator size="small" color={colors.crypto} />
               <Text style={styles.loadingText}>Updating rates...</Text>
             </View>
           )}
@@ -341,16 +343,16 @@ export const ExchangeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
   },
   // Header Styles
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderRadius: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: colors.border,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -361,12 +363,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginLeft: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -374,7 +376,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -382,25 +384,32 @@ const styles = StyleSheet.create({
   rateText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginRight: 8,
   },
   rateIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  liveIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.error,
+    marginRight: 4,
+  },
   liveText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#ff4444',
+    color: colors.error,
   },
   // Conversion Card Styles
   conversionCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     marginVertical: 20,
     borderRadius: 8,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -412,35 +421,35 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6c757d',
+    color: colors.textSecondary,
     marginBottom: 12,
     textTransform: 'uppercase',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   amountInput: {
     flex: 1,
     fontSize: 15,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   readOnlyInput: {
-    color: '#6c757d',
+    color: colors.textSecondary,
     backgroundColor: 'transparent',
   },
   currencySelector: {
     paddingHorizontal: 6,
     paddingVertical: 8,
     borderLeftWidth: 1,
-    borderLeftColor: '#e9ecef',
+    borderLeftColor: colors.border,
     minWidth: 110,
     justifyContent: 'center',
     alignItems: 'center',
@@ -453,26 +462,26 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   currencyName: {
     fontSize: 12,
-    color: '#6c757d',
+    color: colors.textSecondary,
     marginBottom: 4,
     textAlign: 'center',
   },
   // Swap Button
   swapButton: {
     alignSelf: 'center',
-    backgroundColor: '#FFD700',
+    backgroundColor: colors.crypto,
     borderRadius: 25,
     width: 50,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 8,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -488,7 +497,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
   // Action Buttons
   actionButtons: {
@@ -504,27 +513,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   copyButton: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: colors.border,
   },
   shareButton: {
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   // Custom styles for modal content
   currencyOptionPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: colors.textPrimary,
   },
   fiatSymbol: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6c757d',
+    color: colors.textSecondary,
   },
 });
