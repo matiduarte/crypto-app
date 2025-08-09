@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import { CustomIcon } from '../../components/common/CustomIcon';
 import { ScrollableScreen } from '../../components/common/ScreenWrapper';
@@ -27,7 +26,7 @@ import {
   extractNumericValue,
 } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
-import { Button } from '../../components/common';
+import { Button, ScreenHeader, LoadingIndicator } from '../../components/common';
 import { colors } from '../../constants/colors';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
@@ -166,14 +165,12 @@ export const ExchangeScreen: React.FC = () => {
     <ScrollableScreen>
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <CustomIcon name="swap-horiz" size={24} color={colors.primary} />
-            <Text style={styles.title}>Currency Exchange</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            Convert between cryptocurrencies and fiat currencies
-          </Text>
+        <ScreenHeader 
+          title="Currency Exchange"
+          subtitle="Convert between cryptocurrencies and fiat currencies"
+          icon="swap-horiz"
+          style={styles.header}
+        >
           {currentRate && (
             <View style={styles.rateContainer}>
               <Text style={styles.rateText}>
@@ -190,7 +187,7 @@ export const ExchangeScreen: React.FC = () => {
               </View>
             </View>
           )}
-        </View>
+        </ScreenHeader>
 
         {/* Conversion Card */}
         <View style={styles.conversionCard}>
@@ -289,10 +286,10 @@ export const ExchangeScreen: React.FC = () => {
 
           {/* Loading Indicator */}
           {(isPriceLoading || isConverting) && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={colors.crypto} />
-              <Text style={styles.loadingText}>Updating rates...</Text>
-            </View>
+            <LoadingIndicator 
+              text="Updating rates..."
+              style={styles.loadingContainer}
+            />
           )}
         </View>
 
@@ -347,30 +344,8 @@ const styles = StyleSheet.create({
   },
   // Header Styles
   header: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 20,
     paddingVertical: 20,
     borderRadius: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
   },
   rateContainer: {
     flexDirection: 'row',
@@ -489,15 +464,7 @@ const styles = StyleSheet.create({
   },
   // Loading Styles
   loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 16,
-  },
-  loadingText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: colors.textSecondary,
   },
   // Action Buttons
   actionButtons: {

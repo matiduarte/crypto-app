@@ -1,13 +1,8 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { Modal, View, Text, StyleSheet, FlatList } from 'react-native';
 import { colors } from '../../constants/colors';
+import { CustomIcon } from './CustomIcon';
+import { Button } from './Button';
 
 export interface SelectorOption {
   id: string;
@@ -47,7 +42,7 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
   renderRightContent,
 }) => {
   const renderItem = ({ item }: { item: SelectorOption }) => (
-    <TouchableOpacity
+    <Button
       style={styles.currencyOption}
       onPress={() => onSelect(item)}
       activeOpacity={0.7}
@@ -64,7 +59,7 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
           {renderRightContent(item)}
         </View>
       )}
-    </TouchableOpacity>
+    </Button>
   );
 
   return (
@@ -77,9 +72,9 @@ export const SelectorModal: React.FC<SelectorModalProps> = ({
       <View style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>{title}</Text>
-          <TouchableOpacity onPress={onClose} accessibilityLabel="Close modal">
-            <Text style={styles.closeButton}>×</Text>
-          </TouchableOpacity>
+          <Button onPress={onClose} accessibilityLabel="Close modal">
+            <CustomIcon name="close" size={20} color={colors.textTertiary} />
+          </Button>
         </View>
 
         <FlatList

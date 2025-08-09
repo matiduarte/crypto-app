@@ -1,16 +1,13 @@
 import React, { useReducer, useRef, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Alert,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { Button } from '../../components/common';
+import { ActionButton, EmptyState, ScreenHeader, LoadingIndicator } from '../../components/common';
 import { QRScannerModal, WalletItem } from '../../components/scanner';
-import { CustomIcon } from '../../components/common/CustomIcon';
 import { useScannedWallets, useAddScannedWallet } from '../../hooks';
 import {
   validateWalletAddress,
@@ -337,68 +334,36 @@ export const ScannerScreen: React.FC = () => {
   // Header content for FlatList
   const headerContent = (
     <View style={styles.header}>
-      <View style={styles.titleContainer}>
-        <CustomIcon name="qr-code-scanner" size={24} color={colors.primary} />
-        <Text style={styles.title}>QR Scanner</Text>
-      </View>
-      <Text style={styles.subtitle}>Scan cryptocurrency wallet QR codes</Text>
+      <ScreenHeader 
+        title="QR Scanner"
+        subtitle="Scan cryptocurrency wallet QR codes"
+        icon="qr-code-scanner"
+        style={styles.screenHeader}
+      />
 
       {/* Scan Button */}
-      <Button
-        style={[
-          styles.scanButton,
-          state.isProcessing && styles.scanButtonDisabled,
-        ]}
+      <ActionButton
+        title={state.isProcessing ? "Processing..." : "Scan QR Code"}
+        subtitle={state.isProcessing ? state.processingMessage : "Tap to scan a wallet address"}
+        icon="qr-code-scanner"
         onPress={handleOpenScanner}
         disabled={state.isProcessing}
-      >
-        <View style={styles.scanButtonContent}>
-          {state.isProcessing ? (
-            <>
-              <ActivityIndicator
-                size="large"
-                color={colors.white}
-                style={styles.processingIndicator}
-              />
-              <View style={styles.buttonTextContainer}>
-                <Text style={styles.scanButtonText}>Processing...</Text>
-                <Text style={styles.scanButtonSubtext}>
-                  {state.processingMessage}
-                </Text>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.iconContainer}>
-                <CustomIcon name="qr-code-scanner" size={32} color={colors.white} />
-                <View style={styles.iconBadge}>
-                  <CustomIcon name="add" size={16} color={colors.primary} />
-                </View>
-              </View>
-              <View style={styles.buttonTextContainer}>
-                <Text style={styles.scanButtonText}>Scan QR Code</Text>
-                <Text style={styles.scanButtonSubtext}>
-                  Tap to scan a wallet address
-                </Text>
-              </View>
-            </>
-          )}
-        </View>
-      </Button>
+        loading={state.isProcessing}
+        loadingText="Processing..."
+        showBadge={!state.isProcessing}
+        style={styles.actionButton}
+      />
     </View>
   );
 
   // Empty state content for FlatList
   const emptyContent = (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIcon}>
-        <CustomIcon name="search" size={64} color={colors.textTertiary} />
-      </View>
-      <Text style={styles.emptyText}>No wallets scanned yet</Text>
-      <Text style={styles.emptySubtext}>
-        Scan a QR code to add your first wallet address
-      </Text>
-    </View>
+    <EmptyState
+      icon="search"
+      iconSize={64}
+      title="No wallets scanned yet"
+      subtitle="Scan a QR code to add your first wallet address"
+    />
   );
 
   // Loading overlay when wallets are loading
@@ -407,10 +372,13 @@ export const ScannerScreen: React.FC = () => {
       <FixedScreen>
         <View style={styles.container}>
           {headerContent}
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>Loading wallets...</Text>
-          </View>
+          <LoadingIndicator 
+            text="Loading wallets..."
+            size="large"
+            color={colors.primary}
+            horizontal={false}
+            style={styles.loadingContainer}
+          />
           <QRScannerModal
             visible={state.scannerVisible}
             onClose={handleCloseScanner}
@@ -458,87 +426,15 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 10,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
+  screenHeader: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+    paddingHorizontal: 0,
     marginBottom: 30,
   },
-  // Scan Button
-  scanButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    padding: 0, // Remove default padding since we'll use content padding
+  // Action Button
+  actionButton: {
     marginBottom: 20,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: colors.primaryLight,
-  },
-  scanButtonDisabled: {
-    backgroundColor: colors.inactive,
-    opacity: 0.7,
-    shadowOpacity: 0.1,
-  },
-  scanButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    minHeight: 80,
-  },
-  iconContainer: {
-    position: 'relative',
-    marginRight: 16,
-  },
-  iconBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  buttonTextContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  scanButtonText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.white,
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  scanButtonSubtext: {
-    fontSize: 14,
-    color: colors.white,
-    opacity: 0.85,
-    fontWeight: '500',
-  },
-  processingIndicator: {
-    marginRight: 16,
   },
   // FlatList styles
   flatList: {
@@ -554,34 +450,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginTop: 16,
-  },
-  emptyContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
-  },
-  emptyIcon: {
-    marginBottom: 24,
-    opacity: 0.5,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: colors.textTertiary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    lineHeight: 20,
-    opacity: 0.8,
   },
 });

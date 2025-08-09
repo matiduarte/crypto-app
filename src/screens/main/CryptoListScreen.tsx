@@ -1,43 +1,21 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator,
-  TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
 import { debounce, searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
-import { Button, CryptoListItem, CustomIcon } from '../../components/common';
+import {
+  Button,
+  CryptoListItem,
+  CustomIcon,
+  SkeletonLoader,
+  EmptyState,
+  ErrorState,
+  SearchInput,
+  ItemSeparator,
+  PaginationFooter,
+} from '../../components/common';
 import { colors } from '../../constants/colors';
-
-// Item Separator Component
-const ItemSeparator: React.FC = () => <View style={styles.separator} />;
-
-// Skeleton Loader Component
-const SkeletonLoader: React.FC = () => (
-  <View style={styles.skeletonContainer}>
-    {Array.from({ length: 8 }).map((_, index) => (
-      <View key={index} style={styles.skeletonItem}>
-        <View style={styles.skeletonLeft}>
-          <View style={styles.skeletonImage} />
-          <View style={styles.skeletonTextContainer}>
-            <View style={styles.skeletonTitle} />
-            <View style={styles.skeletonSubtitle} />
-          </View>
-        </View>
-        <View style={styles.skeletonRight}>
-          <View style={styles.skeletonPrice} />
-          <View style={styles.skeletonChange} />
-        </View>
-      </View>
-    ))}
-  </View>
-);
 
 // Sort options type
 type SortOption = {
@@ -49,7 +27,11 @@ type SortOption = {
 const SORT_OPTIONS: SortOption[] = [
   { key: 'market_cap_rank', label: 'Market Cap', iconName: 'show-chart' },
   { key: 'current_price', label: 'Price', iconName: 'attach-money' },
-  { key: 'price_change_percentage_24h', label: '24h Change', iconName: 'trending-up' },
+  {
+    key: 'price_change_percentage_24h',
+    label: '24h Change',
+    iconName: 'trending-up',
+  },
   { key: 'name', label: 'Name', iconName: 'sort-by-alpha' },
 ];
 
@@ -104,31 +86,24 @@ export const CryptoListScreen: React.FC = () => {
     refetch();
   }, [refetch]);
 
-  // Prevent user from triggering multiple fetches
-  const debouncedRefetch = debounce(() => refetch(), 1000);
-
   const renderItem = ({ item }: { item: Cryptocurrency }) => (
     <CryptoListItem item={item} />
   );
 
   const keyExtractor = useCallback((item: Cryptocurrency) => item.id, []);
 
-  // Memoize empty component to avoid re-creation
+  // Empty component
   const EmptyComponent = useMemo(() => {
     if (isLoading) {
       return null;
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyIcon}>
-          <CustomIcon name="bar-chart" size={48} color={colors.textTertiary} />
-        </View>
-        <Text style={styles.emptyTitle}>No Data Available</Text>
-        <Text style={styles.emptySubtext}>
-          Unable to load cryptocurrency data. Pull down to refresh.
-        </Text>
-      </View>
+      <EmptyState
+        icon="bar-chart"
+        title="No Data Available"
+        subtitle="Unable to load cryptocurrency data. Pull down to refresh."
+      />
     );
   }, [isLoading]);
 
@@ -141,24 +116,7 @@ export const CryptoListScreen: React.FC = () => {
   const renderErrorState = () => {
     if (!error || isLoading) return null;
 
-    return (
-      <View style={styles.errorContainer}>
-        <View style={styles.errorIcon}>
-          <CustomIcon name="error-outline" size={48} color={colors.errorLight} />
-        </View>
-        <Text style={styles.errorTitle}>Unable to Load Data</Text>
-        <Text style={styles.errorSubtext}>
-          Please check your internet connection and try again.
-        </Text>
-        <Button
-          style={styles.retryButton}
-          onPress={handleRefresh}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </Button>
-      </View>
-    );
+    return <ErrorState onRetry={handleRefresh} />;
   };
 
   // Clear search functionality
@@ -207,34 +165,23 @@ export const CryptoListScreen: React.FC = () => {
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyIcon}>
-          <CustomIcon name="search" size={48} color={colors.textTertiary} />
-        </View>
-        <Text style={styles.emptyTitle}>No Results Found</Text>
-        <Text style={styles.emptySubtext}>
-          No cryptocurrencies match "{searchQuery}". Try a different search
-          term.
-        </Text>
-        <Button style={styles.clearSearchButton} onPress={handleClearSearch}>
-          <Text style={styles.clearSearchText}>Clear Search</Text>
-        </Button>
-      </View>
+      <EmptyState
+        icon="search"
+        title="No Results Found"
+        subtitle={`No cryptocurrencies match "${searchQuery}". Try a different search term.`}
+        actionText="Clear Search"
+        onActionPress={handleClearSearch}
+      />
     );
   }, [searchQuery, isLoading, handleClearSearch]);
 
   // Render footer for pagination loading
   const renderFooter = useCallback(() => {
-    if (!isFetchingNextPage || searchQuery.trim().length > 0) {
+    if (searchQuery.trim().length > 0) {
       return null;
     }
 
-    return (
-      <View style={styles.paginationFooter}>
-        <ActivityIndicator size="small" color={colors.crypto} />
-        <Text style={styles.paginationText}>Loading more...</Text>
-      </View>
-    );
+    return <PaginationFooter isLoading={isFetchingNextPage} />;
   }, [isFetchingNextPage, searchQuery]);
 
   return (
@@ -243,7 +190,11 @@ export const CryptoListScreen: React.FC = () => {
         {/* Search Header */}
         <View style={styles.searchHeader}>
           <View style={styles.titleContainer}>
-            <CustomIcon name="currency-bitcoin" size={24} color={colors.crypto} />
+            <CustomIcon
+              name="currency-bitcoin"
+              size={24}
+              color={colors.crypto}
+            />
             <Text style={styles.title}>Cryptocurrency Market</Text>
           </View>
           <Text style={styles.subtitle}>
@@ -253,36 +204,23 @@ export const CryptoListScreen: React.FC = () => {
           </Text>
 
           <View style={styles.controlsRow}>
-            <View style={styles.searchContainer}>
-              <CustomIcon name="search" size={24} color={colors.textTertiary} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search cryptocurrencies..."
-                placeholderTextColor={colors.textTertiary}
-                value={searchQuery}
-                onChangeText={handleSearchChange}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="search"
-              />
-              {searchQuery.length > 0 && (
-                <Button
-                  style={styles.clearButton}
-                  onPress={handleClearSearch}
-                  accessibilityLabel="Clear search"
-                >
-                  <CustomIcon name="close" size={24} color={colors.textTertiary} />
-                </Button>
-              )}
-            </View>
+            <SearchInput
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              onClear={handleClearSearch}
+              placeholder="Search cryptocurrencies..."
+            />
 
             <Button
               style={styles.sortButton}
               onPress={toggleSortModal}
               accessibilityLabel="Sort options"
             >
-              <CustomIcon 
-                name={SORT_OPTIONS.find(opt => opt.key === sortBy)?.iconName || 'show-chart'}
+              <CustomIcon
+                name={
+                  SORT_OPTIONS.find(opt => opt.key === sortBy)?.iconName ||
+                  'show-chart'
+                }
                 size={18}
                 color={colors.textSecondary}
               />
@@ -306,7 +244,11 @@ export const CryptoListScreen: React.FC = () => {
               <View style={styles.sortModalHeader}>
                 <Text style={styles.sortModalTitle}>Sort by</Text>
                 <Button onPress={() => setShowSortModal(false)}>
-                  <CustomIcon name="close" size={24} color={colors.textTertiary} />
+                  <CustomIcon
+                    name="close"
+                    size={24}
+                    color={colors.textTertiary}
+                  />
                 </Button>
               </View>
 
@@ -320,7 +262,11 @@ export const CryptoListScreen: React.FC = () => {
                   onPress={() => handleSortChange(option.key)}
                 >
                   <View style={styles.sortOptionIcon}>
-                    <CustomIcon name={option.iconName} size={20} color={colors.textSecondary} />
+                    <CustomIcon
+                      name={option.iconName}
+                      size={20}
+                      color={colors.textSecondary}
+                    />
                   </View>
                   <Text
                     style={[
@@ -365,7 +311,11 @@ export const CryptoListScreen: React.FC = () => {
             refreshControl={
               <RefreshControl
                 refreshing={isFetching}
-                onRefresh={debouncedRefetch}
+                onRefresh={() => {
+                  if (!isFetching) {
+                    handleRefresh();
+                  }
+                }}
                 colors={[colors.crypto]} // Android
                 tintColor={colors.crypto} // iOS
               />
@@ -429,16 +379,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -455,38 +395,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.crypto,
     fontWeight: 'bold',
-  },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
-    color: colors.textSecondary,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  clearButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  clearButtonText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontWeight: 'bold',
-  },
-  clearSearchButton: {
-    backgroundColor: colors.crypto,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  clearSearchText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
   },
   // Sort Modal Styles
   sortModal: {
@@ -558,129 +466,6 @@ const styles = StyleSheet.create({
     color: colors.crypto,
     fontWeight: 'bold',
   },
-  // Pagination Styles
-  paginationFooter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: colors.surface,
-  },
-  paginationText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  // Skeleton Loader Styles
-  skeletonContainer: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  skeletonItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  skeletonLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  skeletonImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.borderLight,
-    marginRight: 12,
-  },
-  skeletonTextContainer: {
-    flex: 1,
-  },
-  skeletonTitle: {
-    height: 16,
-    backgroundColor: colors.borderLight,
-    borderRadius: 8,
-    marginBottom: 6,
-    width: '70%',
-  },
-  skeletonSubtitle: {
-    height: 12,
-    backgroundColor: colors.borderLight,
-    borderRadius: 6,
-    width: '40%',
-  },
-  skeletonRight: {
-    alignItems: 'flex-end',
-  },
-  skeletonPrice: {
-    height: 16,
-    width: 80,
-    backgroundColor: colors.borderLight,
-    borderRadius: 8,
-    marginBottom: 6,
-  },
-  skeletonChange: {
-    height: 12,
-    width: 60,
-    backgroundColor: colors.borderLight,
-    borderRadius: 6,
-  },
-  // Loading State
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  // Error State
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  errorIcon: {
-    marginBottom: 16,
-  },
-  emptyIcon: {
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  errorSubtext: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  retryButton: {
-    backgroundColor: colors.crypto,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
   // List Styles
   list: {
     flex: 1,
@@ -690,30 +475,5 @@ const styles = StyleSheet.create({
   },
   listContentEmpty: {
     flex: 1,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginHorizontal: 20,
-  },
-  // Empty State
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
   },
 });

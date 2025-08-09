@@ -7,10 +7,15 @@ interface CustomIconProps {
   color: string;
 }
 
-export const CustomIcon: React.FC<CustomIconProps> = ({ 
-  name, 
-  size, 
-  color 
+/**
+ * Wrapper component for Material Icons.
+ * @param param0
+ * @returns
+ */
+export const CustomIcon: React.FC<CustomIconProps> = ({
+  name,
+  size,
+  color,
 }) => {
   return <Icon name={name} size={size} color={color} />;
 };

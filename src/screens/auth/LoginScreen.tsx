@@ -1,20 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Animated,
-  Easing,
-} from 'react-native';
+import { View, Text, StyleSheet, Alert, Animated, Easing } from 'react-native';
 
 import { useAuth, useGoogleSignIn } from '../../hooks/useAuth';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { GoogleSignInButton } from '../../components/auth';
 import { CustomIcon } from '../../components/common/CustomIcon';
 import { APP_DETAILS } from '../../constants/config';
 import { colors } from '../../constants/colors';
+import { Button, GoogleSignInButton } from '../../components/common';
 
 export const LoginScreen: React.FC = () => {
   // Use both the context (for backward compatibility) and direct React Query hook
@@ -130,7 +122,11 @@ export const LoginScreen: React.FC = () => {
                   },
                 ]}
               >
-                <CustomIcon name={APP_DETAILS.iconName} size={60} color={colors.primary} />
+                <CustomIcon
+                  name={APP_DETAILS.iconName}
+                  size={60}
+                  color={colors.primary}
+                />
               </Animated.View>
             </View>
           </View>
@@ -165,7 +161,7 @@ export const LoginScreen: React.FC = () => {
             <Text style={styles.errorText}>
               {error?.message || 'An error occurred'}
             </Text>
-            <TouchableOpacity
+            <Button
               style={styles.clearErrorButton}
               onPress={() => {
                 clearError();
@@ -175,7 +171,7 @@ export const LoginScreen: React.FC = () => {
               accessibilityRole="button"
             >
               <Text style={styles.clearErrorText}>Dismiss</Text>
-            </TouchableOpacity>
+            </Button>
           </Animated.View>
         )}
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { CustomIcon } from '../common/CustomIcon';
 import { ScannedWallet } from '../../types';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../utils/walletValidation';
 import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
 import { colors } from '../../constants/colors';
+import { Button } from '../common';
 
 interface WalletItemProps {
   item: ScannedWallet;
@@ -75,7 +76,7 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
   };
 
   return (
-    <TouchableOpacity
+    <Button
       style={[styles.container, item.isFavorite && styles.favoriteContainer]}
       onPress={() => onPress?.(item)}
       activeOpacity={0.7}
@@ -103,7 +104,7 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
 
         {/* Right side - Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity
+          <Button
             style={[styles.actionButton, styles.favoriteButton]}
             onPress={handleToggleFavorite}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -113,18 +114,18 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
               size={20}
               color={item.isFavorite ? colors.favorite : colors.textTertiary}
             />
-          </TouchableOpacity>
+          </Button>
 
-          <TouchableOpacity
+          <Button
             style={[styles.actionButton, styles.deleteButton]}
             onPress={handleDelete}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <CustomIcon name="delete" size={20} color={colors.primary} />
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
-    </TouchableOpacity>
+    </Button>
   );
 };
 

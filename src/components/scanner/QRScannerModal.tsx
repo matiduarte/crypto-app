@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Modal,
-  TouchableOpacity,
   Alert,
   StatusBar,
   Dimensions,
@@ -18,6 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomIcon } from '../common/CustomIcon';
 import { colors } from '../../constants/colors';
+import { Button } from '../common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
@@ -38,12 +38,13 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   const insets = useSafeAreaInsets();
   const devices = useCameraDevices();
   const device = devices.find(d => d.position === 'back');
-  
+
   // States
-  const [permission, setPermission] = useState<CameraPermissionStatus>('not-determined');
+  const [permission, setPermission] =
+    useState<CameraPermissionStatus>('not-determined');
   const [isScanning, setIsScanning] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
-  
+
   // Refs
   const hasProcessedScan = useRef(false);
   const processingTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -51,16 +52,16 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   // Initialize camera permission when modal opens
   useEffect(() => {
     if (!visible) return;
-    
+
     let isMounted = true;
-    
+
     const initializeCamera = async () => {
       try {
         // Reset states when modal opens
         setHasScanned(false);
         setIsScanning(true);
         hasProcessedScan.current = false;
-        
+
         // Clear any existing timeout
         if (processingTimeout.current) {
           clearTimeout(processingTimeout.current);
@@ -69,7 +70,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
         // Check current permission
         const currentPermission = Camera.getCameraPermissionStatus();
-        
+
         if (currentPermission === 'not-determined') {
           const requestedPermission = await Camera.requestCameraPermission();
           if (isMounted) {
@@ -94,7 +95,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                   onClose();
                 },
               },
-            ]
+            ],
           );
         }
       } catch (error) {
@@ -103,14 +104,14 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           Alert.alert(
             'Camera Error',
             'Unable to initialize camera. Please try again.',
-            [{ text: 'OK', onPress: onClose }]
+            [{ text: 'OK', onPress: onClose }],
           );
         }
       }
     };
 
     initializeCamera();
-    
+
     return () => {
       isMounted = false;
     };
@@ -122,7 +123,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       setIsScanning(false);
       setHasScanned(false);
       hasProcessedScan.current = false;
-      
+
       if (processingTimeout.current) {
         clearTimeout(processingTimeout.current);
         processingTimeout.current = null;
@@ -142,9 +143,14 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   // Code scanner configuration
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
-    onCodeScanned: (codes) => {
+    onCodeScanned: codes => {
       // Prevent multiple scans
-      if (!isScanning || hasScanned || hasProcessedScan.current || codes.length === 0) {
+      if (
+        !isScanning ||
+        hasScanned ||
+        hasProcessedScan.current ||
+        codes.length === 0
+      ) {
         return;
       }
 
@@ -183,15 +189,20 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <View style={styles.errorContainer}>
           <View style={[styles.errorContent, { paddingTop: insets.top + 40 }]}>
             <View style={styles.errorIcon}>
-              <CustomIcon name="camera" size={48} color={colors.textSecondary} />
+              <CustomIcon
+                name="camera"
+                size={48}
+                color={colors.textSecondary}
+              />
             </View>
             <Text style={styles.errorTitle}>Camera Access Required</Text>
             <Text style={styles.errorText}>
-              We need camera permission to scan QR codes. Please enable camera access in your device settings.
+              We need camera permission to scan QR codes. Please enable camera
+              access in your device settings.
             </Text>
-            <TouchableOpacity style={styles.errorButton} onPress={handleClose}>
+            <Button style={styles.errorButton} onPress={handleClose}>
               <Text style={styles.errorButtonText}>Close</Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
       </Modal>
@@ -212,9 +223,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             <Text style={styles.errorText}>
               Unable to access the camera. Please check your device settings.
             </Text>
-            <TouchableOpacity style={styles.errorButton} onPress={handleClose}>
+            <Button style={styles.errorButton} onPress={handleClose}>
               <Text style={styles.errorButtonText}>Close</Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
       </Modal>
@@ -241,9 +252,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           {/* Header */}
           <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Button style={styles.closeButton} onPress={handleClose}>
               <Text style={styles.closeButtonText}>×</Text>
-            </TouchableOpacity>
+            </Button>
           </View>
 
           {/* Scanning Area */}
@@ -254,7 +265,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
               <View style={[styles.corner, styles.topRight]} />
               <View style={[styles.corner, styles.bottomLeft]} />
               <View style={[styles.corner, styles.bottomRight]} />
-              
+
               {/* Success indicator */}
               {hasScanned && (
                 <View style={styles.successOverlay}>
@@ -263,24 +274,28 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 </View>
               )}
             </View>
-            
+
             <Text style={styles.instructionText}>
-              {hasScanned 
-                ? 'Processing scan...' 
-                : 'Position the QR code within the frame'
-              }
+              {hasScanned
+                ? 'Processing scan...'
+                : 'Position the QR code within the frame'}
             </Text>
           </View>
 
           {/* Bottom Actions */}
-          <View style={[styles.bottomActions, { paddingBottom: insets.bottom + 20 }]}>
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+          <View
+            style={[
+              styles.bottomActions,
+              { paddingBottom: insets.bottom + 20 },
+            ]}
+          >
+            <Button
+              style={styles.cancelButton}
               onPress={handleClose}
               disabled={hasScanned}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            </Button>
           </View>
         </View>
       </View>
