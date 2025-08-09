@@ -89,22 +89,6 @@ export const formatPercentage = (percentage: number): string => {
   return `${sign}${percentage.toFixed(2)}%`;
 };
 
-export const formatMarketCap = (marketCap: number): string => {
-  if (marketCap >= 1e12) {
-    return `$${(marketCap / 1e12).toFixed(2)}T`;
-  } else if (marketCap >= 1e9) {
-    return `$${(marketCap / 1e9).toFixed(2)}B`;
-  } else if (marketCap >= 1e6) {
-    return `$${(marketCap / 1e6).toFixed(2)}M`;
-  } else if (marketCap >= 1e3) {
-    return `$${(marketCap / 1e3).toFixed(2)}K`;
-  }
-  return `$${marketCap.toFixed(2)}`;
-};
-
-export const formatVolume = (volume: number): string => {
-  return formatMarketCap(volume); // Same format as market cap
-};
 
 // Date formatting utilities
 export const formatDate = (
@@ -115,30 +99,8 @@ export const formatDate = (
   return format(dateObj, formatString);
 };
 
-export const getTimeAgo = (date: string | Date): string => {
-  const now = new Date();
-  const targetDate = typeof date === 'string' ? new Date(date) : date;
-  const diffInMs = now.getTime() - targetDate.getTime();
-  const diffInMinutes = Math.floor(diffInMs / 60000);
-  const diffInHours = Math.floor(diffInMs / 3600000);
-  const diffInDays = Math.floor(diffInMs / 86400000);
-
-  if (diffInMinutes < 1) {
-    return 'Just now';
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`;
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
-  } else {
-    return `${diffInDays}d ago`;
-  }
-};
 
 // Validation utilities
-export const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
 
 export const isValidBitcoinAddress = (address: string): boolean => {
   // Basic Bitcoin address validation (P2PKH, P2SH, Bech32)
@@ -219,25 +181,6 @@ export const debounce = <T extends (...args: any[]) => any>(
 // Generate unique ID
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
-};
-
-// Color utilities for price changes
-export const getPriceChangeColor = (change: number): string => {
-  if (change > 0) {
-    return '#4CAF50'; // Green for positive
-  } else if (change < 0) {
-    return '#f44336'; // Red for negative
-  }
-  return '#757575'; // Gray for zero
-};
-
-// Conversion utilities
-export const convertCurrency = (
-  amount: number,
-  rate: number,
-  decimals: number = 6,
-): number => {
-  return parseFloat((amount * rate).toFixed(decimals));
 };
 
 // Format input values with thousands separators as user types

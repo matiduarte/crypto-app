@@ -2,43 +2,12 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
-  UseQueryOptions,
 } from '@tanstack/react-query';
 import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
-import { APIResponse, ConversionResult } from '../types';
+import { ConversionResult } from '../types';
 
-// Hook for getting simple prices for conversion
-export const useSimplePrice = (
-  params: {
-    ids: string;
-    vs_currencies: string;
-    include_24hr_change?: boolean;
-  },
-  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>,
-) => {
-  return useQuery({
-    queryKey: queryKeys.prices.simple(params.ids, params.vs_currencies),
-    queryFn: () => apiService.getSimplePrice(params),
-    enabled: !!params.ids && !!params.vs_currencies,
-    refetchInterval: 60000, // Refetch every 60 seconds for real-time prices
-    staleTime: 1000 * 30, // Consider data stale after 30 seconds
-    ...options,
-  });
-};
 
-// Hook for getting exchange rates
-export const useExchangeRates = (
-  options?: Omit<UseQueryOptions<APIResponse<any>>, 'queryKey' | 'queryFn'>,
-) => {
-  return useQuery({
-    queryKey: queryKeys.prices.rates(),
-    queryFn: () => apiService.getExchangeRates(),
-    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
-    staleTime: 1000 * 60 * 2, // Consider data stale after 2 minutes
-    ...options,
-  });
-};
 
 // Hook for currency conversion calculations
 export const useCurrencyConversion = () => {
@@ -120,54 +89,3 @@ export const useRealTimePrices = (
   });
 };
 
-// Hook for getting historical price data (if needed for charts)
-export const useHistoricalPrices = (
-  cryptoId: string,
-  days: number = 7,
-  options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>,
-) => {
-  return useQuery({
-    queryKey: [...queryKeys.cryptos.detail(cryptoId), 'history', days],
-    queryFn: async () => {
-      // Note: This would require a different endpoint for historical data
-      // For now, we'll use the detail endpoint which includes some price history
-      return apiService.getCryptocurrencyDetails(cryptoId);
-    },
-    enabled: !!cryptoId,
-    staleTime: 1000 * 60 * 10, // 10 minutes for historical data
-    ...options,
-  });
-};
-
-// Hook for managing favorite conversion pairs
-export const useFavoriteConversionPairs = () => {
-  const queryClient = useQueryClient();
-
-  const addFavoritePair = useMutation({
-    mutationFn: async (pair: { from: string; to: string }) => {
-      // This would typically save to AsyncStorage or a backend
-      // For now, we'll just simulate the operation
-      return { ...pair, id: Date.now().toString() };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.favorites() });
-    },
-  });
-
-  const removeFavoritePair = useMutation({
-    mutationFn: async (pairId: string) => {
-      // This would typically remove from AsyncStorage or a backend
-      return pairId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.favorites() });
-    },
-  });
-
-  return {
-    addPair: addFavoritePair.mutate,
-    removePair: removeFavoritePair.mutate,
-    isAddingPair: addFavoritePair.isPending,
-    isRemovingPair: removeFavoritePair.isPending,
-  };
-};

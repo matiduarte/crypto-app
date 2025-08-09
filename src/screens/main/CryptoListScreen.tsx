@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { FixedScreen } from '../../components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
-import { debounce, searchCryptos, sortCryptos } from '../../utils/helpers';
+import { searchCryptos, sortCryptos } from '../../utils/helpers';
 import { Cryptocurrency } from '../../types';
 import {
   Button,
@@ -391,11 +391,6 @@ const styles = StyleSheet.create({
     minWidth: 60,
     justifyContent: 'center',
   },
-  sortOrder: {
-    fontSize: 16,
-    color: colors.crypto,
-    fontWeight: 'bold',
-  },
   // Sort Modal Styles
   sortModal: {
     position: 'absolute',
@@ -434,12 +429,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  sortModalClose: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    fontWeight: 'bold',
-    padding: 4,
-  },
   sortOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -460,11 +449,6 @@ const styles = StyleSheet.create({
   sortOptionTextActive: {
     color: colors.textPrimary,
     fontWeight: '600',
-  },
-  sortOptionOrder: {
-    fontSize: 18,
-    color: colors.crypto,
-    fontWeight: 'bold',
   },
   // List Styles
   list: {

@@ -466,32 +466,6 @@ const styles = StyleSheet.create({
   loadingContainer: {
     paddingVertical: 16,
   },
-  // Action Buttons
-  actionButtons: {
-    flexDirection: 'row',
-    marginTop: 20,
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  copyButton: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  shareButton: {
-    backgroundColor: colors.primary,
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
   // Custom styles for modal content
   currencyOptionPrice: {
     fontSize: 14,

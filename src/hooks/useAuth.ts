@@ -1,10 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  authService,
-  authHelpers,
-  User,
-  AuthTokens,
-} from '../services/authService';
+import { authService, User, AuthTokens } from '../services/authService';
 import storageService from '../utils/storage';
 
 // Storage keys
@@ -30,12 +26,6 @@ interface SignInResult {
   error?: string;
 }
 
-interface SignOutResult {
-  success: boolean;
-  error?: string;
-  warning?: string;
-}
-
 interface AuthSession {
   user: User | null;
   tokens: AuthTokens | null;
@@ -43,142 +33,75 @@ interface AuthSession {
 }
 
 /**
- * Query to get current user session
- * Automatically runs silent sign-in to check if user is already logged in
+ * Simple auth session query
  */
-export const useAuthSession = () => {
+const useAuthSession = () => {
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.session,
     queryFn: async (): Promise<AuthSession> => {
       try {
-        // Initialize auth service
-        const initialized = await authHelpers.initialize();
-        if (!initialized) {
-          console.warn('Auth service initialization failed');
-          return { user: null, tokens: null, isLoggedIn: false };
-        }
+        const [storedUser, storedToken, storedIsLoggedIn] = await Promise.all([
+          storageService.getItem<User>(STORAGE_KEYS.USER),
+          storageService.getItem<string>(STORAGE_KEYS.TOKEN),
+          storageService.getItem<boolean>(STORAGE_KEYS.IS_LOGGED_IN),
+        ]);
 
-        // Check if we have stored session data first (fallback for iOS)
-        const [storedUser, storedToken, storedRefreshToken, storedIsLoggedIn] =
-          await Promise.all([
-            storageService.getItem<User>(STORAGE_KEYS.USER),
-            storageService.getItem<string>(STORAGE_KEYS.TOKEN),
-            storageService.getItem<string>(STORAGE_KEYS.REFRESH_TOKEN),
-            storageService.getItem<boolean>(STORAGE_KEYS.IS_LOGGED_IN),
-          ]);
+        if (storedIsLoggedIn && storedUser && storedToken) {
+          console.log('Found stored auth data, validating session...');
 
-        // If we have stored login state, try to restore from Google Sign-in
-        if (storedIsLoggedIn && storedUser) {
-          console.log('Found stored auth data, attempting silent sign-in...');
-          
           try {
-            // Try silent sign-in
-            const silentResult = await authHelpers.silentSignIn();
+            // Validate the session by checking if tokens are still valid
+            const isSessionValid = await authService.validateSession();
 
-            if (silentResult.success && silentResult.user && silentResult.tokens) {
-              console.log('Silent sign-in successful');
-              const tokens: AuthTokens = {
-                idToken: storedToken || silentResult.tokens.idToken,
-                accessToken: silentResult.tokens.accessToken, // Use fresh token from silent sign-in
-              };
-
-              return { 
-                user: silentResult.user, // Use fresh user data
-                tokens, 
-                isLoggedIn: true 
-              };
-            } else {
-              console.warn('Silent sign-in failed, checking if tokens expired');
-              
-              // Check if the error indicates expired tokens
-              if (silentResult.error?.includes('expired') || silentResult.error?.includes('Authentication session has expired')) {
-                console.log('Tokens have expired, clearing stored auth data');
-                // Clear expired session data
-                try {
-                  await Promise.all([
-                    storageService.removeItem(STORAGE_KEYS.USER),
-                    storageService.removeItem(STORAGE_KEYS.TOKEN),
-                    storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
-                    storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
-                  ]);
-                } catch (clearError) {
-                  console.warn('Failed to clear expired auth data:', clearError);
-                }
-                return { user: null, tokens: null, isLoggedIn: false };
-              }
-              
-              // If silent sign-in fails but we have stored data, try to use stored data as fallback
-              if (storedUser && storedToken) {
-                return {
-                  user: storedUser,
-                  tokens: {
-                    idToken: storedToken,
-                    accessToken: storedRefreshToken || '',
-                  },
-                  isLoggedIn: true,
-                };
-              }
-            }
-          } catch (silentError) {
-            console.warn('Silent sign-in error:', silentError);
-            // Fallback to stored data if available
-            if (storedUser && storedToken) {
-              console.log('Using stored auth data as fallback');
+            if (isSessionValid) {
+              console.log('Session is valid');
               return {
                 user: storedUser,
-                tokens: {
-                  idToken: storedToken,
-                  accessToken: storedRefreshToken || '',
-                },
+                tokens: { idToken: storedToken, accessToken: '' },
                 isLoggedIn: true,
               };
-            }
-          }
-        } else {
-          // No stored login state, try fresh silent sign-in
-          console.log('No stored auth data, trying fresh silent sign-in...');
-          const silentResult = await authHelpers.silentSignIn();
+            } else {
+              console.warn(
+                'Session validation failed - tokens expired or invalid',
+              );
 
-          if (silentResult.success && silentResult.user && silentResult.tokens) {
-            console.log('Fresh silent sign-in successful');
-            return { 
-              user: silentResult.user,
-              tokens: silentResult.tokens,
-              isLoggedIn: true 
-            };
+              // Clear expired session data
+              await Promise.all([
+                storageService.removeItem(STORAGE_KEYS.USER),
+                storageService.removeItem(STORAGE_KEYS.TOKEN),
+                storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+                storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
+                storageService.removeItem('auth_session_start_time'),
+              ]);
+
+              return { user: null, tokens: null, isLoggedIn: false };
+            }
+          } catch (validationError) {
+            console.error('Session validation error:', validationError);
+
+            // On validation error, assume session is invalid and clear it
+            await Promise.all([
+              storageService.removeItem(STORAGE_KEYS.USER),
+              storageService.removeItem(STORAGE_KEYS.TOKEN),
+              storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+              storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
+              storageService.removeItem('auth_session_start_time'),
+            ]);
+
+            return { user: null, tokens: null, isLoggedIn: false };
           }
         }
 
-        console.log('No valid session found');
         return { user: null, tokens: null, isLoggedIn: false };
       } catch (error) {
         console.error('Auth session query error:', error);
         return { user: null, tokens: null, isLoggedIn: false };
       }
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes - shorter stale time to catch expired tokens sooner
-    gcTime: 1000 * 60 * 10, // 10 minutes
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    retry: failureCount => {
-      return failureCount < 2;
-    },
-  });
-};
-
-/**
- * Query to get current user data only
- */
-export const useCurrentUser = () => {
-  const { data: session } = useAuthSession();
-
-  return useQuery({
-    queryKey: AUTH_QUERY_KEYS.user,
-    queryFn: async (): Promise<User | null> => {
-      return session?.user || null;
-    },
-    enabled: !!session,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes - normal session checking
+    gcTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: 1000 * 60 * 2, // Check every 2 minutes for session expiration
+    refetchIntervalInBackground: false, // Don't check in background to save resources
   });
 };
 
@@ -191,10 +114,20 @@ export const useGoogleSignIn = () => {
   return useMutation({
     mutationFn: async (): Promise<SignInResult> => {
       try {
+        // Initialize Google Sign-In configuration first
+        const { APP_CONFIG } = await import('../constants/config');
+
+        await authService.configure({
+          webClientId: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.WEB_CLIENT_ID,
+          iosClientId: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.IOS_CLIENT_ID,
+          offlineAccess: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.OFFLINE_ACCESS,
+          forceCodeForRefreshToken:
+            APP_CONFIG.GOOGLE_SIGNIN_CONFIG.FORCE_CODE_FOR_REFRESH_TOKEN,
+        });
+
         const result = await authService.signIn();
 
         if (result.success && result.user && result.tokens) {
-          // Store auth data
           await Promise.all([
             storageService.setItem(STORAGE_KEYS.USER, result.user),
             storageService.setItem(STORAGE_KEYS.TOKEN, result.tokens.idToken),
@@ -248,87 +181,38 @@ export const useGoogleSignIn = () => {
 };
 
 /**
- * Mutation for Sign-Out with improved error handling
+ * Simple sign-out mutation
  */
-export const useSignOut = () => {
+const useSignOut = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (): Promise<SignOutResult> => {
+    mutationFn: async () => {
       try {
-        // First try the complete sign-out (which includes fallbacks)
-        const result = await authHelpers.completeSignOut();
-
-        // Always clear stored auth data, regardless of Google sign-out success
-        // This ensures the user is logged out locally even if Google services fail
-        try {
-          await Promise.all([
-            storageService.removeItem(STORAGE_KEYS.USER),
-            storageService.removeItem(STORAGE_KEYS.TOKEN),
-            storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
-            storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
-          ]);
-        } catch (storageError) {
-          console.warn(
-            'Failed to clear some auth storage items:',
-            storageError,
-          );
-          // Continue anyway - storage cleanup failure shouldn't block sign-out
-        }
-
-        return {
-          success: result.success,
-          error: result.error,
-          warning: result.warning,
-        };
-      } catch (error: any) {
-        console.error('Sign-out mutation error:', error);
-
-        // Even if sign-out fails, try to clear local storage
-        try {
-          await Promise.all([
-            storageService.removeItem(STORAGE_KEYS.USER),
-            storageService.removeItem(STORAGE_KEYS.TOKEN),
-            storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
-            storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
-          ]);
-
-          return {
-            success: true,
-            warning: 'Local sign-out completed (Google sign-out failed)',
-          };
-        } catch (storageError) {
-          console.error(
-            'Failed to clear auth storage during emergency:',
-            storageError,
-          );
-          return {
-            success: false,
-            error: error?.message || 'Sign-out failed completely',
-          };
-        }
+        await Promise.all([
+          storageService.removeItem(STORAGE_KEYS.USER),
+          storageService.removeItem(STORAGE_KEYS.TOKEN),
+          storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+          storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
+        ]);
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: 'Failed to sign out' };
       }
     },
     onSuccess: () => {
-      // Clear all auth-related cache
       queryClient.setQueryData(AUTH_QUERY_KEYS.session, {
         user: null,
         tokens: null,
         isLoggedIn: false,
       });
-      queryClient.setQueryData(AUTH_QUERY_KEYS.user, null);
-
-      // Clear all cached data (since user is no longer authenticated)
       queryClient.clear();
-    },
-    onError: error => {
-      console.error('Sign-out mutation error:', error);
     },
   });
 };
 
 /**
- * Hook that provides authentication state and actions
+ * Hook that provides authentication state and actions with session expiration handling
  */
 export const useAuth = () => {
   const {
@@ -347,9 +231,9 @@ export const useAuth = () => {
     isLoading:
       isSessionLoading || signInMutation.isPending || signOutMutation.isPending,
     error:
-      sessionError?.message ||
       signInMutation.error?.message ||
       signOutMutation.error?.message ||
+      sessionError?.message ||
       null,
 
     // Actions
@@ -370,38 +254,4 @@ export const useAuth = () => {
     signInMutation,
     signOutMutation,
   };
-};
-
-/**
- * Hook to check if user is authenticated
- */
-export const useIsAuthenticated = (): boolean => {
-  const { data: session } = useAuthSession();
-  return session?.isLoggedIn || false;
-};
-
-/**
- * Hook to get user data with type safety
- */
-export const useUserData = () => {
-  const { data: session } = useAuthSession();
-
-  if (!session?.user) return null;
-
-  return {
-    id: session.user.id,
-    name: session.user.name || 'Unknown User',
-    email: session.user.email || '',
-    photo: session.user.photo || null,
-    givenName: session.user.givenName || '',
-    familyName: session.user.familyName || '',
-  };
-};
-
-/**
- * Hook to get authentication tokens
- */
-export const useAuthTokens = (): AuthTokens | null => {
-  const { data: session } = useAuthSession();
-  return session?.tokens || null;
 };

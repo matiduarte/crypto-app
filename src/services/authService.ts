@@ -364,7 +364,7 @@ class AuthService {
   }
 
   /**
-   * Validate user session with token expiration handling
+   * Validate user session with custom timeout and token expiration handling
    */
   async validateSession(): Promise<boolean> {
     try {
@@ -377,11 +377,14 @@ class AuthService {
       // If getCurrentTokens returned null due to expiration, session is invalid
       if (!tokens || !tokens.idToken) {
         console.warn(
-          'Session validation failed: tokens are invalid or expired',
+          'Session validation failed: Google tokens are invalid or expired',
         );
         return false;
       }
 
+      console.log(
+        'Session validation passed: both custom timeout and Google tokens are valid',
+      );
       return !!(userInfo && tokens && tokens.idToken);
     } catch (error) {
       console.error('Session validation error:', error);
@@ -422,155 +425,3 @@ class AuthService {
 
 // Export singleton instance
 export const authService = new AuthService();
-
-// Helper functions for common auth operations
-export const authHelpers = {
-  /**
-   * Initialize Google Sign-In with configuration
-   */
-  async initialize(): Promise<boolean> {
-    try {
-      // Import config at runtime to avoid circular imports
-      const { APP_CONFIG } = await import('../constants/config');
-
-      await authService.configure({
-        webClientId: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.WEB_CLIENT_ID,
-        iosClientId: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.IOS_CLIENT_ID,
-        offlineAccess: APP_CONFIG.GOOGLE_SIGNIN_CONFIG.OFFLINE_ACCESS,
-        forceCodeForRefreshToken:
-          APP_CONFIG.GOOGLE_SIGNIN_CONFIG.FORCE_CODE_FOR_REFRESH_TOKEN,
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Auth initialization failed:', error);
-      return false;
-    }
-  },
-
-  /**
-   * Quick sign-in with error handling
-   */
-  async quickSignIn(): Promise<SignInResult> {
-    const initialized = await authHelpers.initialize();
-    if (!initialized) {
-      return {
-        success: false,
-        error: 'Authentication service initialization failed',
-      };
-    }
-
-    return await authService.signIn();
-  },
-
-  /**
-   * Silent sign-in (check existing session)
-   * Enhanced for iOS compatibility with proper session restoration and token expiration handling
-   */
-  async silentSignIn(): Promise<SignInResult> {
-    try {
-      // Try to restore user session (especially important for iOS)
-      const user = await authService.getCurrentUserWithRestore();
-
-      if (user) {
-        // If we got the user, also try to get tokens
-        const tokens = await authService.getCurrentTokens();
-
-        if (tokens) {
-          return {
-            success: true,
-            user: user,
-            tokens,
-          };
-        } else {
-          console.warn(
-            'User found but tokens are invalid/expired - session cleared',
-          );
-          // Session was automatically cleared by getCurrentTokens() if tokens were expired
-          return {
-            success: false,
-            error: 'Authentication session has expired. Please sign in again.',
-          };
-        }
-      }
-
-      return {
-        success: false,
-        error: 'No valid session found',
-      };
-    } catch (error: any) {
-      console.error('Silent sign-in error:', error);
-      return {
-        success: false,
-        error: error?.message || 'Silent sign-in failed',
-      };
-    }
-  },
-
-  /**
-   * Complete sign-out with cleanup
-   * Tries to revoke access first, falls back to regular sign-out if that fails
-   */
-  async completeSignOut(): Promise<SignInResult> {
-    // First try the full revoke access approach
-    const revokeResult = await authService.revokeAccess();
-
-    if (revokeResult.success) {
-      return revokeResult;
-    }
-
-    console.warn(
-      'Revoke access failed, attempting simple sign-out as fallback',
-    );
-
-    // If revoke access fails, try simple sign-out as fallback
-    const signOutResult = await authService.signOut();
-
-    if (signOutResult.success) {
-      return {
-        success: true,
-        warning:
-          'Sign-out successful using fallback method (token revocation failed)',
-      };
-    }
-
-    // If both fail, return the original error
-    return revokeResult;
-  },
-
-  /**
-   * Emergency sign-out that only does local cleanup
-   * Use this when Google services are not responding
-   */
-  async emergencySignOut(): Promise<SignInResult> {
-    try {
-      // Try simple sign-out first
-      const result = await authService.signOut();
-
-      if (result.success) {
-        return {
-          success: true,
-          warning: 'Emergency sign-out completed (local only)',
-        };
-      }
-
-      // If even simple sign-out fails, we'll consider it successful
-      // since we're doing emergency cleanup
-      console.warn(
-        'Emergency sign-out: Google sign-out failed, but continuing with local cleanup',
-      );
-
-      return {
-        success: true,
-        warning: 'Emergency sign-out completed (Google services unavailable)',
-      };
-    } catch (error: any) {
-      console.error('Emergency sign-out error:', error);
-      // Even in emergency, if everything fails, we should report it
-      return {
-        success: false,
-        error: error?.message || 'Emergency sign-out failed',
-      };
-    }
-  },
-};

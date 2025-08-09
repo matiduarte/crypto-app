@@ -26,12 +26,7 @@ export { SearchInput } from './SearchInput';
 export { ActionButton } from './ActionButton';
 
 // List components
-export {
-  ListSeparator,
-  ItemSeparator,
-  ThickSeparator,
-  FullWidthSeparator,
-} from './ListSeparator';
+export { ListSeparator, ItemSeparator } from './ListSeparator';
 export { PaginationFooter } from './PaginationFooter';
 
 // Existing components

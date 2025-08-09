@@ -31,14 +31,6 @@ export const ListSeparator: React.FC<ListSeparatorProps> = ({
 // Pre-made separator variants for common use cases
 export const ItemSeparator: React.FC = () => <ListSeparator />;
 
-export const ThickSeparator: React.FC = () => (
-  <ListSeparator height={2} color={colors.border} />
-);
-
-export const FullWidthSeparator: React.FC = () => (
-  <ListSeparator marginHorizontal={0} />
-);
-
 const styles = StyleSheet.create({
   separator: {
     backgroundColor: colors.borderLight,

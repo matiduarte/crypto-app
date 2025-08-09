@@ -7,41 +7,7 @@ export interface WalletValidationResult {
   error?: string;
 }
 
-/**
- * Validates a Bitcoin address (Legacy, SegWit, Native SegWit)
- */
-export const validateBitcoinAddress = (address: string): boolean => {
-  // Remove whitespace
-  address = address.trim();
 
-  // Legacy address (starts with 1)
-  if (address.match(/^[1][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
-    return true;
-  }
-
-  // Script hash address (starts with 3)
-  if (address.match(/^[3][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
-    return true;
-  }
-
-  // Bech32 address (starts with bc1)
-  if (address.match(/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,87}$/)) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
- * Validates an Ethereum address
- */
-export const validateEthereumAddress = (address: string): boolean => {
-  // Remove whitespace
-  address = address.trim();
-
-  // Ethereum address pattern (0x followed by 40 hex characters)
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-};
 
 /**
  * Determines wallet type and validates address
@@ -71,7 +37,8 @@ export const validateWalletAddress = (
   }
 
   // Check for Bitcoin address patterns first
-  if (validateBitcoinAddress(address)) {
+  // Legacy address (starts with 1)
+  if (address.match(/^[1][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
     return {
       isValid: true,
       type: 'bitcoin',
@@ -79,8 +46,26 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for Ethereum address pattern
-  if (validateEthereumAddress(address)) {
+  // Script hash address (starts with 3)
+  if (address.match(/^[3][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
+    return {
+      isValid: true,
+      type: 'bitcoin',
+      address,
+    };
+  }
+
+  // Bech32 address (starts with bc1)
+  if (address.match(/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,87}$/)) {
+    return {
+      isValid: true,
+      type: 'bitcoin',
+      address,
+    };
+  }
+
+  // Check for Ethereum address pattern (0x followed by 40 hex characters)
+  if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
     return {
       isValid: true,
       type: 'ethereum',

@@ -116,23 +116,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 4,
   },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    backgroundColor: colors.surface,
-  },
-  searchInput: {
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   currencyOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -161,10 +144,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textTertiary,
     marginTop: 2,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginHorizontal: 20,
   },
 });

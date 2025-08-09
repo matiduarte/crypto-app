@@ -61,31 +61,3 @@ export const queryKeys = {
   },
 } as const;
 
-// Prefetch utilities
-export const prefetchCryptocurrencies = async (params: {
-  vs_currency?: string;
-  order?: string;
-  per_page?: number;
-  page?: number;
-}) => {
-  const apiService = await import('./api');
-  
-  await queryClient.prefetchQuery({
-    queryKey: queryKeys.cryptos.list(params),
-    queryFn: () => apiService.default.getCryptocurrencies(params),
-    staleTime: 1000 * 60 * 2, // 2 minutes
-  });
-};
-
-// Invalidation helpers
-export const invalidateCryptoQueries = () => {
-  queryClient.invalidateQueries({ queryKey: queryKeys.cryptos.all });
-};
-
-export const invalidatePriceQueries = () => {
-  queryClient.invalidateQueries({ queryKey: queryKeys.prices.all });
-};
-
-export const invalidateUserQueries = () => {
-  queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-};

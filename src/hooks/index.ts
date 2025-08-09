@@ -2,23 +2,10 @@
 export {
   useCryptocurrencies,
   useInfiniteCryptocurrencies,
-  useCryptocurrencyDetails,
-  useMultipleCryptocurrencyDetails,
-  useRefreshCryptocurrencies,
 } from './useCryptocurrencies';
 
-// Search hooks
-export { useSearchCryptocurrencies, useDebouncedSearch } from './useSearch';
-
 // Exchange hooks
-export {
-  useSimplePrice,
-  useExchangeRates,
-  useCurrencyConversion,
-  useRealTimePrices,
-  useHistoricalPrices,
-  useFavoriteConversionPairs,
-} from './useExchange';
+export { useCurrencyConversion, useRealTimePrices } from './useExchange';
 
 // Wallet scanner hooks
 export {
@@ -26,21 +13,7 @@ export {
   useAddScannedWallet,
   useRemoveScannedWallet,
   useToggleWalletFavorite,
-  useUpdateWalletLabel,
-  useQRScanner,
-  useFavoriteWallets,
-  useWalletsByType,
-  useClearAllWallets,
 } from './useWalletScanner';
 
 // Authentication hooks
-export {
-  useAuth,
-  useAuthSession,
-  useCurrentUser,
-  useGoogleSignIn,
-  useSignOut,
-  useIsAuthenticated,
-  useUserData,
-  useAuthTokens,
-} from './useAuth';
+export { useAuth, useGoogleSignIn } from './useAuth';
