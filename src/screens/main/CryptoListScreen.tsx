@@ -69,7 +69,7 @@ export const CryptoListScreen: React.FC = () => {
       .filter(Boolean);
   }, [infiniteData]);
 
-  // Filter and sort crypto data based on search query and sort options (in memory)
+  // Filter and sort crypto data based on search query and sort options
   const cryptoData = useMemo(() => {
     let filteredData = baseCryptoData;
 

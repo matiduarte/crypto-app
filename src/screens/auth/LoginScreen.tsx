@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Animated, Easing } from 'react-native';
 
-import { useAuth, useGoogleSignIn } from '@hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
 import { FixedScreen } from '@components/common/ScreenWrapper';
 import { CustomIcon } from '@components/common/CustomIcon';
 import { APP_DETAILS } from '@constants/config';
@@ -9,9 +9,8 @@ import { colors } from '@constants/colors';
 import { Button, GoogleSignInButton } from '@components/common';
 
 export const LoginScreen: React.FC = () => {
-  // Use both the context (for backward compatibility) and direct React Query hook
-  const { clearError } = useAuth();
-  const { mutateAsync, error, reset, isPending } = useGoogleSignIn();
+  const { clearError, signInMutation } = useAuth();
+  const { error, isPending, reset, mutateAsync: signIn } = signInMutation;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -63,12 +62,9 @@ export const LoginScreen: React.FC = () => {
     try {
       clearError();
 
-      // Use React Query mutation directly for better error handling
-      const result = await mutateAsync();
+      const result = await signIn();
 
       if (!result.success) {
-        // Error is now displayed in the UI via React Query error state
-        // Show alert for specific error types that need immediate attention
         const errorMessage =
           result.error || 'Unable to sign in. Please try again.';
 
@@ -79,9 +75,7 @@ export const LoginScreen: React.FC = () => {
           Alert.alert('Sign-In Failed', errorMessage, [{ text: 'OK' }]);
         }
       }
-      // Success is handled automatically by React Query and navigation state change
     } catch (err: any) {
-      // React Query will handle the error, but show alert for critical issues
       const errorMessage = err.message || 'An unexpected error occurred.';
       Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
     }

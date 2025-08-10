@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { View, Text, StyleSheet, TextInput, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { CustomIcon } from '@components/common/CustomIcon';
 import { ScrollableScreen } from '@components/common/ScreenWrapper';
 import {
@@ -26,10 +26,11 @@ import {
 import { Cryptocurrency } from '@types';
 import { Button, ScreenHeader, LoadingIndicator } from '@components/common';
 import { colors } from '@constants/colors';
+import { CurrencyInputSection } from '../../components/common/CurrencyInputSection';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
 
-interface SelectedCurrency {
+export interface SelectedCurrency {
   id: string;
   name: string;
   symbol: string;
@@ -214,50 +215,24 @@ export const ExchangeScreen: React.FC = () => {
         {/* Conversion Card */}
         <View style={styles.conversionCard}>
           {/* From Section */}
-          <View style={styles.currencySection}>
-            <Text style={styles.sectionLabel}>From</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.amountInput}
-                value={fromAmount}
-                onChangeText={text => {
-                  const formatted = formatInputValue(text);
-                  setFromAmount(formatted);
-                }}
-                placeholder="0.00"
-                keyboardType="numeric"
-                placeholderTextColor={colors.textTertiary}
-              />
-              <Button
-                style={styles.currencySelector}
-                onPress={() => {
-                  if (direction === 'crypto-to-fiat') {
-                    setShowCryptoSelector(true);
-                  } else {
-                    setShowFiatSelector(true);
-                  }
-                }}
-              >
-                <View style={styles.currencySelectorContent}>
-                  <Text style={styles.currencySymbol}>
-                    {direction === 'crypto-to-fiat'
-                      ? selectedCrypto.symbol
-                      : selectedFiat.code}
-                  </Text>
-                  <Text style={styles.currencyName}>
-                    {direction === 'crypto-to-fiat'
-                      ? selectedCrypto.name
-                      : selectedFiat.name}
-                  </Text>
-                </View>
-                <CustomIcon
-                  name="keyboard-arrow-down"
-                  size={16}
-                  color={colors.textSecondary}
-                />
-              </Button>
-            </View>
-          </View>
+          <CurrencyInputSection
+            label="From"
+            amount={fromAmount}
+            onAmountChange={text => {
+              const formatted = formatInputValue(text);
+              setFromAmount(formatted);
+            }}
+            currency={
+              direction === 'crypto-to-fiat' ? selectedCrypto : selectedFiat
+            }
+            onCurrencySelect={() => {
+              if (direction === 'crypto-to-fiat') {
+                setShowCryptoSelector(true);
+              } else {
+                setShowFiatSelector(true);
+              }
+            }}
+          />
 
           {/* Swap Button */}
           <Animated.View style={animatedStyle}>
@@ -271,46 +246,21 @@ export const ExchangeScreen: React.FC = () => {
           </Animated.View>
 
           {/* To Section */}
-          <View style={styles.currencySection}>
-            <Text style={styles.sectionLabel}>To</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.amountInput, styles.readOnlyInput]}
-                value={toAmount}
-                placeholder="0.00"
-                editable={false}
-                placeholderTextColor={colors.textTertiary}
-              />
-              <Button
-                style={styles.currencySelector}
-                onPress={() => {
-                  if (direction === 'crypto-to-fiat') {
-                    setShowFiatSelector(true);
-                  } else {
-                    setShowCryptoSelector(true);
-                  }
-                }}
-              >
-                <View style={styles.currencySelectorContent}>
-                  <Text style={styles.currencySymbol}>
-                    {direction === 'crypto-to-fiat'
-                      ? selectedFiat.code
-                      : selectedCrypto.symbol}
-                  </Text>
-                  <Text style={styles.currencyName}>
-                    {direction === 'crypto-to-fiat'
-                      ? selectedFiat.name
-                      : selectedCrypto.name}
-                  </Text>
-                </View>
-                <CustomIcon
-                  name="keyboard-arrow-down"
-                  size={16}
-                  color={colors.textSecondary}
-                />
-              </Button>
-            </View>
-          </View>
+          <CurrencyInputSection
+            label="To"
+            amount={toAmount}
+            isReadOnly
+            currency={
+              direction === 'crypto-to-fiat' ? selectedFiat : selectedCrypto
+            }
+            onCurrencySelect={() => {
+              if (direction === 'crypto-to-fiat') {
+                setShowFiatSelector(true);
+              } else {
+                setShowCryptoSelector(true);
+              }
+            }}
+          />
 
           {/* Loading Indicator */}
           {(isPriceLoading || isConverting) && (
@@ -417,62 +367,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-  },
-  currencySection: {
-    marginBottom: 20,
-  },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  amountInput: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  readOnlyInput: {
-    color: colors.textSecondary,
-    backgroundColor: 'transparent',
-  },
-  currencySelector: {
-    paddingHorizontal: 6,
-    paddingVertical: 8,
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
-    minWidth: 110,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  currencySelectorContent: {
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  currencySymbol: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  currencyName: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 4,
-    textAlign: 'center',
   },
   // Swap Button
   swapButton: {
