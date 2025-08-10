@@ -71,17 +71,21 @@ yarn-error.log
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 
-# testing
+# Testing
 /coverage
+coverage/
+junit.xml
+/test-results/
+.jest/
+.jest-cache/
 
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-
+# Documentation that shouldn't be committed
 CLAUDE.md 
 TODO.md

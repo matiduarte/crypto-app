@@ -5,6 +5,7 @@ interface CustomIconProps {
   name: string;
   size: number;
   color: string;
+  testID?: string;
 }
 
 /**
@@ -16,6 +17,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
   size,
   color,
+  testID,
 }) => {
-  return <Icon name={name} size={size} color={color} />;
+  return <Icon name={name} size={size} color={color} testID={testID} />;
 };

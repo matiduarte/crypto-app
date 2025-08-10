@@ -23,8 +23,13 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   inputStyle,
   showClearButton = true,
 }) => (
-  <View style={[styles.searchContainer, style]}>
-    <CustomIcon name="search" size={24} color={colors.textTertiary} />
+  <View style={[styles.searchContainer, style]} testID="search-input-container">
+    <CustomIcon
+      name="search"
+      size={24}
+      color={colors.textTertiary}
+      testID="search-icon"
+    />
     <TextInput
       style={[styles.searchInput, inputStyle]}
       placeholder={placeholder}
@@ -40,6 +45,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         style={styles.clearButton}
         onPress={onClear}
         accessibilityLabel="Clear search"
+        testID="clear-button"
       >
         <CustomIcon name="close" size={24} color={colors.textTertiary} />
       </Button>

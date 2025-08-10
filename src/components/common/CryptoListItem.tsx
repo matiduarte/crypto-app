@@ -14,9 +14,13 @@ export const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
     const changeColor = isPositive ? colors.success : colors.errorLight;
 
     return (
-      <View style={styles.listItem}>
+      <View style={styles.listItem} testID="list-item-container">
         <View style={styles.itemLeft}>
-          <Image source={{ uri: item.image }} style={styles.cryptoImage} />
+          <Image 
+            source={{ uri: item.image }} 
+            style={styles.cryptoImage} 
+            testID="crypto-image"
+          />
           <View style={styles.cryptoInfo}>
             <Text style={styles.cryptoName} numberOfLines={1}>
               {item.name}
