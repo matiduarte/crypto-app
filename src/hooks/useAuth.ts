@@ -46,23 +46,17 @@ const useAuthSession = () => {
         ]);
 
         if (storedIsLoggedIn && storedUser && storedToken) {
-          console.log('Found stored auth data, validating session...');
-
           try {
             // Validate the session by checking if tokens are still valid
             const isSessionValid = await authService.validateSession();
 
             if (isSessionValid) {
-              console.log('Session is valid');
               return {
                 user: storedUser,
                 tokens: { idToken: storedToken, accessToken: '' },
                 isLoggedIn: true,
               };
             } else {
-              console.warn(
-                'Session validation failed - tokens expired or invalid',
-              );
 
               // Clear expired session data
               await Promise.all([
@@ -76,8 +70,6 @@ const useAuthSession = () => {
               return { user: null, tokens: null, isLoggedIn: false };
             }
           } catch (validationError) {
-            console.error('Session validation error:', validationError);
-
             // On validation error, assume session is invalid and clear it
             await Promise.all([
               storageService.removeItem(STORAGE_KEYS.USER),
@@ -93,7 +85,6 @@ const useAuthSession = () => {
 
         return { user: null, tokens: null, isLoggedIn: false };
       } catch (error) {
-        console.error('Auth session query error:', error);
         return { user: null, tokens: null, isLoggedIn: false };
       }
     },
@@ -149,7 +140,6 @@ export const useGoogleSignIn = () => {
           error: result.error || 'Sign-in failed',
         };
       } catch (error: any) {
-        console.error('Sign-in mutation error:', error);
         return {
           success: false,
           error:
@@ -172,9 +162,6 @@ export const useGoogleSignIn = () => {
         // Invalidate and refetch auth queries to ensure consistency
         queryClient.invalidateQueries({ queryKey: ['auth'] });
       }
-    },
-    onError: _error => {
-      console.error('Sign-in mutation error:', _error);
     },
   });
 };

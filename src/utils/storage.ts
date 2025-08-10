@@ -8,7 +8,6 @@ class StorageService {
       const jsonValue = JSON.stringify(value);
       await AsyncStorage.setItem(key, jsonValue);
     } catch (error) {
-      console.error(`Error storing data for key ${key}:`, error);
       throw error;
     }
   }
@@ -18,7 +17,6 @@ class StorageService {
       const jsonValue = await AsyncStorage.getItem(key);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
-      console.error(`Error retrieving data for key ${key}:`, error);
       return null;
     }
   }
@@ -27,7 +25,6 @@ class StorageService {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing data for key ${key}:`, error);
       throw error;
     }
   }
@@ -36,7 +33,6 @@ class StorageService {
     try {
       await AsyncStorage.clear();
     } catch (error) {
-      console.error('Error clearing storage:', error);
       throw error;
     }
   }

@@ -57,9 +57,7 @@ class AuthService {
       GoogleSignin.configure(configParams);
 
       this.isConfigured = true;
-      console.log('Google Sign-In configured successfully', configParams);
     } catch (error) {
-      console.error('Google Sign-In configuration failed:', error);
       throw error;
     }
   }
@@ -74,7 +72,6 @@ class AuthService {
       });
       return true;
     } catch (error) {
-      console.error('Google Play Services not available:', error);
       return false;
     }
   }
@@ -97,14 +94,9 @@ class AuthService {
         return !!silentSignInResult;
       } catch (silentError: any) {
         // Silent sign-in failed - user is not signed in
-        console.log(
-          'Silent sign-in failed, user not signed in:',
-          silentError?.message || 'Unknown error',
-        );
         return false;
       }
     } catch (error) {
-      console.error('Error checking sign-in status:', error);
       return false;
     }
   }
@@ -117,7 +109,6 @@ class AuthService {
       const userInfo = GoogleSignin.getCurrentUser();
       return userInfo ? userInfo.user : null;
     } catch (error) {
-      console.error('Error getting current user:', error);
       return null;
     }
   }
@@ -142,14 +133,9 @@ class AuthService {
         }
         return null;
       } catch (silentError: any) {
-        console.log(
-          'Silent user restoration failed:',
-          silentError?.message || 'Unknown error',
-        );
         return null;
       }
     } catch (error) {
-      console.error('Error getting current user with restore:', error);
       return null;
     }
   }
@@ -165,20 +151,13 @@ class AuthService {
         accessToken: tokens.accessToken,
       };
     } catch (error: any) {
-      console.error('Error getting tokens:', error);
-
       // Check if this is a token expiration error
       if (this.isTokenExpiredError(error)) {
-        console.warn('Tokens have expired, clearing session');
         // Silently clear the session since tokens are invalid
         try {
           await GoogleSignin.signOut();
-          console.log('Session cleared due to expired tokens');
         } catch (signOutError) {
-          console.warn(
-            'Failed to clear session after token expiration:',
-            signOutError,
-          );
+          // Silent failure handling
         }
       }
 
@@ -270,13 +249,11 @@ class AuthService {
   async signOut(): Promise<SignInResult> {
     try {
       await GoogleSignin.signOut();
-      console.log('Successfully signed out from Google');
 
       return {
         success: true,
       };
     } catch (error: any) {
-      console.error('Sign-out error:', error);
       return {
         success: false,
         error: error?.message || 'Sign-out failed',
@@ -286,7 +263,6 @@ class AuthService {
 
   /**
    * Revoke access and sign out
-   * Made more robust to handle token revocation failures gracefully
    */
   async revokeAccess(): Promise<SignInResult> {
     let revokeSuccess = false;
@@ -297,9 +273,7 @@ class AuthService {
     try {
       await GoogleSignin.revokeAccess();
       revokeSuccess = true;
-      console.log('Successfully revoked Google access');
     } catch (error: any) {
-      console.warn('Failed to revoke Google access (non-critical):', error);
       lastError = error;
       // Don't return here - continue with sign out
     }
@@ -308,9 +282,7 @@ class AuthService {
     try {
       await GoogleSignin.signOut();
       signOutSuccess = true;
-      console.log('Successfully signed out from Google');
     } catch (error: any) {
-      console.error('Failed to sign out from Google:', error);
       lastError = error;
     }
 
@@ -318,7 +290,6 @@ class AuthService {
     if (signOutSuccess) {
       return {
         success: true,
-        // Optionally include a warning about revoke failure
         ...(revokeSuccess
           ? {}
           : {
@@ -352,11 +323,6 @@ class AuthService {
       errorMessage = error.message;
     }
 
-    console.error('Google Sign-In error:', {
-      code: error.code,
-      message: error.message,
-    });
-
     return {
       success: false,
       error: errorMessage,
@@ -376,18 +342,11 @@ class AuthService {
 
       // If getCurrentTokens returned null due to expiration, session is invalid
       if (!tokens || !tokens.idToken) {
-        console.warn(
-          'Session validation failed: Google tokens are invalid or expired',
-        );
         return false;
       }
 
-      console.log(
-        'Session validation passed: both custom timeout and Google tokens are valid',
-      );
       return !!(userInfo && tokens && tokens.idToken);
     } catch (error) {
-      console.error('Session validation error:', error);
       return false;
     }
   }
@@ -417,7 +376,6 @@ class AuthService {
         familyName: user.familyName || undefined,
       };
     } catch (error) {
-      console.error('Error getting user profile:', error);
       return null;
     }
   }

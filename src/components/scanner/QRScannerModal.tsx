@@ -98,7 +98,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           );
         }
       } catch (error) {
-        console.error('Camera initialization error:', error);
         if (isMounted) {
           Alert.alert(
             'Camera Error',
@@ -382,7 +381,7 @@ const styles = StyleSheet.create({
   },
   successOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(76, 175, 80, 0.9)',
+    backgroundColor: colors.successOverlay,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
@@ -411,7 +410,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   cancelButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: colors.whiteOverlay,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

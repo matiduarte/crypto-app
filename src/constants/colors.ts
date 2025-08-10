@@ -17,6 +17,7 @@ export const colors = {
   // Success & Status Colors
   success: '#28a745', // Green for success states
   successLight: '#34a853', // Lighter green
+  successOverlay: 'rgba(76, 175, 80, 0.9)', // Semi-transparent success green
   warning: '#ffc107', // Yellow/amber for warnings
   error: '#dc3545', // Red for errors
   errorLight: '#f44336', // Lighter red for error icons
@@ -65,6 +66,7 @@ export const colors = {
   // Transparent Colors
   transparent: 'transparent',
   white: '#ffffff',
+  whiteOverlay: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white
   black: '#000000',
 } as const;
 
@@ -80,10 +82,11 @@ export const getColor = (colorKey: ColorKey): string => {
 export const colorCategories = {
   brand: ['primary', 'primaryLight', 'primaryAccent'],
   crypto: ['bitcoin', 'ethereum', 'crypto'],
-  status: ['success', 'successLight', 'warning', 'error', 'errorLight'],
+  status: ['success', 'successLight', 'successOverlay', 'warning', 'error', 'errorLight'],
   text: ['textPrimary', 'textSecondary', 'textTertiary', 'textLight'],
   background: ['background', 'backgroundLight', 'backgroundDark', 'surface'],
   interactive: ['active', 'inactive', 'disabled', 'favorite'],
+  transparent: ['transparent', 'white', 'whiteOverlay', 'black'],
 } as const;
 
 // Export individual color groups for convenience
@@ -101,6 +104,7 @@ export const cryptoColors = {
 
 export const statusColors = {
   success: colors.success,
+  successOverlay: colors.successOverlay,
   warning: colors.warning,
   error: colors.error,
 } as const;

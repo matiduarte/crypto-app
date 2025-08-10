@@ -28,7 +28,7 @@ jest.mock('react-native-vector-icons/MaterialIcons', () => {
   const React = require('react');
   const { View } = require('react-native');
   
-  const MockIcon = ({ name, size, color, testID, ...props }: any) => {
+  const MockIcon = ({ name, size: _size, color: _color, testID, ..._props }: any) => {
     return React.createElement(View, { testID, accessibilityLabel: name }, name);
   };
   MockIcon.getImageSource = jest.fn(() => Promise.resolve({ uri: 'mocked-icon' }));
@@ -39,7 +39,7 @@ jest.mock('react-native-vector-icons/Ionicons', () => {
   const React = require('react');
   const { View } = require('react-native');
   
-  const MockIcon = ({ name, size, color, testID, ...props }: any) => {
+  const MockIcon = ({ name, size: _size, color: _color, testID, ..._props }: any) => {
     return React.createElement(View, { testID, accessibilityLabel: name }, name);
   };
   MockIcon.getImageSource = jest.fn(() => Promise.resolve({ uri: 'mocked-icon' }));

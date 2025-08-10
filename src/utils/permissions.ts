@@ -16,14 +16,11 @@ export const requestCameraPermission = async (): Promise<boolean> => {
       );
       
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Camera permission granted');
         return true;
       } else {
-        console.log('Camera permission denied');
         return false;
       }
     } catch (err) {
-      console.warn('Camera permission error:', err);
       return false;
     }
   } else {

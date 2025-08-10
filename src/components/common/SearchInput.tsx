@@ -12,6 +12,7 @@ interface SearchInputProps {
   style?: object;
   inputStyle?: object;
   showClearButton?: boolean;
+  testID?: string;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({

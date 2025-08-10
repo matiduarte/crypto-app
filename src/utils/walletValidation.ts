@@ -1,13 +1,9 @@
-// Wallet address validation utilities
-
 export interface WalletValidationResult {
   isValid: boolean;
   type: 'bitcoin' | 'ethereum' | 'unknown';
   address: string;
   error?: string;
 }
-
-
 
 /**
  * Determines wallet type and validates address

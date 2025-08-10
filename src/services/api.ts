@@ -22,11 +22,9 @@ class ApiService {
     // Request interceptor
     this.api.interceptors.request.use(
       (config) => {
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
-        console.error('API Request Error:', error);
         return Promise.reject(error);
       }
     );
@@ -34,24 +32,9 @@ class ApiService {
     // Response interceptor
     this.api.interceptors.response.use(
       (response) => {
-        console.log(`API Response: ${response.status} ${response.config.url}`);
         return response;
       },
       (error) => {
-        console.error('API Response Error:', error);
-        
-        if (error.response) {
-          // Server responded with error status
-          console.error('Response data:', error.response.data);
-          console.error('Response status:', error.response.status);
-        } else if (error.request) {
-          // Request was made but no response received
-          console.error('No response received:', error.request);
-        } else {
-          // Something else happened
-          console.error('Request setup error:', error.message);
-        }
-
         return Promise.reject(this.handleError(error));
       }
     );

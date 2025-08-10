@@ -193,14 +193,9 @@ export const ScannerScreen: React.FC = () => {
         if (signal.aborted) return;
         const extractedAddress = extractAddressFromQRData(qrData);
 
-        console.log('QR Data:', qrData);
-        console.log('Extracted Address:', extractedAddress);
-
         // Validate the address
         if (signal.aborted) return;
         const validation = validateWalletAddress(extractedAddress);
-
-        console.log('Validation Result:', validation);
 
         if (!validation.isValid) {
           dispatch({ type: 'STOP_PROCESSING' });
