@@ -9,6 +9,7 @@ import {
 import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
 import { colors } from '../../constants/colors';
 import { Button } from '@components/common';
+import { formatDate } from '@utils/helpers';
 
 interface WalletItemProps {
   item: ScannedWallet;
@@ -53,56 +54,17 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-    );
-
-    if (diffInHours < 1) {
-      return 'Just now';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else if (diffInHours < 48) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-      });
-    }
-  };
-
   return (
     <Button
       style={[styles.container, item.isFavorite && styles.favoriteContainer]}
       onPress={() => onPress?.(item)}
       activeOpacity={0.7}
     >
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Left side - Wallet info */}
-        <View style={styles.leftContent}>
-          <View style={styles.walletInfo}>
-            <View style={styles.titleRow}>
-              <Text style={styles.walletType} numberOfLines={1}>
-                {getWalletTypeDisplayName(item.type)} Wallet
-              </Text>
-            </View>
-            <Text
-              style={styles.address}
-              numberOfLines={1}
-              ellipsizeMode="middle"
-            >
-              {formatWalletAddress(item.address, 36)}
-            </Text>
-            <Text style={styles.date}>{formatDate(item.scannedAt)}</Text>
-          </View>
-        </View>
-
-        {/* Right side - Actions */}
+      {/* Header with title and actions */}
+      <View style={styles.header}>
+        <Text style={styles.walletType} numberOfLines={1}>
+          {getWalletTypeDisplayName(item.type)} Wallet
+        </Text>
         <View style={styles.actions}>
           <Button
             style={[styles.actionButton, styles.favoriteButton]}
@@ -111,7 +73,7 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
           >
             <CustomIcon
               name={item.isFavorite ? 'favorite' : 'favorite-border'}
-              size={20}
+              size={18}
               color={item.isFavorite ? colors.favorite : colors.textTertiary}
             />
           </Button>
@@ -121,9 +83,17 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
             onPress={handleDelete}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <CustomIcon name="delete" size={20} color={colors.primary} />
+            <CustomIcon name="delete" size={18} color={colors.primary} />
           </Button>
         </View>
+      </View>
+
+      {/* Wallet content */}
+      <View style={styles.content}>
+        <Text style={styles.address} numberOfLines={1} ellipsizeMode="middle">
+          {formatWalletAddress(item.address, 36)}
+        </Text>
+        <Text style={styles.date}>{formatDate(item.scannedAt)}</Text>
       </View>
     </Button>
   );
@@ -139,31 +109,20 @@ const styles = StyleSheet.create({
   favoriteContainer: {
     backgroundColor: colors.favoriteBackground,
   },
-  content: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  leftContent: {
+  content: {
     flex: 1,
-    marginRight: 16,
-  },
-  walletInfo: {
-    flex: 1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
   },
   walletType: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
     flex: 1,
-  },
-  favoriteIndicator: {
-    marginLeft: 8,
   },
   address: {
     fontSize: 14,
@@ -174,22 +133,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
-    alignSelf: 'flex-start',
   },
   date: {
     fontSize: 12,
     color: colors.textTertiary,
-    marginTop: 2,
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
@@ -201,10 +158,5 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     // Additional styling for delete button if needed
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginTop: 16,
   },
 });

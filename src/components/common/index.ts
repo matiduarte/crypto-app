@@ -14,6 +14,7 @@ export {
 
 export { SkeletonLoader } from './SkeletonLoader';
 export { EmptyState } from './EmptyState';
+export { ErrorModal } from './ErrorModal';
 export { ErrorState } from './ErrorState';
 export { LoadingIndicator } from './LoadingIndicator';
 
