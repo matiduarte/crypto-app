@@ -7,7 +7,7 @@ import {
   AuthStackParamList,
   MainTabParamList,
   CryptoStackParamList,
-} from '../types';
+} from '@types';
 
 // Root Stack Navigation Types
 export type RootStackNavigationProp =
@@ -26,10 +26,7 @@ export type CryptoStackNavigationProp =
 
 // Route Types
 export type LoginScreenRouteProp = RouteProp<AuthStackParamList, 'Login'>;
-export type CryptoListScreenRouteProp = RouteProp<
-  MainTabParamList,
-  'Crypto'
->;
+export type CryptoListScreenRouteProp = RouteProp<MainTabParamList, 'Crypto'>;
 export type ExchangeScreenRouteProp = RouteProp<MainTabParamList, 'Exchange'>;
 export type ScannerScreenRouteProp = RouteProp<MainTabParamList, 'Scanner'>;
 export type ProfileScreenRouteProp = RouteProp<MainTabParamList, 'Profile'>;

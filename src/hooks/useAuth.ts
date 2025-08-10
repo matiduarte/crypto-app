@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService, User, AuthTokens } from '../services/authService';
-import storageService from '../utils/storage';
+import { authService, User, AuthTokens } from '@services/authService';
+import storageService from '@utils/storage';
 
 // Storage keys
 const STORAGE_KEYS = {

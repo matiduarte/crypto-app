@@ -1,14 +1,14 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { RootStackParamList } from '@types';
+import { useAuth } from '@hooks/useAuth';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { CustomIcon } from '../components/common/CustomIcon';
-import { APP_DETAILS } from '../constants/config';
-import { colors } from '../constants/colors';
+import { CustomIcon } from '@components/common/CustomIcon';
+import { APP_DETAILS } from '@constants/config';
+import { colors } from '@constants/colors';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,7 +21,11 @@ export const RootNavigator: React.FC = () => {
       <View style={styles.loadingContainer}>
         <View style={styles.loadingContent}>
           <View style={styles.logoContainer}>
-            <CustomIcon name={APP_DETAILS.iconName} size={64} color={colors.primary} />
+            <CustomIcon
+              name={APP_DETAILS.iconName}
+              size={64}
+              color={colors.primary}
+            />
           </View>
           <ActivityIndicator
             size="large"

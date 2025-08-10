@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface LoadingIndicatorProps {
   text?: string;
@@ -17,16 +17,15 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   horizontal = true,
   style,
 }) => (
-  <View style={[
-    horizontal ? styles.horizontalContainer : styles.verticalContainer,
-    style
-  ]}>
+  <View
+    style={[
+      horizontal ? styles.horizontalContainer : styles.verticalContainer,
+      style,
+    ]}
+  >
     <ActivityIndicator size={size} color={color} />
     {text && (
-      <Text style={[
-        styles.loadingText,
-        horizontal && styles.horizontalText
-      ]}>
+      <Text style={[styles.loadingText, horizontal && styles.horizontalText]}>
         {text}
       </Text>
     )}

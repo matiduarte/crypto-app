@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CustomIcon } from './CustomIcon';
 import { Button } from './Button';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface ErrorStateProps {
   title?: string;
@@ -30,11 +30,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
     <Text style={styles.errorTitle}>{title}</Text>
     <Text style={styles.errorSubtext}>{message}</Text>
     {onRetry && (
-      <Button
-        style={styles.retryButton}
-        onPress={onRetry}
-        activeOpacity={0.7}
-      >
+      <Button style={styles.retryButton} onPress={onRetry} activeOpacity={0.7}>
         <Text style={styles.retryButtonText}>{retryText}</Text>
       </Button>
     )}

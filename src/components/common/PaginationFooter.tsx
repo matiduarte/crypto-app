@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface PaginationFooterProps {
   isLoading?: boolean;

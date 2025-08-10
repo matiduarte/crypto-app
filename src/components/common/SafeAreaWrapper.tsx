@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface SafeAreaWrapperProps {
   children: React.ReactNode;
@@ -17,12 +17,8 @@ export const SafeAreaWrapper: React.FC<SafeAreaWrapperProps> = ({
   style,
 }) => {
   return (
-    <SafeAreaView 
-      style={[
-        styles.container,
-        { backgroundColor },
-        style,
-      ]}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor }, style]}
       edges={edges}
     >
       {children}
@@ -31,17 +27,17 @@ export const SafeAreaWrapper: React.FC<SafeAreaWrapperProps> = ({
 };
 
 // Specialized components for common use cases
-export const SafeAreaScreen: React.FC<Omit<SafeAreaWrapperProps, 'edges'>> = (props) => (
-  <SafeAreaWrapper {...props} edges={['top', 'left', 'right']} />
-);
+export const SafeAreaScreen: React.FC<
+  Omit<SafeAreaWrapperProps, 'edges'>
+> = props => <SafeAreaWrapper {...props} edges={['top', 'left', 'right']} />;
 
-export const SafeAreaModal: React.FC<Omit<SafeAreaWrapperProps, 'edges'>> = (props) => (
-  <SafeAreaWrapper {...props} edges={['bottom', 'left', 'right']} />
-);
+export const SafeAreaModal: React.FC<
+  Omit<SafeAreaWrapperProps, 'edges'>
+> = props => <SafeAreaWrapper {...props} edges={['bottom', 'left', 'right']} />;
 
-export const SafeAreaHeader: React.FC<Omit<SafeAreaWrapperProps, 'edges'>> = (props) => (
-  <SafeAreaWrapper {...props} edges={['top', 'left', 'right']} />
-);
+export const SafeAreaHeader: React.FC<
+  Omit<SafeAreaWrapperProps, 'edges'>
+> = props => <SafeAreaWrapper {...props} edges={['top', 'left', 'right']} />;
 
 const styles = StyleSheet.create({
   container: {

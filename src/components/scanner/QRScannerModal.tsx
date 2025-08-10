@@ -15,9 +15,8 @@ import {
   CameraPermissionStatus,
 } from 'react-native-vision-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomIcon } from '../common/CustomIcon';
-import { colors } from '../../constants/colors';
-import { Button } from '../common';
+import { colors } from '@constants/colors';
+import { Button, CustomIcon } from '@components/common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
@@ -253,7 +252,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
             <Text style={styles.title}>{title}</Text>
             <Button style={styles.closeButton} onPress={handleClose}>
-              <Text style={styles.closeButtonText}>×</Text>
+              <CustomIcon name="close" size={20} color={colors.white} />
             </Button>
           </View>
 
@@ -338,12 +337,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    fontSize: 20,
-    color: colors.white,
-    fontWeight: '500',
-  },
-
   // Scanning area
   scanningArea: {
     flex: 1,

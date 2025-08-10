@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Alert } from 'react-native';
-import { useAuth } from '../../hooks/useAuth';
-import { ScrollableScreen } from '../../components/common/ScreenWrapper';
-import { Button } from '../../components/common';
-import { CustomIcon } from '../../components/common/CustomIcon';
-import { colors } from '../../constants/colors';
+import { useAuth } from '@hooks/useAuth';
+import { ScrollableScreen } from '@components/common/ScreenWrapper';
+import { Button } from '@components/common';
+import { CustomIcon } from '@components/common/CustomIcon';
+import { colors } from '@constants/colors';
 
 export const ProfileScreen: React.FC = () => {
   const { user, signOut, isLoading } = useAuth();

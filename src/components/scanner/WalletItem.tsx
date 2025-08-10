@@ -8,7 +8,7 @@ import {
 } from '../../utils/walletValidation';
 import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
 import { colors } from '../../constants/colors';
-import { Button } from '../common';
+import { Button } from '@components/common';
 
 interface WalletItemProps {
   item: ScannedWallet;

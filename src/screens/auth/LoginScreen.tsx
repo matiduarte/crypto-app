@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Animated, Easing } from 'react-native';
 
-import { useAuth, useGoogleSignIn } from '../../hooks/useAuth';
-import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { CustomIcon } from '../../components/common/CustomIcon';
-import { APP_DETAILS } from '../../constants/config';
-import { colors } from '../../constants/colors';
-import { Button, GoogleSignInButton } from '../../components/common';
+import { useAuth, useGoogleSignIn } from '@hooks/useAuth';
+import { FixedScreen } from '@components/common/ScreenWrapper';
+import { CustomIcon } from '@components/common/CustomIcon';
+import { APP_DETAILS } from '@constants/config';
+import { colors } from '@constants/colors';
+import { Button, GoogleSignInButton } from '@components/common';
 
 export const LoginScreen: React.FC = () => {
   // Use both the context (for backward compatibility) and direct React Query hook

@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { useInfiniteCryptocurrencies } from '../../hooks/useCryptocurrencies';
-import { searchCryptos, sortCryptos } from '../../utils/helpers';
-import { Cryptocurrency } from '../../types';
+import { FixedScreen } from '@components/common/ScreenWrapper';
+import { useInfiniteCryptocurrencies } from '@hooks/useCryptocurrencies';
+import { searchCryptos, sortCryptos } from '@utils/helpers';
+import { Cryptocurrency } from '@types';
 import {
   Button,
   CryptoListItem,
@@ -14,7 +14,7 @@ import {
   SearchInput,
   ItemSeparator,
   PaginationFooter,
-} from '../../components/common';
+} from '@components/common';
 import { colors } from '../../constants/colors';
 
 // Sort options type

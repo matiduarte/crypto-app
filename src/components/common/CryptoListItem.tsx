@@ -1,8 +1,8 @@
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { formatPercentage, formatPriceUSD } from '../../utils/helpers';
-import { Cryptocurrency } from '../../types';
-import { colors } from '../../constants/colors';
+import { formatPercentage, formatPriceUSD } from '@utils/helpers';
+import { Cryptocurrency } from '@types';
+import { colors } from '@constants/colors';
 
 interface CryptoListItemProps {
   item: Cryptocurrency;

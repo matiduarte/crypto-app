@@ -1,8 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { CryptoStackParamList } from '../types';
+import { CryptoStackParamList } from '@types';
 import { BottomTabNavigator } from './BottomTabNavigator';
-import { colors } from '../constants/colors';
+import { colors } from '@constants/colors';
 
 const Stack = createNativeStackNavigator<CryptoStackParamList>();
 

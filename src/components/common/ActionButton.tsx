@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Button } from './Button';
 import { CustomIcon } from './CustomIcon';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface ActionButtonProps {
   title: string;
@@ -71,7 +71,11 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
               <CustomIcon name={icon} size={iconSize} color={textColor} />
               {showBadge && (
                 <View style={styles.iconBadge}>
-                  <CustomIcon name={badgeIcon} size={16} color={backgroundColor} />
+                  <CustomIcon
+                    name={badgeIcon}
+                    size={16}
+                    color={backgroundColor}
+                  />
                 </View>
               )}
             </View>

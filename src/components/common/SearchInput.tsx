@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { CustomIcon } from './CustomIcon';
 import { Button } from './Button';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface SearchInputProps {
   value: string;
@@ -17,7 +17,7 @@ interface SearchInputProps {
 export const SearchInput: React.FC<SearchInputProps> = ({
   value,
   onChangeText,
-  placeholder = "Search...",
+  placeholder = 'Search...',
   onClear,
   style,
   inputStyle,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CustomIcon } from './CustomIcon';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface ScreenHeaderProps {
   title: string;

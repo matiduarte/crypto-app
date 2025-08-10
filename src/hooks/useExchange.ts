@@ -1,13 +1,7 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
-import apiService from '../services/api';
-import { queryKeys } from '../services/queryClient';
-import { ConversionResult } from '../types';
-
-
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import apiService from '@services/api';
+import { queryKeys } from '@services/queryClient';
+import { ConversionResult } from '@types';
 
 // Hook for currency conversion calculations
 export const useCurrencyConversion = () => {
@@ -88,4 +82,3 @@ export const useRealTimePrices = (
     refetchIntervalInBackground: true, // Continue updating in background
   });
 };
-

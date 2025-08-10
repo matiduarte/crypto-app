@@ -1,22 +1,20 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-} from 'react-native';
-import { CustomIcon } from '../../components/common/CustomIcon';
-import { ScrollableScreen } from '../../components/common/ScreenWrapper';
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
+import { View, Text, StyleSheet, TextInput, Animated } from 'react-native';
+import { CustomIcon } from '@components/common/CustomIcon';
+import { ScrollableScreen } from '@components/common/ScreenWrapper';
 import {
   SelectorModal,
   SelectorOption,
-} from '../../components/common/SelectorModal';
-import {
-  useCurrencyConversion,
-  useRealTimePrices,
-} from '../../hooks/useExchange';
-import { useCryptocurrencies } from '../../hooks/useCryptocurrencies';
-import { FIAT_CURRENCIES } from '../../constants/config';
+} from '@components/common/SelectorModal';
+import { useCurrencyConversion, useRealTimePrices } from '@hooks/useExchange';
+import { useCryptocurrencies } from '@hooks/useCryptocurrencies';
+import { FIAT_CURRENCIES } from '@constants/config';
 import {
   formatPriceUSD,
   formatFiatCurrency,
@@ -24,10 +22,10 @@ import {
   safeParseFloat,
   formatInputValue,
   extractNumericValue,
-} from '../../utils/helpers';
-import { Cryptocurrency } from '../../types';
-import { Button, ScreenHeader, LoadingIndicator } from '../../components/common';
-import { colors } from '../../constants/colors';
+} from '@utils/helpers';
+import { Cryptocurrency } from '@types';
+import { Button, ScreenHeader, LoadingIndicator } from '@components/common';
+import { colors } from '@constants/colors';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
 
@@ -51,6 +49,10 @@ export const ExchangeScreen: React.FC = () => {
   const [selectedFiat, setSelectedFiat] = useState<
     (typeof FIAT_CURRENCIES)[number]
   >(FIAT_CURRENCIES[0]); // USD
+
+  // Animation state for swap button
+  const rotationValue = useRef(new Animated.Value(0)).current;
+  const [rotationCount, setRotationCount] = useState(0);
   const [showCryptoSelector, setShowCryptoSelector] = useState(false);
   const [showFiatSelector, setShowFiatSelector] = useState(false);
 
@@ -111,6 +113,16 @@ export const ExchangeScreen: React.FC = () => {
 
   // Handle conversion direction toggle
   const toggleDirection = useCallback(() => {
+    // Animate the swap button rotation
+    const nextRotationCount = rotationCount + 1;
+    setRotationCount(nextRotationCount);
+
+    Animated.timing(rotationValue, {
+      toValue: nextRotationCount,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+
     setDirection(prev =>
       prev === 'crypto-to-fiat' ? 'fiat-to-crypto' : 'crypto-to-fiat',
     );
@@ -121,7 +133,7 @@ export const ExchangeScreen: React.FC = () => {
     const formattedValue = formatInputValue(extractedValue);
     setFromAmount(formattedValue);
     setToAmount(temp);
-  }, [fromAmount, toAmount]);
+  }, [fromAmount, toAmount, rotationValue, rotationCount]);
 
   // Handle crypto selection
   const handleCryptoSelect = useCallback((crypto: Cryptocurrency) => {
@@ -161,11 +173,21 @@ export const ExchangeScreen: React.FC = () => {
     [cryptos, handleCryptoSelect],
   );
 
+  // Create rotation transform for swap button
+  const rotationInterpolate = rotationValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const animatedStyle = {
+    transform: [{ rotate: rotationInterpolate }],
+  };
+
   return (
     <ScrollableScreen>
       <View style={styles.container}>
         {/* Header */}
-        <ScreenHeader 
+        <ScreenHeader
           title="Currency Exchange"
           subtitle="Convert between cryptocurrencies and fiat currencies"
           icon="swap-horiz"
@@ -238,9 +260,15 @@ export const ExchangeScreen: React.FC = () => {
           </View>
 
           {/* Swap Button */}
-          <Button style={styles.swapButton} onPress={toggleDirection}>
-            <CustomIcon name="swap-vert" size={24} color={colors.textPrimary} />
-          </Button>
+          <Animated.View style={animatedStyle}>
+            <Button style={styles.swapButton} onPress={toggleDirection}>
+              <CustomIcon
+                name="swap-vert"
+                size={24}
+                color={colors.textPrimary}
+              />
+            </Button>
+          </Animated.View>
 
           {/* To Section */}
           <View style={styles.currencySection}>
@@ -286,7 +314,7 @@ export const ExchangeScreen: React.FC = () => {
 
           {/* Loading Indicator */}
           {(isPriceLoading || isConverting) && (
-            <LoadingIndicator 
+            <LoadingIndicator
               text="Updating rates..."
               style={styles.loadingContainer}
             />

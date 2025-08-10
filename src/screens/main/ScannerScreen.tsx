@@ -1,20 +1,20 @@
 import React, { useReducer, useRef, useEffect, useCallback } from 'react';
+import { View, StyleSheet, Alert, FlatList } from 'react-native';
+import { FixedScreen } from '@components/common/ScreenWrapper';
 import {
-  View,
-  StyleSheet,
-  Alert,
-  FlatList,
-} from 'react-native';
-import { FixedScreen } from '../../components/common/ScreenWrapper';
-import { ActionButton, EmptyState, ScreenHeader, LoadingIndicator } from '../../components/common';
-import { QRScannerModal, WalletItem } from '../../components/scanner';
-import { useScannedWallets, useAddScannedWallet } from '../../hooks';
+  ActionButton,
+  EmptyState,
+  ScreenHeader,
+  LoadingIndicator,
+} from '@components/common';
+import { QRScannerModal, WalletItem } from '@components/scanner';
+import { useScannedWallets, useAddScannedWallet } from '@hooks';
 import {
   validateWalletAddress,
   extractAddressFromQRData,
   getWalletTypeDisplayName,
-} from '../../utils/walletValidation';
-import { colors } from '../../constants/colors';
+} from '@utils/walletValidation';
+import { colors } from '@constants/colors';
 
 // Types for better state management
 interface ScannerState {
@@ -334,7 +334,7 @@ export const ScannerScreen: React.FC = () => {
   // Header content for FlatList
   const headerContent = (
     <View style={styles.header}>
-      <ScreenHeader 
+      <ScreenHeader
         title="QR Scanner"
         subtitle="Scan cryptocurrency wallet QR codes"
         icon="qr-code-scanner"
@@ -343,8 +343,12 @@ export const ScannerScreen: React.FC = () => {
 
       {/* Scan Button */}
       <ActionButton
-        title={state.isProcessing ? "Processing..." : "Scan QR Code"}
-        subtitle={state.isProcessing ? state.processingMessage : "Tap to scan a wallet address"}
+        title={state.isProcessing ? 'Processing...' : 'Scan QR Code'}
+        subtitle={
+          state.isProcessing
+            ? state.processingMessage
+            : 'Tap to scan a wallet address'
+        }
         icon="qr-code-scanner"
         onPress={handleOpenScanner}
         disabled={state.isProcessing}
@@ -372,7 +376,7 @@ export const ScannerScreen: React.FC = () => {
       <FixedScreen>
         <View style={styles.container}>
           {headerContent}
-          <LoadingIndicator 
+          <LoadingIndicator
             text="Loading wallets..."
             size="large"
             color={colors.primary}

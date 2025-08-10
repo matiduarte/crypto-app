@@ -3,9 +3,9 @@ import {
   useInfiniteQuery,
   UseQueryOptions,
 } from '@tanstack/react-query';
-import apiService from '../services/api';
-import { queryKeys } from '../services/queryClient';
-import { Cryptocurrency, APIResponse } from '../types';
+import apiService from '@services/api';
+import { queryKeys } from '@services/queryClient';
+import { Cryptocurrency, APIResponse } from '@types';
 
 /**
  * Hook for fetching cryptocurrencies
@@ -69,6 +69,3 @@ export const useInfiniteCryptocurrencies = (
     maxPages: 10, // Prevent excessive memory usage
   });
 };
-
-
-

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, ScrollViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;

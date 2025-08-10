@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, FlatList } from 'react-native';
-import { colors } from '../../constants/colors';
+import { colors } from '@constants/colors';
 import { CustomIcon } from './CustomIcon';
 import { Button } from './Button';
 
