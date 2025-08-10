@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService, User, AuthTokens } from '@services/authService';
+import { authService } from '@services/authService';
 import storageService from '@utils/storage';
+import { AuthTokens, User } from '@types';
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -57,7 +58,6 @@ const useAuthSession = () => {
                 isLoggedIn: true,
               };
             } else {
-
               // Clear expired session data
               await Promise.all([
                 storageService.removeItem(STORAGE_KEYS.USER),

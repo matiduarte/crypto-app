@@ -37,6 +37,11 @@ export interface SelectedCurrency {
   image?: string;
 }
 
+/**
+ * ExchangeScreen provides real-time cryptocurrency to fiat currency conversion.
+ * Features live rates, bidirectional conversion, animated swap transitions,
+ * and supports major cryptocurrencies with popular fiat currencies.
+ */
 export const ExchangeScreen: React.FC = () => {
   const [fromAmount, setFromAmount] = useState('1');
   const [toAmount, setToAmount] = useState('');
@@ -51,13 +56,11 @@ export const ExchangeScreen: React.FC = () => {
     (typeof FIAT_CURRENCIES)[number]
   >(FIAT_CURRENCIES[0]); // USD
 
-  // Animation state for swap button
   const rotationValue = useRef(new Animated.Value(0)).current;
   const [rotationCount, setRotationCount] = useState(0);
   const [showCryptoSelector, setShowCryptoSelector] = useState(false);
   const [showFiatSelector, setShowFiatSelector] = useState(false);
 
-  // Get cryptocurrency data for selection
   const { data: cryptoData } = useCryptocurrencies({
     vs_currency: 'usd',
     order: 'market_cap_desc',
@@ -65,23 +68,19 @@ export const ExchangeScreen: React.FC = () => {
     sparkline: false,
   });
 
-  // Get real-time price for selected crypto
   const { data: priceData, isLoading: isPriceLoading } = useRealTimePrices(
     [selectedCrypto.id],
     selectedFiat.code.toLowerCase(),
     60000, // Update every minute
   );
 
-  // Get conversion hook
   const { isLoading: isConverting } = useCurrencyConversion();
 
-  // Calculate current rate and converted amount
   const currentRate = useMemo(() => {
     if (!priceData?.success || !priceData.data) return null;
     return priceData.data[selectedCrypto.id]?.[selectedFiat.code.toLowerCase()];
   }, [priceData, selectedCrypto.id, selectedFiat.code]);
 
-  // Auto-calculate conversion when inputs change
   const calculateConversion = useCallback(() => {
     const inputAmount = safeParseFloat(fromAmount);
     if (!inputAmount || !currentRate) {
@@ -92,7 +91,6 @@ export const ExchangeScreen: React.FC = () => {
     let result: number;
     if (direction === 'crypto-to-fiat') {
       result = inputAmount * currentRate;
-      // Format as fiat currency with proper symbol
       const formattedResult = formatFiatCurrency(
         result,
         selectedFiat.code,
@@ -101,20 +99,16 @@ export const ExchangeScreen: React.FC = () => {
       setToAmount(formattedResult);
     } else {
       result = inputAmount / currentRate;
-      // Format as crypto amount with proper precision
       const formattedResult = formatCryptoAmount(result, selectedCrypto.symbol);
       setToAmount(formattedResult);
     }
   }, [fromAmount, currentRate, direction, selectedFiat, selectedCrypto]);
 
-  // Recalculate when dependencies change
   useEffect(() => {
     calculateConversion();
   }, [calculateConversion]);
 
-  // Handle conversion direction toggle
   const toggleDirection = useCallback(() => {
-    // Animate the swap button rotation
     const nextRotationCount = rotationCount + 1;
     setRotationCount(nextRotationCount);
 
@@ -128,7 +122,6 @@ export const ExchangeScreen: React.FC = () => {
       prev === 'crypto-to-fiat' ? 'fiat-to-crypto' : 'crypto-to-fiat',
     );
 
-    // Swap amounts with proper extraction and formatting
     const temp = fromAmount;
     const extractedValue = extractNumericValue(toAmount || '0');
     const formattedValue = formatInputValue(extractedValue);
@@ -136,7 +129,6 @@ export const ExchangeScreen: React.FC = () => {
     setToAmount(temp);
   }, [fromAmount, toAmount, rotationValue, rotationCount]);
 
-  // Handle crypto selection
   const handleCryptoSelect = useCallback((crypto: Cryptocurrency) => {
     setSelectedCrypto({
       id: crypto.id,
@@ -147,7 +139,6 @@ export const ExchangeScreen: React.FC = () => {
     setShowCryptoSelector(false);
   }, []);
 
-  // Handle fiat selection
   const handleFiatSelect = useCallback((option: SelectorOption) => {
     const fiat = FIAT_CURRENCIES.find(f => f.code === option.symbol);
     if (fiat) {
@@ -156,14 +147,12 @@ export const ExchangeScreen: React.FC = () => {
     setShowFiatSelector(false);
   }, []);
 
-  // Filter cryptos based on search
   const cryptos = useMemo(() => {
     if (!cryptoData?.success || !cryptoData.data) return [];
 
     return cryptoData.data;
   }, [cryptoData]);
 
-  // Handle crypto selection from modal
   const handleCryptoSelectFromModal = useCallback(
     (option: SelectorOption) => {
       const crypto = cryptos.find(c => c.id === option.id);
@@ -174,7 +163,6 @@ export const ExchangeScreen: React.FC = () => {
     [cryptos, handleCryptoSelect],
   );
 
-  // Create rotation transform for swap button
   const rotationInterpolate = rotationValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
@@ -187,7 +175,6 @@ export const ExchangeScreen: React.FC = () => {
   return (
     <ScrollableScreen>
       <View style={styles.container}>
-        {/* Header */}
         <ScreenHeader
           title="Currency Exchange"
           subtitle="Convert between cryptocurrencies and fiat currencies"
@@ -212,9 +199,7 @@ export const ExchangeScreen: React.FC = () => {
           )}
         </ScreenHeader>
 
-        {/* Conversion Card */}
         <View style={styles.conversionCard}>
-          {/* From Section */}
           <CurrencyInputSection
             label="From"
             amount={fromAmount}
@@ -234,7 +219,6 @@ export const ExchangeScreen: React.FC = () => {
             }}
           />
 
-          {/* Swap Button */}
           <Animated.View style={animatedStyle}>
             <Button style={styles.swapButton} onPress={toggleDirection}>
               <CustomIcon
@@ -245,7 +229,6 @@ export const ExchangeScreen: React.FC = () => {
             </Button>
           </Animated.View>
 
-          {/* To Section */}
           <CurrencyInputSection
             label="To"
             amount={toAmount}
@@ -262,7 +245,6 @@ export const ExchangeScreen: React.FC = () => {
             }}
           />
 
-          {/* Loading Indicator */}
           {(isPriceLoading || isConverting) && (
             <LoadingIndicator
               text="Updating rates..."
@@ -271,7 +253,6 @@ export const ExchangeScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Crypto Selector Modal */}
         <SelectorModal
           visible={showCryptoSelector}
           title="Select Cryptocurrency"
@@ -292,7 +273,6 @@ export const ExchangeScreen: React.FC = () => {
           }}
         />
 
-        {/* Fiat Selector Modal */}
         <SelectorModal
           visible={showFiatSelector}
           title="Select Fiat Currency"
@@ -320,7 +300,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  // Header Styles
   header: {
     paddingVertical: 20,
     borderRadius: 8,
@@ -356,7 +335,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.error,
   },
-  // Conversion Card Styles
   conversionCard: {
     backgroundColor: colors.surface,
     marginVertical: 20,
@@ -368,7 +346,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  // Swap Button
   swapButton: {
     alignSelf: 'center',
     backgroundColor: colors.crypto,
@@ -384,11 +361,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  // Loading Styles
   loadingContainer: {
     paddingVertical: 16,
   },
-  // Custom styles for modal content
   currencyOptionPrice: {
     fontSize: 14,
     fontWeight: '600',

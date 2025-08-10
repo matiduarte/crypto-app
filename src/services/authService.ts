@@ -2,35 +2,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-
-export interface AuthTokens {
-  idToken: string;
-  accessToken: string;
-}
-
-export type User = {
-  id: string;
-  name: string | null;
-  email: string;
-  photo: string | null;
-  familyName: string | null;
-  givenName: string | null;
-};
-
-export interface SignInResult {
-  success: boolean;
-  user?: User;
-  tokens?: AuthTokens;
-  error?: string;
-  warning?: string;
-}
-
-export interface AuthServiceConfig {
-  webClientId: string;
-  offlineAccess?: boolean;
-  hostedDomain?: string;
-  forceCodeForRefreshToken?: boolean;
-}
+import { AuthServiceConfig, AuthTokens, SignInResult, User } from '@types';
 
 class AuthService {
   private isConfigured = false;
@@ -108,33 +80,6 @@ class AuthService {
     try {
       const userInfo = GoogleSignin.getCurrentUser();
       return userInfo ? userInfo.user : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  /**
-   * Get current user information with iOS session restoration
-   * This method will attempt to restore the session if needed
-   */
-  async getCurrentUserWithRestore(): Promise<User | null> {
-    try {
-      // First try to get cached user
-      const userInfo = GoogleSignin.getCurrentUser();
-      if (userInfo && userInfo.user) {
-        return userInfo.user;
-      }
-
-      // If no cached user, try silent sign-in for iOS compatibility
-      try {
-        const silentSignInResult = await GoogleSignin.signInSilently();
-        if (silentSignInResult.type === 'success') {
-          return silentSignInResult.data.user || null;
-        }
-        return null;
-      } catch (silentError: any) {
-        return null;
-      }
     } catch (error) {
       return null;
     }
@@ -262,50 +207,6 @@ class AuthService {
   }
 
   /**
-   * Revoke access and sign out
-   */
-  async revokeAccess(): Promise<SignInResult> {
-    let revokeSuccess = false;
-    let signOutSuccess = false;
-    let lastError: any = null;
-
-    // Try to revoke access first, but don't fail if it doesn't work
-    try {
-      await GoogleSignin.revokeAccess();
-      revokeSuccess = true;
-    } catch (error: any) {
-      lastError = error;
-      // Don't return here - continue with sign out
-    }
-
-    // Always try to sign out, even if revoke failed
-    try {
-      await GoogleSignin.signOut();
-      signOutSuccess = true;
-    } catch (error: any) {
-      lastError = error;
-    }
-
-    // Consider it successful if we managed to sign out, even if revoke failed
-    if (signOutSuccess) {
-      return {
-        success: true,
-        ...(revokeSuccess
-          ? {}
-          : {
-              warning:
-                'Sign-out successful, but token revocation failed (non-critical)',
-            }),
-      };
-    } else {
-      return {
-        success: false,
-        error: lastError?.message || 'Sign-out failed',
-      };
-    }
-  }
-
-  /**
    * Handle sign-in errors with specific error codes
    */
   private handleSignInError(error: any): SignInResult {
@@ -348,35 +249,6 @@ class AuthService {
       return !!(userInfo && tokens && tokens.idToken);
     } catch (error) {
       return false;
-    }
-  }
-
-  /**
-   * Get user profile information in a normalized format
-   */
-  async getUserProfile(): Promise<{
-    id: string;
-    name: string;
-    email: string;
-    photo?: string;
-    givenName?: string;
-    familyName?: string;
-  } | null> {
-    try {
-      const user = this.getCurrentUser();
-
-      if (!user) return null;
-
-      return {
-        id: user.id || '',
-        name: user.name || 'Unknown User',
-        email: user.email || '',
-        photo: user.photo || undefined,
-        givenName: user.givenName || undefined,
-        familyName: user.familyName || undefined,
-      };
-    } catch (error) {
-      return null;
     }
   }
 }

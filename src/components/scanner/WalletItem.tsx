@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { CustomIcon } from '../common/CustomIcon';
-import { ScannedWallet } from '../../types';
+import { CustomIcon } from '@components/common/CustomIcon';
+import { ScannedWallet } from '@types';
 import {
   formatWalletAddress,
   getWalletTypeDisplayName,
-} from '../../utils/walletValidation';
-import { useRemoveScannedWallet, useToggleWalletFavorite } from '../../hooks';
-import { colors } from '../../constants/colors';
+} from '@utils/walletValidation';
+import { useRemoveScannedWallet, useToggleWalletFavorite } from '@hooks';
+import { colors } from '@constants/colors';
 import { Button } from '@components/common';
 import { formatDate } from '@utils/helpers';
 
@@ -16,10 +16,21 @@ interface WalletItemProps {
   onPress?: (item: ScannedWallet) => void;
 }
 
+/**
+ * WalletItem component displays a scanned cryptocurrency wallet with actions.
+ * Shows wallet type, address (truncated), scan date, and favorite/delete actions.
+ *
+ * @param item - The scanned wallet data to display
+ * @param onPress - Optional callback when the wallet item is pressed
+ */
 export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
   const removeWalletMutation = useRemoveScannedWallet();
   const toggleFavoriteMutation = useToggleWalletFavorite();
 
+  /**
+   * Shows confirmation dialog and deletes wallet if confirmed.
+   * Uses React Query mutation to remove wallet from storage.
+   */
   const handleDelete = () => {
     Alert.alert(
       'Delete Wallet',
@@ -43,6 +54,10 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
     );
   };
 
+  /**
+   * Toggles the favorite status of the wallet.
+   * Uses React Query mutation to persist the change.
+   */
   const handleToggleFavorite = async () => {
     try {
       await toggleFavoriteMutation.mutateAsync({
@@ -60,7 +75,6 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
       onPress={() => onPress?.(item)}
       activeOpacity={0.7}
     >
-      {/* Header with title and actions */}
       <View style={styles.header}>
         <Text style={styles.walletType} numberOfLines={1}>
           {getWalletTypeDisplayName(item.type)} Wallet
@@ -88,7 +102,6 @@ export const WalletItem: React.FC<WalletItemProps> = ({ item, onPress }) => {
         </View>
       </View>
 
-      {/* Wallet content */}
       <View style={styles.content}>
         <Text style={styles.address} numberOfLines={1} ellipsizeMode="middle">
           {formatWalletAddress(item.address, 36)}
@@ -153,10 +166,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  favoriteButton: {
-    // Additional styling for favorite button if needed
-  },
-  deleteButton: {
-    // Additional styling for delete button if needed
-  },
+  favoriteButton: {},
+  deleteButton: {},
 });

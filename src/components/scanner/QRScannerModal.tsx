@@ -28,6 +28,16 @@ interface QRScannerModalProps {
   title?: string;
 }
 
+/**
+ * QRScannerModal provides camera-based QR code scanning functionality.
+ * Handles camera permissions, device selection, and prevents duplicate scan triggers.
+ * Shows appropriate error states for permission denied or unavailable camera.
+ * 
+ * @param visible - Controls modal visibility
+ * @param onClose - Callback when modal should be closed
+ * @param onScanSuccess - Callback with scanned QR code data
+ * @param title - Optional title for the scanner interface
+ */
 export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   visible,
   onClose,
@@ -42,7 +52,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     useState<CameraPermissionStatus>('not-determined');
   const hasProcessed = useRef(false);
 
-  // Request permission when modal opens
   useEffect(() => {
     async function requestPermission() {
       try {
@@ -72,7 +81,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     requestPermission();
   }, [onClose]);
 
-  // Reset scan flag when modal opens
   useEffect(() => {
     if (visible) {
       hasProcessed.current = false;

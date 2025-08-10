@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 
 // Number formatting utilities
 export const formatPrice = (price: number, decimals: number = 2): string => {

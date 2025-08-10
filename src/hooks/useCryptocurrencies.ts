@@ -8,10 +8,8 @@ import { queryKeys } from '@services/queryClient';
 import { Cryptocurrency, APIResponse } from '@types';
 
 /**
- * Hook for fetching cryptocurrencies
- * @param params
- * @param options
- * @returns
+ * Fetches paginated cryptocurrency market data with React Query caching.
+ * Provides real-time price updates and market statistics.
  */
 export const useCryptocurrencies = (
   params: {
@@ -35,10 +33,8 @@ export const useCryptocurrencies = (
 };
 
 /**
- * Hook for infinite loading of cryptocurrencies
- * @param params
- * @param options
- * @returns
+ * Provides infinite scrolling for cryptocurrency lists with automatic
+ * pagination and memory management. Optimized for large datasets.
  */
 export const useInfiniteCryptocurrencies = (
   params: {
@@ -66,6 +62,6 @@ export const useInfiniteCryptocurrencies = (
       return lastPageParam + 1;
     },
     initialPageParam: 1,
-    maxPages: 10, // Prevent excessive memory usage
+    maxPages: 10,
   });
 };

@@ -17,7 +17,6 @@ import {
 } from '@components/common';
 import { colors } from '../../constants/colors';
 
-// Sort options type
 type SortOption = {
   key: keyof Cryptocurrency;
   label: string;
@@ -35,13 +34,17 @@ const SORT_OPTIONS: SortOption[] = [
   { key: 'name', label: 'Name', iconName: 'sort-by-alpha' },
 ];
 
+/**
+ * CryptoListScreen displays a searchable, sortable list of cryptocurrencies
+ * with infinite scrolling, real-time price updates, and multiple sort options.
+ * Optimized for performance with proper virtualization and data management.
+ */
 export const CryptoListScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<keyof Cryptocurrency>('market_cap_rank');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showSortModal, setShowSortModal] = useState(false);
 
-  // Use React Query hook for infinite cryptocurrency data
   const {
     data: infiniteData,
     fetchNextPage,
@@ -54,12 +57,11 @@ export const CryptoListScreen: React.FC = () => {
   } = useInfiniteCryptocurrencies({
     vs_currency: 'usd',
     order: 'market_cap_desc',
-    per_page: 20, // Smaller pages for better infinite scroll
+    per_page: 20,
     sparkline: false,
     price_change_percentage: '24h',
   });
 
-  // Get the base crypto data from all pages
   const baseCryptoData = useMemo(() => {
     if (!infiniteData?.pages) return [];
 
@@ -69,16 +71,13 @@ export const CryptoListScreen: React.FC = () => {
       .filter(Boolean);
   }, [infiniteData]);
 
-  // Filter and sort crypto data based on search query and sort options
   const cryptoData = useMemo(() => {
     let filteredData = baseCryptoData;
 
-    // Apply search filter if query exists
     if (searchQuery.trim().length > 0) {
       filteredData = searchCryptos(baseCryptoData, searchQuery.trim());
     }
 
-    // Apply sorting
     return sortCryptos(filteredData, sortBy, sortOrder);
   }, [baseCryptoData, searchQuery, sortBy, sortOrder]);
 
@@ -92,7 +91,6 @@ export const CryptoListScreen: React.FC = () => {
 
   const keyExtractor = useCallback((item: Cryptocurrency) => item.id, []);
 
-  // Empty component
   const EmptyComponent = useMemo(() => {
     if (isLoading) {
       return null;
@@ -119,24 +117,19 @@ export const CryptoListScreen: React.FC = () => {
     return <ErrorState onRetry={handleRefresh} />;
   };
 
-  // Clear search functionality
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
   }, []);
 
-  // Handle search input change
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
   }, []);
 
-  // Handle sort option selection
   const handleSortChange = useCallback(
     (newSortBy: keyof Cryptocurrency) => {
       if (newSortBy === sortBy) {
-        // Toggle sort order if same field
         setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
       } else {
-        // Change sort field and default to ascending
         setSortBy(newSortBy);
         setSortOrder('asc');
       }
@@ -145,20 +138,16 @@ export const CryptoListScreen: React.FC = () => {
     [sortBy],
   );
 
-  // Toggle sort modal
   const toggleSortModal = useCallback(() => {
     setShowSortModal(prev => !prev);
   }, []);
 
-  // Handle load more for infinite scroll
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage && !searchQuery.trim()) {
-      // Only load more when not searching (to keep infinite scroll simple)
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, searchQuery, fetchNextPage]);
 
-  // Empty search results component
   const renderEmptySearch = useCallback(() => {
     if (searchQuery.trim().length === 0 || isLoading) {
       return null;
@@ -175,7 +164,6 @@ export const CryptoListScreen: React.FC = () => {
     );
   }, [searchQuery, isLoading, handleClearSearch]);
 
-  // Render footer for pagination loading
   const renderFooter = useCallback(() => {
     if (searchQuery.trim().length > 0) {
       return null;
@@ -187,7 +175,6 @@ export const CryptoListScreen: React.FC = () => {
   return (
     <FixedScreen>
       <View style={styles.container}>
-        {/* Search Header */}
         <View style={styles.searchHeader}>
           <View style={styles.titleContainer}>
             <CustomIcon
@@ -237,7 +224,6 @@ export const CryptoListScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Sort Modal */}
         {showSortModal && (
           <View style={styles.sortModal}>
             <View style={styles.sortModalContent}>
@@ -316,8 +302,8 @@ export const CryptoListScreen: React.FC = () => {
                     handleRefresh();
                   }
                 }}
-                colors={[colors.crypto]} // Android
-                tintColor={colors.crypto} // iOS
+                colors={[colors.crypto]}
+                tintColor={colors.crypto}
               />
             }
             ListEmptyComponent={EmptyComponent}
@@ -327,7 +313,7 @@ export const CryptoListScreen: React.FC = () => {
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
             getItemLayout={(_data, index) => ({
-              length: 72, // Fixed item height
+              length: 72,
               offset: 72 * index,
               index,
             })}
@@ -347,7 +333,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  // Search Header
   searchHeader: {
     backgroundColor: colors.surface,
     paddingHorizontal: 20,
@@ -391,7 +376,6 @@ const styles = StyleSheet.create({
     minWidth: 60,
     justifyContent: 'center',
   },
-  // Sort Modal Styles
   sortModal: {
     position: 'absolute',
     top: 0,
@@ -450,7 +434,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: '600',
   },
-  // List Styles
   list: {
     flex: 1,
   },

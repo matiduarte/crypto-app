@@ -11,21 +11,28 @@ import {
 } from '@utils/walletValidation';
 import { colors } from '@constants/colors';
 
+/**
+ * ScannerScreen allows users to scan QR codes containing cryptocurrency wallet addresses.
+ * Validates addresses, prevents duplicates, saves to storage, and displays scanned wallets.
+ * Supports Bitcoin and Ethereum address formats.
+ */
 export const ScannerScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   
-  // Data hooks
   const { data: scannedWallets = [], isLoading } = useScannedWallets();
   const addWalletMutation = useAddScannedWallet();
 
+  /**
+   * Processes scanned QR code data, validates wallet address, checks for duplicates,
+   * and saves valid wallets to storage with user feedback.
+   * 
+   * @param qrData - Raw QR code data from the scanner
+   */
   const handleScanSuccess = async (qrData: string) => {
     setModalVisible(false);
     
     try {
-      // Extract address from QR data
       const extractedAddress = extractAddressFromQRData(qrData);
-      
-      // Validate wallet address
       const validation = validateWalletAddress(extractedAddress);
       
       if (!validation.isValid) {
@@ -44,7 +51,6 @@ export const ScannerScreen: React.FC = () => {
         return;
       }
       
-      // Check for duplicates
       const existingWallet = scannedWallets.find(wallet => wallet.address === validation.address);
       if (existingWallet) {
         Alert.alert(
@@ -55,7 +61,6 @@ export const ScannerScreen: React.FC = () => {
         return;
       }
       
-      // Save wallet
       await addWalletMutation.mutateAsync({
         address: validation.address,
         qrData: qrData,
@@ -77,12 +82,10 @@ export const ScannerScreen: React.FC = () => {
     }
   };
 
-  // Render wallet item
   const renderWalletItem = ({ item }: { item: any }) => (
     <WalletItem item={item} />
   );
 
-  // Header component for FlatList
   const headerComponent = (
     <View style={styles.headerSection}>
       <ScreenHeader
@@ -102,7 +105,6 @@ export const ScannerScreen: React.FC = () => {
     </View>
   );
 
-  // Empty state component
   const emptyComponent = (
     <EmptyState
       icon="qr-code-scanner"

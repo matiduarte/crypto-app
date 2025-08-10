@@ -2,6 +2,10 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '../constants/config';
 import { APIResponse, Cryptocurrency } from '../types';
 
+/**
+ * ApiService handles all cryptocurrency API requests with automatic error handling,
+ * retry mechanisms, and response transformation. Integrates with CoinGecko API.
+ */
 class ApiService {
   private api: AxiosInstance;
 
@@ -19,24 +23,22 @@ class ApiService {
   }
 
   private setupInterceptors() {
-    // Request interceptor
     this.api.interceptors.request.use(
-      (config) => {
+      config => {
         return config;
       },
-      (error) => {
+      error => {
         return Promise.reject(error);
-      }
+      },
     );
 
-    // Response interceptor
     this.api.interceptors.response.use(
-      (response) => {
+      response => {
         return response;
       },
-      (error) => {
+      error => {
         return Promise.reject(this.handleError(error));
-      }
+      },
     );
   }
 
@@ -62,27 +64,37 @@ class ApiService {
     }
   }
 
-  // Get cryptocurrencies with pagination
-  async getCryptocurrencies(params: {
-    vs_currency?: string;
-    order?: string;
-    per_page?: number;
-    page?: number;
-    sparkline?: boolean;
-    price_change_percentage?: string;
-  } = {}): Promise<APIResponse<Cryptocurrency[]>> {
+  /**
+   * Fetches paginated cryptocurrency market data with customizable parameters.
+   *
+   * @param params - Configuration for currency, sorting, pagination and data format
+   * @returns Promise resolving to cryptocurrency array with market data
+   */
+  async getCryptocurrencies(
+    params: {
+      vs_currency?: string;
+      order?: string;
+      per_page?: number;
+      page?: number;
+      sparkline?: boolean;
+      price_change_percentage?: string;
+    } = {},
+  ): Promise<APIResponse<Cryptocurrency[]>> {
     try {
-      const response: AxiosResponse<Cryptocurrency[]> = await this.api.get(API_CONFIG.ENDPOINTS.COINS, {
-        params: {
-          vs_currency: params.vs_currency || API_CONFIG.DEFAULT_VS_CURRENCY,
-          order: params.order || 'market_cap_desc',
-          per_page: params.per_page || API_CONFIG.DEFAULT_PAGE_SIZE,
-          page: params.page || 1,
-          sparkline: params.sparkline || false,
-          price_change_percentage: params.price_change_percentage || '24h',
-          ...params,
+      const response: AxiosResponse<Cryptocurrency[]> = await this.api.get(
+        API_CONFIG.ENDPOINTS.COINS,
+        {
+          params: {
+            vs_currency: params.vs_currency || API_CONFIG.DEFAULT_VS_CURRENCY,
+            order: params.order || 'market_cap_desc',
+            per_page: params.per_page || API_CONFIG.DEFAULT_PAGE_SIZE,
+            page: params.page || 1,
+            sparkline: params.sparkline || false,
+            price_change_percentage: params.price_change_percentage || '24h',
+            ...params,
+          },
         },
-      });
+      );
 
       return {
         success: true,
@@ -93,47 +105,13 @@ class ApiService {
     }
   }
 
-  // Get cryptocurrency details by ID
-  async getCryptocurrencyDetails(id: string): Promise<APIResponse<any>> {
-    try {
-      const endpoint = API_CONFIG.ENDPOINTS.COIN_DETAIL.replace('{id}', id);
-      const response = await this.api.get(endpoint, {
-        params: {
-          localization: false,
-          tickers: false,
-          market_data: true,
-          community_data: true,
-          developer_data: false,
-          sparkline: true,
-        },
-      });
-
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return this.handleError<any>(error);
-    }
-  }
-
-  // Search cryptocurrencies
-  async searchCryptocurrencies(query: string): Promise<APIResponse<any>> {
-    try {
-      const response = await this.api.get(API_CONFIG.ENDPOINTS.SEARCH, {
-        params: { query },
-      });
-
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return this.handleError<any>(error);
-    }
-  }
-
-  // Get simple price for conversion
+  /**
+   * Gets current prices and 24h changes for specified cryptocurrencies
+   * in requested fiat currencies. Optimized for real-time price displays.
+   *
+   * @param params - Cryptocurrency IDs, target currencies, and data options
+   * @returns Promise with current prices and optional 24h change data
+   */
   async getSimplePrice(params: {
     ids: string;
     vs_currencies: string;
@@ -155,47 +133,6 @@ class ApiService {
     } catch (error) {
       return this.handleError<any>(error);
     }
-  }
-
-  // Get exchange rates
-  async getExchangeRates(): Promise<APIResponse<any>> {
-    try {
-      const response = await this.api.get(API_CONFIG.ENDPOINTS.EXCHANGE_RATES);
-
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return this.handleError<any>(error);
-    }
-  }
-
-  // Retry mechanism for failed requests
-  async retryRequest<T>(
-    requestFn: () => Promise<APIResponse<T>>,
-    maxRetries: number = 3,
-    delay: number = 1000
-  ): Promise<APIResponse<T>> {
-    let lastError: APIResponse<T>;
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const result = await requestFn();
-        if (result.success) {
-          return result;
-        }
-        lastError = result;
-      } catch (error) {
-        lastError = this.handleError<T>(error);
-      }
-
-      if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
-      }
-    }
-
-    return lastError!;
   }
 }
 

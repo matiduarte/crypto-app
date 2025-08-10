@@ -15,7 +15,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const RootNavigator: React.FC = () => {
   const { isLoggedIn, isLoading } = useAuth();
 
-  // Show loading screen while checking authentication status
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -47,7 +46,6 @@ export const RootNavigator: React.FC = () => {
         }}
       >
         {isLoggedIn ? (
-          // User is logged in - show main app
           <Stack.Screen
             name="Main"
             component={MainStack}
@@ -56,7 +54,6 @@ export const RootNavigator: React.FC = () => {
             }}
           />
         ) : (
-          // User is not logged in - show auth flow
           <Stack.Screen
             name="Auth"
             component={AuthStack}

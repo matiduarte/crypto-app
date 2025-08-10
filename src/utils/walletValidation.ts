@@ -6,7 +6,12 @@ export interface WalletValidationResult {
 }
 
 /**
- * Determines wallet type and validates address
+ * Validates cryptocurrency wallet addresses and identifies their type.
+ * Supports Bitcoin (legacy, script hash, bech32) and Ethereum addresses.
+ * Provides helpful error messages for common non-crypto QR code types.
+ * 
+ * @param input - Address string to validate
+ * @returns Validation result with type, validity, and error details
  */
 export const validateWalletAddress = (
   input: string,
@@ -22,7 +27,6 @@ export const validateWalletAddress = (
 
   const address = input.trim();
 
-  // Check for empty string after trim
   if (!address) {
     return {
       isValid: false,
@@ -32,8 +36,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for Bitcoin address patterns first
-  // Legacy address (starts with 1)
   if (address.match(/^[1][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
     return {
       isValid: true,
@@ -42,7 +44,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Script hash address (starts with 3)
   if (address.match(/^[3][a-km-zA-HJ-NP-Z1-9]{25,34}$/)) {
     return {
       isValid: true,
@@ -51,7 +52,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Bech32 address (starts with bc1)
   if (address.match(/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,87}$/)) {
     return {
       isValid: true,
@@ -60,7 +60,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for Ethereum address pattern (0x followed by 40 hex characters)
   if (/^0x[a-fA-F0-9]{40}$/.test(address)) {
     return {
       isValid: true,
@@ -69,7 +68,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Handle common non-crypto QR codes that people might scan by mistake
   if (address.startsWith('http://') || address.startsWith('https://')) {
     return {
       isValid: false,
@@ -90,7 +88,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for phone numbers
   if (/^[+]?[0-9\s\-()]{10,}$/.test(address)) {
     return {
       isValid: false,
@@ -101,7 +98,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for social media handles or usernames
   if (address.startsWith('@') || address.startsWith('#')) {
     return {
       isValid: false,
@@ -112,7 +108,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for WiFi QR codes
   if (address.startsWith('WIFI:')) {
     return {
       isValid: false,
@@ -122,7 +117,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // Check for other common QR code types
   if (address.startsWith('BEGIN:VCARD') || address.includes('VERSION:')) {
     return {
       isValid: false,
@@ -133,7 +127,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // If it looks like it could be a crypto address but doesn't match known patterns
   if (address.length > 20 && /^[a-zA-Z0-9]+$/.test(address)) {
     return {
       isValid: false,
@@ -144,7 +137,6 @@ export const validateWalletAddress = (
     };
   }
 
-  // For very short strings or strings with special characters that don't match any pattern
   if (address.length < 20) {
     return {
       isValid: false,
@@ -165,43 +157,39 @@ export const validateWalletAddress = (
 };
 
 /**
- * Extracts wallet address from QR code data
- * Handles various QR code formats like bitcoin:address or just plain address
+ * Extracts cryptocurrency addresses from various QR code URI formats.
+ * Handles bitcoin:, ethereum: URI schemes and plain addresses with parameter parsing.
+ * 
+ * @param qrData - Raw QR code string data
+ * @returns Extracted wallet address or original data if no URI format detected
  */
 export const extractAddressFromQRData = (qrData: string): string => {
   if (!qrData) return '';
 
   const data = qrData.trim();
 
-  // Handle bitcoin: URI format
   if (data.startsWith('bitcoin:')) {
-    // Extract address from bitcoin:address?amount=0.1&label=example
     const match = data.match(/^bitcoin:([13bc1][a-zA-HJ-NP-Z0-9]{25,87})/);
     if (match && match[1]) {
       return match[1];
     }
-    // Fallback: try to extract any alphanumeric sequence after bitcoin:
     const fallbackMatch = data.match(/^bitcoin:([a-zA-Z0-9]+)/);
     if (fallbackMatch && fallbackMatch[1]) {
       return fallbackMatch[1];
     }
   }
 
-  // Handle ethereum: URI format
   if (data.startsWith('ethereum:')) {
-    // Extract address from ethereum:0x...
     const match = data.match(/^ethereum:(0x[a-fA-F0-9]{40})/);
     if (match && match[1]) {
       return match[1];
     }
-    // Fallback: try to extract any 0x address after ethereum:
     const fallbackMatch = data.match(/^ethereum:(0x[a-fA-F0-9]+)/);
     if (fallbackMatch && fallbackMatch[1]) {
       return fallbackMatch[1];
     }
   }
 
-  // Handle other cryptocurrency URI schemes
   if (
     data.includes(':') &&
     !data.startsWith('http') &&
@@ -210,7 +198,6 @@ export const extractAddressFromQRData = (qrData: string): string => {
   ) {
     const parts = data.split(':');
     if (parts.length >= 2 && parts[1]) {
-      // Extract the part after the first colon, but before any query parameters
       const addressPart = parts[1].split('?')[0].split('&')[0];
       if (addressPart) {
         return addressPart.trim();
@@ -218,12 +205,15 @@ export const extractAddressFromQRData = (qrData: string): string => {
     }
   }
 
-  // Return as-is if it's likely a plain address
   return data;
 };
 
 /**
- * Formats wallet address for display (shortens long addresses)
+ * Formats long wallet addresses for display by truncating the middle.
+ * 
+ * @param address - Wallet address to format
+ * @param maxLength - Maximum display length before truncation (default: 20)
+ * @returns Formatted address with ellipsis in the middle if truncated
  */
 export const formatWalletAddress = (
   address: string,
@@ -239,7 +229,10 @@ export const formatWalletAddress = (
 };
 
 /**
- * Gets wallet type display name
+ * Converts wallet type enum to user-friendly display name.
+ * 
+ * @param type - Wallet type identifier
+ * @returns Capitalized display name for the wallet type
  */
 export const getWalletTypeDisplayName = (
   type: 'bitcoin' | 'ethereum' | 'unknown',

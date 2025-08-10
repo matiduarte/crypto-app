@@ -1,11 +1,30 @@
-// User Types
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  photo?: string;
+export interface AuthTokens {
+  idToken: string;
   accessToken: string;
-  refreshToken?: string;
+}
+
+export type User = {
+  id: string;
+  name: string | null;
+  email: string;
+  photo: string | null;
+  familyName: string | null;
+  givenName: string | null;
+};
+
+export interface SignInResult {
+  success: boolean;
+  user?: User;
+  tokens?: AuthTokens;
+  error?: string;
+  warning?: string;
+}
+
+export interface AuthServiceConfig {
+  webClientId: string;
+  offlineAccess?: boolean;
+  hostedDomain?: string;
+  forceCodeForRefreshToken?: boolean;
 }
 
 // Cryptocurrency Types
