@@ -99,3 +99,7 @@ src/
 - **CoinGecko API** for cryptocurrency data
 - **Real-time price updates** with auto-refresh
 - **Google OAuth** for authentication
+
+## Demo
+
+https://github.com/user-attachments/assets/db808a89-6024-4cbf-9689-8a33d5475bb2
