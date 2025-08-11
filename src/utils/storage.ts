@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Keychain from 'react-native-keychain';
+
 import { APP_CONFIG } from '@constants/config';
 
 class StorageService {
@@ -37,29 +39,28 @@ class StorageService {
     }
   }
 
-  // User-specific methods
-  async setUserToken(token: string): Promise<void> {
-    await this.setItem(APP_CONFIG.STORAGE_KEYS.USER_TOKEN, token);
+  /**
+   * Securely store a item using Keychain
+   * @param key
+   * @param value
+   */
+  async setSecureItem(key: string, value: string): Promise<void> {
+    await Keychain.setGenericPassword(key, value, { service: key });
   }
 
-  async getUserToken(): Promise<string | null> {
-    return await this.getItem<string>(APP_CONFIG.STORAGE_KEYS.USER_TOKEN);
+  /**
+   * Retrieve a value securely
+   */
+  async getSecureItem(key: string): Promise<string | null> {
+    const credentials = await Keychain.getGenericPassword({ service: key });
+    return credentials ? credentials.password : null;
   }
 
-  async removeUserToken(): Promise<void> {
-    await this.removeItem(APP_CONFIG.STORAGE_KEYS.USER_TOKEN);
-  }
-
-  async setUserData<T>(userData: T): Promise<void> {
-    await this.setItem(APP_CONFIG.STORAGE_KEYS.USER_DATA, userData);
-  }
-
-  async getUserData<T>(): Promise<T | null> {
-    return await this.getItem<T>(APP_CONFIG.STORAGE_KEYS.USER_DATA);
-  }
-
-  async removeUserData(): Promise<void> {
-    await this.removeItem(APP_CONFIG.STORAGE_KEYS.USER_DATA);
+  /**
+   * Remove a value securely
+   */
+  async removeSecureItem(key: string): Promise<void> {
+    await Keychain.resetGenericPassword({ service: key });
   }
 
   // Scanned wallets methods
@@ -86,53 +87,6 @@ class StorageService {
       wallet => wallet.id !== walletId,
     );
     await this.setScannedWallets(updatedWallets);
-  }
-
-  // Favorite cryptos methods
-  async setFavoriteCryptos(cryptoIds: string[]): Promise<void> {
-    await this.setItem(APP_CONFIG.STORAGE_KEYS.FAVORITE_CRYPTOS, cryptoIds);
-  }
-
-  async getFavoriteCryptos(): Promise<string[]> {
-    const favorites = await this.getItem<string[]>(
-      APP_CONFIG.STORAGE_KEYS.FAVORITE_CRYPTOS,
-    );
-    return favorites || [];
-  }
-
-  async addFavoriteCrypto(cryptoId: string): Promise<void> {
-    const existingFavorites = await this.getFavoriteCryptos();
-    if (!existingFavorites.includes(cryptoId)) {
-      const updatedFavorites = [...existingFavorites, cryptoId];
-      await this.setFavoriteCryptos(updatedFavorites);
-    }
-  }
-
-  async removeFavoriteCrypto(cryptoId: string): Promise<void> {
-    const existingFavorites = await this.getFavoriteCryptos();
-    const updatedFavorites = existingFavorites.filter(id => id !== cryptoId);
-    await this.setFavoriteCryptos(updatedFavorites);
-  }
-
-  // App settings methods
-  async setAppSettings<T>(settings: T): Promise<void> {
-    await this.setItem(APP_CONFIG.STORAGE_KEYS.APP_SETTINGS, settings);
-  }
-
-  async getAppSettings<T>(): Promise<T | null> {
-    return await this.getItem<T>(APP_CONFIG.STORAGE_KEYS.APP_SETTINGS);
-  }
-
-  // Check if user is logged in
-  async isUserLoggedIn(): Promise<boolean> {
-    const token = await this.getUserToken();
-    return !!token;
-  }
-
-  // Clear all user data (logout)
-  async clearUserData(): Promise<void> {
-    await this.removeUserToken();
-    await this.removeUserData();
   }
 }
 

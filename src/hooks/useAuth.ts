@@ -42,7 +42,7 @@ const useAuthSession = () => {
       try {
         const [storedUser, storedToken, storedIsLoggedIn] = await Promise.all([
           storageService.getItem<User>(STORAGE_KEYS.USER),
-          storageService.getItem<string>(STORAGE_KEYS.TOKEN),
+          storageService.getSecureItem(STORAGE_KEYS.TOKEN),
           storageService.getItem<boolean>(STORAGE_KEYS.IS_LOGGED_IN),
         ]);
 
@@ -61,8 +61,8 @@ const useAuthSession = () => {
               // Clear expired session data
               await Promise.all([
                 storageService.removeItem(STORAGE_KEYS.USER),
-                storageService.removeItem(STORAGE_KEYS.TOKEN),
-                storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+                storageService.removeSecureItem(STORAGE_KEYS.TOKEN),
+                storageService.removeSecureItem(STORAGE_KEYS.REFRESH_TOKEN),
                 storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
                 storageService.removeItem('auth_session_start_time'),
               ]);
@@ -73,10 +73,9 @@ const useAuthSession = () => {
             // On validation error, assume session is invalid and clear it
             await Promise.all([
               storageService.removeItem(STORAGE_KEYS.USER),
-              storageService.removeItem(STORAGE_KEYS.TOKEN),
-              storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+              storageService.removeSecureItem(STORAGE_KEYS.TOKEN),
+              storageService.removeSecureItem(STORAGE_KEYS.REFRESH_TOKEN),
               storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
-              storageService.removeItem('auth_session_start_time'),
             ]);
 
             return { user: null, tokens: null, isLoggedIn: false };
@@ -120,8 +119,11 @@ export const useGoogleSignIn = () => {
         if (result.success && result.user && result.tokens) {
           await Promise.all([
             storageService.setItem(STORAGE_KEYS.USER, result.user),
-            storageService.setItem(STORAGE_KEYS.TOKEN, result.tokens.idToken),
-            storageService.setItem(
+            storageService.setSecureItem(
+              STORAGE_KEYS.TOKEN,
+              result.tokens.idToken,
+            ),
+            storageService.setSecureItem(
               STORAGE_KEYS.REFRESH_TOKEN,
               result.tokens.accessToken,
             ),
@@ -177,8 +179,8 @@ const useSignOut = () => {
       try {
         await Promise.all([
           storageService.removeItem(STORAGE_KEYS.USER),
-          storageService.removeItem(STORAGE_KEYS.TOKEN),
-          storageService.removeItem(STORAGE_KEYS.REFRESH_TOKEN),
+          storageService.removeSecureItem(STORAGE_KEYS.TOKEN),
+          storageService.removeSecureItem(STORAGE_KEYS.REFRESH_TOKEN),
           storageService.removeItem(STORAGE_KEYS.IS_LOGGED_IN),
         ]);
         return { success: true };
