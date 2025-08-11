@@ -1,27 +1,23 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useInfiniteCryptocurrencies } from '@hooks/useCryptocurrencies';
-import { searchCryptos, sortCryptos } from '@utils/helpers';
+import { useCryptoListSort } from '@hooks';
+import { searchCryptos } from '@utils/helpers';
 import { Cryptocurrency } from '@types';
 import {
-  Button,
   CryptoListItem,
-  CustomIcon,
   SkeletonLoader,
   EmptyState,
   ErrorState,
-  SearchInput,
   FixedScreen,
   ItemSeparator,
   PaginationFooter,
+  SortModal,
+  SortOption,
+  CryptoListHeader,
 } from '@components';
 import { colors } from '@constants/colors';
-
-type SortOption = {
-  key: keyof Cryptocurrency;
-  label: string;
-  iconName: string;
-};
+import { DEFAULT_CRYPTO_FILTER } from '@constants/cryptoFilters';
 
 const SORT_OPTIONS: SortOption[] = [
   { key: 'market_cap_rank', label: 'Market Cap', iconName: 'show-chart' },
@@ -41,9 +37,6 @@ const SORT_OPTIONS: SortOption[] = [
  */
 export const CryptoListScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<keyof Cryptocurrency>('market_cap_rank');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [showSortModal, setShowSortModal] = useState(false);
 
   const {
     data: infiniteData,
@@ -54,13 +47,7 @@ export const CryptoListScreen: React.FC = () => {
     error,
     refetch,
     isFetching,
-  } = useInfiniteCryptocurrencies({
-    vs_currency: 'usd',
-    order: 'market_cap_desc',
-    per_page: 20,
-    sparkline: false,
-    price_change_percentage: '24h',
-  });
+  } = useInfiniteCryptocurrencies(DEFAULT_CRYPTO_FILTER);
 
   const baseCryptoData = useMemo(() => {
     if (!infiniteData?.pages) return [];
@@ -71,15 +58,22 @@ export const CryptoListScreen: React.FC = () => {
       .filter(Boolean);
   }, [infiniteData]);
 
-  const cryptoData = useMemo(() => {
-    let filteredData = baseCryptoData;
-
+  const filteredData = useMemo(() => {
     if (searchQuery.trim().length > 0) {
-      filteredData = searchCryptos(baseCryptoData, searchQuery.trim());
+      return searchCryptos(baseCryptoData, searchQuery.trim());
     }
+    return baseCryptoData;
+  }, [baseCryptoData, searchQuery]);
 
-    return sortCryptos(filteredData, sortBy, sortOrder);
-  }, [baseCryptoData, searchQuery, sortBy, sortOrder]);
+  const {
+    sortedData: cryptoData,
+    sortBy,
+    sortOrder,
+    showSortModal,
+    handleSortChange,
+    toggleSortModal,
+    closeSortModal,
+  } = useCryptoListSort({ data: filteredData });
 
   const handleRefresh = useCallback(() => {
     refetch();
@@ -125,23 +119,6 @@ export const CryptoListScreen: React.FC = () => {
     setSearchQuery(text);
   }, []);
 
-  const handleSortChange = useCallback(
-    (newSortBy: keyof Cryptocurrency) => {
-      if (newSortBy === sortBy) {
-        setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-      } else {
-        setSortBy(newSortBy);
-        setSortOrder('asc');
-      }
-      setShowSortModal(false);
-    },
-    [sortBy],
-  );
-
-  const toggleSortModal = useCallback(() => {
-    setShowSortModal(prev => !prev);
-  }, []);
-
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage && !searchQuery.trim()) {
       fetchNextPage();
@@ -175,109 +152,24 @@ export const CryptoListScreen: React.FC = () => {
   return (
     <FixedScreen>
       <View style={styles.container}>
-        <View style={styles.searchHeader}>
-          <View style={styles.titleContainer}>
-            <CustomIcon
-              name="currency-bitcoin"
-              size={24}
-              color={colors.crypto}
-            />
-            <Text style={styles.title}>Cryptocurrency Market</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            {searchQuery
-              ? `Search results for "${searchQuery}"`
-              : 'Live USD prices and 24h changes'}
-          </Text>
+        <CryptoListHeader
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onClearSearch={handleClearSearch}
+          onSortPress={toggleSortModal}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          sortOptions={SORT_OPTIONS}
+        />
 
-          <View style={styles.controlsRow}>
-            <SearchInput
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              onClear={handleClearSearch}
-              placeholder="Search cryptocurrencies..."
-            />
-
-            <Button
-              style={styles.sortButton}
-              onPress={toggleSortModal}
-              accessibilityLabel="Sort options"
-            >
-              <CustomIcon
-                name={
-                  SORT_OPTIONS.find(opt => opt.key === sortBy)?.iconName ||
-                  'show-chart'
-                }
-                size={18}
-                color={colors.textSecondary}
-              />
-              <CustomIcon
-                name={
-                  sortOrder === 'asc'
-                    ? 'keyboard-arrow-up'
-                    : 'keyboard-arrow-down'
-                }
-                size={18}
-                color={colors.textSecondary}
-              />
-            </Button>
-          </View>
-        </View>
-
-        {showSortModal && (
-          <View style={styles.sortModal}>
-            <View style={styles.sortModalContent}>
-              <View style={styles.sortModalHeader}>
-                <Text style={styles.sortModalTitle}>Sort by</Text>
-                <Button onPress={() => setShowSortModal(false)}>
-                  <CustomIcon
-                    name="close"
-                    size={24}
-                    color={colors.textTertiary}
-                  />
-                </Button>
-              </View>
-
-              {SORT_OPTIONS.map(option => (
-                <Button
-                  key={option.key}
-                  style={[
-                    styles.sortOption,
-                    sortBy === option.key && styles.sortOptionActive,
-                  ]}
-                  onPress={() => handleSortChange(option.key)}
-                >
-                  <View style={styles.sortOptionIcon}>
-                    <CustomIcon
-                      name={option.iconName}
-                      size={20}
-                      color={colors.textSecondary}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      styles.sortOptionText,
-                      sortBy === option.key && styles.sortOptionTextActive,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                  {sortBy === option.key && (
-                    <CustomIcon
-                      name={
-                        sortOrder === 'asc'
-                          ? 'keyboard-arrow-up'
-                          : 'keyboard-arrow-down'
-                      }
-                      size={18}
-                      color={colors.textSecondary}
-                    />
-                  )}
-                </Button>
-              ))}
-            </View>
-          </View>
-        )}
+        <SortModal
+          visible={showSortModal}
+          options={SORT_OPTIONS}
+          currentSort={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          onClose={closeSortModal}
+        />
 
         {renderLoadingState()}
         {renderErrorState()}
@@ -289,7 +181,6 @@ export const CryptoListScreen: React.FC = () => {
             data={cryptoData}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            style={styles.list}
             contentContainerStyle={[
               styles.listContent,
               cryptoData.length === 0 && styles.listContentEmpty,
@@ -332,110 +223,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  searchHeader: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginLeft: 8,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  controlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    minWidth: 60,
-    justifyContent: 'center',
-  },
-  sortModal: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.overlayTransparent,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  sortModalContent: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    paddingVertical: 20,
-    marginHorizontal: 20,
-    minWidth: 280,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  sortModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  sortModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  sortOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  sortOptionActive: {
-    backgroundColor: colors.favoriteBackground,
-  },
-  sortOptionIcon: {
-    marginRight: 12,
-  },
-  sortOptionText: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  sortOptionTextActive: {
-    color: colors.textPrimary,
-    fontWeight: '600',
-  },
-  list: {
-    flex: 1,
   },
   listContent: {
     paddingVertical: 8,

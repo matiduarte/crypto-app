@@ -80,29 +80,25 @@ class ApiService {
       price_change_percentage?: string;
     } = {},
   ): Promise<APIResponse<Cryptocurrency[]>> {
-    try {
-      const response: AxiosResponse<Cryptocurrency[]> = await this.api.get(
-        API_CONFIG.ENDPOINTS.COINS,
-        {
-          params: {
-            vs_currency: params.vs_currency || API_CONFIG.DEFAULT_VS_CURRENCY,
-            order: params.order || 'market_cap_desc',
-            per_page: params.per_page || API_CONFIG.DEFAULT_PAGE_SIZE,
-            page: params.page || 1,
-            sparkline: params.sparkline || false,
-            price_change_percentage: params.price_change_percentage || '24h',
-            ...params,
-          },
+    const response: AxiosResponse<Cryptocurrency[]> = await this.api.get(
+      API_CONFIG.ENDPOINTS.COINS,
+      {
+        params: {
+          vs_currency: params.vs_currency || API_CONFIG.DEFAULT_VS_CURRENCY,
+          order: params.order || 'market_cap_desc',
+          per_page: params.per_page || API_CONFIG.DEFAULT_PAGE_SIZE,
+          page: params.page || 1,
+          sparkline: params.sparkline || false,
+          price_change_percentage: params.price_change_percentage || '24h',
+          ...params,
         },
-      );
+      },
+    );
 
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return this.handleError<Cryptocurrency[]>(error);
-    }
+    return {
+      success: true,
+      data: response.data,
+    };
   }
 
   /**
