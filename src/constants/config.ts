@@ -12,9 +12,6 @@ export const API_CONFIG = {
   COINGECKO_API_KEY: ENV_CONFIG.COINGECKO_API_KEY,
   ENDPOINTS: {
     COINS: '/coins/markets',
-    COIN_DETAIL: '/coins/{id}',
-    SEARCH: '/search',
-    EXCHANGE_RATES: '/exchange_rates',
     SIMPLE_PRICE: '/simple/price',
   },
   DEFAULT_VS_CURRENCY: 'usd',
@@ -29,8 +26,6 @@ export const APP_CONFIG = {
     USER_TOKEN: '@user_token',
     USER_DATA: '@user_data',
     SCANNED_WALLETS: '@scanned_wallets',
-    FAVORITE_CRYPTOS: '@favorite_cryptos',
-    APP_SETTINGS: '@app_settings',
   },
   GOOGLE_SIGNIN_CONFIG: {
     WEB_CLIENT_ID: ENV_CONFIG.WEB_CLIENT_ID,
@@ -46,16 +41,6 @@ export const FIAT_CURRENCIES = [
   { code: 'EUR', name: 'Euro', symbol: '€' },
   { code: 'ARS', name: 'Arg Peso', symbol: '$' },
   { code: 'PEN', name: 'Peru Sol', symbol: 'S/' },
-] as const;
-
-// Default Cryptocurrencies
-export const DEFAULT_CRYPTOS = [
-  'bitcoin',
-  'ethereum',
-  'tether',
-  'binancecoin',
-  'cardano',
-  'solana',
 ] as const;
 
 export const APP_DETAILS = {
