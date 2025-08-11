@@ -3,7 +3,7 @@ export {
   useInfiniteCryptocurrencies,
 } from './useCryptocurrencies';
 
-export { useCurrencyConversion, useRealTimePrices } from './useExchange';
+export { useRealTimePrices } from './useExchange';
 
 export {
   useScannedWallets,

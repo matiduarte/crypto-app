@@ -28,12 +28,6 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.cryptos.details(), id] as const,
   },
 
-  search: {
-    all: ['search'] as const,
-    cryptos: (query: string) =>
-      [...queryKeys.search.all, 'cryptos', query] as const,
-  },
-
   prices: {
     all: ['prices'] as const,
     simple: (ids: string, vs_currencies: string) =>

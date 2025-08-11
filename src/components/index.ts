@@ -1,16 +1,4 @@
-export {
-  ScreenWrapper,
-  ScrollableScreen,
-  FixedScreen,
-  FullScreenModal,
-} from './ScreenWrapper';
-
-export {
-  SafeAreaWrapper,
-  SafeAreaScreen,
-  SafeAreaModal,
-  SafeAreaHeader,
-} from './SafeAreaWrapper';
+export { ScreenWrapper, ScrollableScreen, FixedScreen } from './ScreenWrapper';
 
 export { SkeletonLoader } from './SkeletonLoader';
 export { EmptyState } from './EmptyState';

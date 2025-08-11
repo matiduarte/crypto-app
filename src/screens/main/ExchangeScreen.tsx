@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
-import { useCurrencyConversion, useRealTimePrices } from '@hooks/useExchange';
+import { useRealTimePrices } from '@hooks/useExchange';
 import { useCryptocurrencies } from '@hooks/useCryptocurrencies';
 import { FIAT_CURRENCIES } from '@constants/config';
 import {
@@ -76,8 +76,6 @@ export const ExchangeScreen: React.FC = () => {
     selectedFiat.code.toLowerCase(),
     60000, // Update every minute
   );
-
-  const { isLoading: isConverting } = useCurrencyConversion();
 
   const currentRate = useMemo(() => {
     if (!priceData) return null;
@@ -248,7 +246,7 @@ export const ExchangeScreen: React.FC = () => {
             }}
           />
 
-          {(isPriceLoading || isConverting) && (
+          {isPriceLoading && (
             <LoadingIndicator
               text="Updating rates..."
               style={styles.loadingContainer}

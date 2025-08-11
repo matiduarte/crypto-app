@@ -28,7 +28,6 @@ export const ListSeparator: React.FC<ListSeparatorProps> = ({
   />
 );
 
-// Pre-made separator variants for common use cases
 export const ItemSeparator: React.FC = () => <ListSeparator />;
 
 const styles = StyleSheet.create({

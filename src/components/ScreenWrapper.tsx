@@ -63,15 +63,6 @@ export const FixedScreen: React.FC<
   Omit<ScreenWrapperProps, 'scrollable'>
 > = props => <ScreenWrapper {...props} scrollable={false} />;
 
-export const FullScreenModal: React.FC<
-  Omit<ScreenWrapperProps, 'safeAreaEdges'>
-> = props => (
-  <ScreenWrapper
-    {...props}
-    safeAreaEdges={['top', 'bottom', 'left', 'right']}
-  />
-);
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
