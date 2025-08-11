@@ -106,3 +106,37 @@ src/
 
 https://github.com/user-attachments/assets/db808a89-6024-4cbf-9689-8a33d5475bb2
 
+- Crypto List Screen
+
+https://github.com/user-attachments/assets/5e47594b-1af3-4695-b021-e13750643951
+
+https://github.com/user-attachments/assets/2eebfe1e-3b49-4537-930d-e248adf4f22c
+
+- Exchange Screen
+
+https://github.com/user-attachments/assets/72baa9b8-5497-48e8-b303-fc1bb2ef1e26
+
+- Scanner Screen
+
+
+https://github.com/user-attachments/assets/ad8a6d80-af78-4902-af8c-16c71ef775d8
+
+
+https://github.com/user-attachments/assets/1e20b769-af9d-44fd-9218-c79790140893
+
+
+https://github.com/user-attachments/assets/980821ec-3b27-4760-afb6-a216dabf4e7d
+
+
+- Profile Screen
+
+https://github.com/user-attachments/assets/0aedadec-fab2-4b14-ba9d-f8f5b773abf2
+
+
+
+
+
+
+
+
+
