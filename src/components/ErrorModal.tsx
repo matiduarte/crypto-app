@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@constants/colors';
-import { Button, CustomIcon } from '@components/common';
+import { CustomIcon } from './CustomIcon';
+import { Button } from './Button';
 
 interface ErrorModalProps {
   onClose: () => void;

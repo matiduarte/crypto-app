@@ -32,3 +32,6 @@ export { CustomIcon } from './CustomIcon';
 export { Button } from './Button';
 export { GoogleSignInButton } from './GoogleSignInButton';
 export { CurrencyInputSection } from './CurrencyInputSection';
+
+export { QRScannerModal } from './QRScannerModal';
+export { WalletItem } from './WalletItem';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { CryptoListItem } from '../CryptoListItem';
+import { CryptoListItem } from '@components/CryptoListItem';
 
 const mockCryptocurrency = {
   id: 'bitcoin',
@@ -36,8 +36,10 @@ const mockCryptocurrency = {
 
 // Mock the helper functions
 jest.mock('@utils/helpers', () => ({
-  formatPercentage: jest.fn((value) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`),
-  formatPriceUSD: jest.fn((value) => `$${value.toLocaleString()}`),
+  formatPercentage: jest.fn(
+    value => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`,
+  ),
+  formatPriceUSD: jest.fn(value => `$${value.toLocaleString()}`),
 }));
 
 describe('CryptoListItem Component', () => {
@@ -68,7 +70,7 @@ describe('CryptoListItem Component', () => {
     };
 
     const { getByText } = render(
-      <CryptoListItem item={cryptoWithNegativeChange} />
+      <CryptoListItem item={cryptoWithNegativeChange} />,
     );
 
     const changeText = getByText('-5.20%');
@@ -76,9 +78,7 @@ describe('CryptoListItem Component', () => {
   });
 
   it('should display cryptocurrency image', () => {
-    const { getByTestId } = render(
-      <CryptoListItem {...defaultProps} />
-    );
+    const { getByTestId } = render(<CryptoListItem {...defaultProps} />);
 
     const image = getByTestId('crypto-image');
     expect(image).toHaveProp('source', { uri: mockCryptocurrency.image });
@@ -90,11 +90,11 @@ describe('CryptoListItem Component', () => {
       name: 'Very Long Cryptocurrency Name That Should Be Truncated',
     };
 
-    const { getByText } = render(
-      <CryptoListItem item={cryptoWithLongName} />
-    );
+    const { getByText } = render(<CryptoListItem item={cryptoWithLongName} />);
 
-    const nameText = getByText('Very Long Cryptocurrency Name That Should Be Truncated');
+    const nameText = getByText(
+      'Very Long Cryptocurrency Name That Should Be Truncated',
+    );
     expect(nameText).toHaveProp('numberOfLines', 1);
   });
 
@@ -105,7 +105,7 @@ describe('CryptoListItem Component', () => {
     };
 
     const { getByText } = render(
-      <CryptoListItem item={cryptoWithZeroChange} />
+      <CryptoListItem item={cryptoWithZeroChange} />,
     );
 
     expect(getByText('+0.00%')).toBeTruthy();
@@ -118,16 +118,14 @@ describe('CryptoListItem Component', () => {
     };
 
     const { getByText } = render(
-      <CryptoListItem item={cryptoWithLowercaseSymbol} />
+      <CryptoListItem item={cryptoWithLowercaseSymbol} />,
     );
 
     expect(getByText('BTC')).toBeTruthy();
   });
 
   it('should have proper styling structure', () => {
-    const { getByTestId } = render(
-      <CryptoListItem {...defaultProps} />
-    );
+    const { getByTestId } = render(<CryptoListItem {...defaultProps} />);
 
     const container = getByTestId('list-item-container');
     expect(container).toHaveStyle({

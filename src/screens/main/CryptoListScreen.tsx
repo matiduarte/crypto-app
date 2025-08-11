@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { FixedScreen } from '@components/common/ScreenWrapper';
 import { useInfiniteCryptocurrencies } from '@hooks/useCryptocurrencies';
 import { searchCryptos, sortCryptos } from '@utils/helpers';
 import { Cryptocurrency } from '@types';
@@ -12,10 +11,11 @@ import {
   EmptyState,
   ErrorState,
   SearchInput,
+  FixedScreen,
   ItemSeparator,
   PaginationFooter,
-} from '@components/common';
-import { colors } from '../../constants/colors';
+} from '@components';
+import { colors } from '@constants/colors';
 
 type SortOption = {
   key: keyof Cryptocurrency;

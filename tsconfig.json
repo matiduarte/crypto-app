@@ -3,6 +3,7 @@
     "compilerOptions": {
     "baseUrl": "./src",
     "paths": {
+      "@components": ["components/index"],
       "@components/*": ["components/*"],
       "@screens/*": ["screens/*"],
       "@utils/*": ["utils/*"],

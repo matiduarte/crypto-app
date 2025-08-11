@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { CustomIcon } from '@components/common/CustomIcon';
 import { ScannedWallet } from '@types';
 import {
   formatWalletAddress,
@@ -8,8 +7,9 @@ import {
 } from '@utils/walletValidation';
 import { useRemoveScannedWallet, useToggleWalletFavorite } from '@hooks';
 import { colors } from '@constants/colors';
-import { Button } from '@components/common';
 import { formatDate } from '@utils/helpers';
+import { CustomIcon } from './CustomIcon';
+import { Button } from './Button';
 
 interface WalletItemProps {
   item: ScannedWallet;

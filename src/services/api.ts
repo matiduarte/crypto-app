@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { API_CONFIG } from '../constants/config';
-import { APIResponse, Cryptocurrency } from '../types';
+import { API_CONFIG } from '@constants/config';
+import { APIResponse, Cryptocurrency } from '@types';
 
 /**
  * ApiService handles all cryptocurrency API requests with automatic error handling,

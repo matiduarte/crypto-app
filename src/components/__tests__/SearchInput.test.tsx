@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
-import { SearchInput } from '../SearchInput';
+import { SearchInput } from '@components/SearchInput';
 
 describe('SearchInput Component', () => {
   const defaultProps = {
@@ -14,7 +14,7 @@ describe('SearchInput Component', () => {
 
   it('should render correctly with default props', () => {
     const { getByPlaceholderText, getByTestId } = render(
-      <SearchInput {...defaultProps} />
+      <SearchInput {...defaultProps} />,
     );
 
     expect(getByPlaceholderText('Search...')).toBeTruthy();
@@ -24,7 +24,10 @@ describe('SearchInput Component', () => {
 
   it('should render with custom placeholder', () => {
     const { getByPlaceholderText } = render(
-      <SearchInput {...defaultProps} placeholder="Search cryptocurrencies..." />
+      <SearchInput
+        {...defaultProps}
+        placeholder="Search cryptocurrencies..."
+      />,
     );
 
     expect(getByPlaceholderText('Search cryptocurrencies...')).toBeTruthy();
@@ -33,7 +36,7 @@ describe('SearchInput Component', () => {
   it('should call onChangeText when text changes', () => {
     const mockOnChangeText = jest.fn();
     const { getByPlaceholderText } = render(
-      <SearchInput value="" onChangeText={mockOnChangeText} />
+      <SearchInput value="" onChangeText={mockOnChangeText} />,
     );
 
     const input = getByPlaceholderText('Search...');
@@ -44,7 +47,7 @@ describe('SearchInput Component', () => {
 
   it('should show clear button when value exists', () => {
     const { getByTestId } = render(
-      <SearchInput {...defaultProps} value="bitcoin" />
+      <SearchInput {...defaultProps} value="bitcoin" />,
     );
 
     expect(getByTestId('clear-button')).toBeTruthy();
@@ -52,7 +55,7 @@ describe('SearchInput Component', () => {
 
   it('should hide clear button when value is empty', () => {
     const { queryByTestId } = render(
-      <SearchInput {...defaultProps} value="" />
+      <SearchInput {...defaultProps} value="" />,
     );
 
     expect(queryByTestId('clear-button')).toBeNull();
@@ -61,7 +64,7 @@ describe('SearchInput Component', () => {
   it('should call onClear when clear button is pressed', () => {
     const mockOnClear = jest.fn();
     const { getByTestId } = render(
-      <SearchInput {...defaultProps} value="bitcoin" onClear={mockOnClear} />
+      <SearchInput {...defaultProps} value="bitcoin" onClear={mockOnClear} />,
     );
 
     const clearButton = getByTestId('clear-button');
@@ -72,11 +75,7 @@ describe('SearchInput Component', () => {
 
   it('should not show clear button when showClearButton is false', () => {
     const { queryByTestId } = render(
-      <SearchInput 
-        {...defaultProps} 
-        value="bitcoin" 
-        showClearButton={false} 
-      />
+      <SearchInput {...defaultProps} value="bitcoin" showClearButton={false} />,
     );
 
     expect(queryByTestId('clear-button')).toBeNull();
@@ -85,11 +84,11 @@ describe('SearchInput Component', () => {
   it('should apply custom styles', () => {
     const customStyle = { backgroundColor: 'blue' };
     const { getByTestId } = render(
-      <SearchInput 
-        {...defaultProps} 
+      <SearchInput
+        {...defaultProps}
         style={customStyle}
-        testID="search-input-container" 
-      />
+        testID="search-input-container"
+      />,
     );
 
     const container = getByTestId('search-input-container');
@@ -97,9 +96,7 @@ describe('SearchInput Component', () => {
   });
 
   it('should have correct text input properties', () => {
-    const { getByPlaceholderText } = render(
-      <SearchInput {...defaultProps} />
-    );
+    const { getByPlaceholderText } = render(<SearchInput {...defaultProps} />);
 
     const input = getByPlaceholderText('Search...');
     expect(input).toHaveProp('autoCapitalize', 'none');

@@ -1,9 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Alert } from 'react-native';
 import { useAuth } from '@hooks/useAuth';
-import { ScrollableScreen } from '@components/common/ScreenWrapper';
-import { Button } from '@components/common';
-import { CustomIcon } from '@components/common/CustomIcon';
+import { Button, ScrollableScreen, CustomIcon } from '@components';
 import { colors } from '@constants/colors';
 
 export const ProfileScreen: React.FC = () => {

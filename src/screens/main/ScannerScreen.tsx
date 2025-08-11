@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert, FlatList } from 'react-native';
-import { FixedScreen } from '@components/common/ScreenWrapper';
-import { ActionButton, ScreenHeader, EmptyState, LoadingIndicator } from '@components/common';
-import { QRScannerModal, WalletItem } from '@components/scanner';
+import {
+  ActionButton,
+  ScreenHeader,
+  FixedScreen,
+  EmptyState,
+  LoadingIndicator,
+  QRScannerModal,
+  WalletItem,
+} from '@components';
 import { useScannedWallets, useAddScannedWallet } from '@hooks';
-import { 
-  validateWalletAddress, 
-  extractAddressFromQRData, 
-  getWalletTypeDisplayName 
+import {
+  validateWalletAddress,
+  extractAddressFromQRData,
+  getWalletTypeDisplayName,
 } from '@utils/walletValidation';
 import { colors } from '@constants/colors';
 
@@ -18,66 +24,73 @@ import { colors } from '@constants/colors';
  */
 export const ScannerScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const { data: scannedWallets = [], isLoading } = useScannedWallets();
   const addWalletMutation = useAddScannedWallet();
 
   /**
    * Processes scanned QR code data, validates wallet address, checks for duplicates,
    * and saves valid wallets to storage with user feedback.
-   * 
+   *
    * @param qrData - Raw QR code data from the scanner
    */
   const handleScanSuccess = async (qrData: string) => {
     setModalVisible(false);
-    
+
     try {
       const extractedAddress = extractAddressFromQRData(qrData);
       const validation = validateWalletAddress(extractedAddress);
-      
+
       if (!validation.isValid) {
         let errorMessage = 'Invalid wallet address';
         if (validation.error === 'Unsupported wallet address format') {
-          errorMessage = 'This wallet type is not supported. We only support Bitcoin and Ethereum addresses.';
+          errorMessage =
+            'This wallet type is not supported. We only support Bitcoin and Ethereum addresses.';
         } else if (validation.error === 'Invalid wallet address format') {
-          errorMessage = 'This QR code does not contain a valid cryptocurrency wallet address.';
+          errorMessage =
+            'This QR code does not contain a valid cryptocurrency wallet address.';
         } else if (validation.error === 'Invalid input') {
           errorMessage = 'The scanned QR code appears to be empty or invalid.';
         } else if (validation.error) {
           errorMessage = validation.error;
         }
-        
+
         Alert.alert('Invalid QR Code', errorMessage, [{ text: 'OK' }]);
         return;
       }
-      
-      const existingWallet = scannedWallets.find(wallet => wallet.address === validation.address);
+
+      const existingWallet = scannedWallets.find(
+        wallet => wallet.address === validation.address,
+      );
       if (existingWallet) {
         Alert.alert(
-          'Wallet Already Added', 
-          `This ${getWalletTypeDisplayName(validation.type)} address is already in your collection.`,
-          [{ text: 'OK' }]
+          'Wallet Already Added',
+          `This ${getWalletTypeDisplayName(
+            validation.type,
+          )} address is already in your collection.`,
+          [{ text: 'OK' }],
         );
         return;
       }
-      
+
       await addWalletMutation.mutateAsync({
         address: validation.address,
         qrData: qrData,
         label: `${getWalletTypeDisplayName(validation.type)} wallet`,
       });
-      
+
       Alert.alert(
-        'Wallet Added Successfully!', 
-        `${getWalletTypeDisplayName(validation.type)} address has been added to your collection.`,
-        [{ text: 'OK' }]
+        'Wallet Added Successfully!',
+        `${getWalletTypeDisplayName(
+          validation.type,
+        )} address has been added to your collection.`,
+        [{ text: 'OK' }],
       );
-      
     } catch (error: any) {
       Alert.alert(
-        'Error', 
+        'Error',
         error.message || 'Failed to save wallet. Please try again.',
-        [{ text: 'OK' }]
+        [{ text: 'OK' }],
       );
     }
   };

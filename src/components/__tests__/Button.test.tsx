@@ -1,14 +1,14 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
-import { Button } from '../Button';
+import { Button } from '@components/Button';
 
 describe('Button Component', () => {
   it('should render correctly with text', () => {
     const { getByText } = render(
       <Button>
         <Text>Test Button</Text>
-      </Button>
+      </Button>,
     );
 
     expect(getByText('Test Button')).toBeTruthy();
@@ -19,7 +19,7 @@ describe('Button Component', () => {
     const { getByText } = render(
       <Button onPress={mockOnPress}>
         <Text>Press Me</Text>
-      </Button>
+      </Button>,
     );
 
     fireEvent.press(getByText('Press Me'));
@@ -31,12 +31,12 @@ describe('Button Component', () => {
     const { getByTestId } = render(
       <Button onPress={mockOnPress} disabled testID="disabled-button">
         <Text>Disabled Button</Text>
-      </Button>
+      </Button>,
     );
 
     const button = getByTestId('disabled-button');
     fireEvent.press(button);
-    
+
     // Press event should not trigger onPress when disabled
     expect(mockOnPress).not.toHaveBeenCalled();
   });
@@ -46,7 +46,7 @@ describe('Button Component', () => {
     const { getByTestId } = render(
       <Button style={customStyle} testID="styled-button">
         <Text>Styled Button</Text>
-      </Button>
+      </Button>,
     );
 
     const button = getByTestId('styled-button');
@@ -57,7 +57,7 @@ describe('Button Component', () => {
     const { getByTestId } = render(
       <Button accessibilityLabel="Custom button" testID="accessible-button">
         <Text>Accessible Button</Text>
-      </Button>
+      </Button>,
     );
 
     const button = getByTestId('accessible-button');
@@ -69,12 +69,12 @@ describe('Button Component', () => {
     const { getByTestId } = render(
       <Button onPress={mockOnPress} testID="touchable-button">
         <Text>Touchable Button</Text>
-      </Button>
+      </Button>,
     );
 
     const button = getByTestId('touchable-button');
     expect(button).toBeTruthy();
-    
+
     // Test that it's actually pressable
     fireEvent.press(button);
     expect(mockOnPress).toHaveBeenCalledTimes(1);

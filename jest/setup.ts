@@ -2,7 +2,7 @@ import '@testing-library/jest-native/extend-expect';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
 // Mock react-navigation
@@ -27,22 +27,46 @@ jest.mock('@react-navigation/native', () => {
 jest.mock('react-native-vector-icons/MaterialIcons', () => {
   const React = require('react');
   const { View } = require('react-native');
-  
-  const MockIcon = ({ name, size: _size, color: _color, testID, ..._props }: any) => {
-    return React.createElement(View, { testID, accessibilityLabel: name }, name);
+
+  const MockIcon = ({
+    name,
+    size: _size,
+    color: _color,
+    testID,
+    ..._props
+  }: any) => {
+    return React.createElement(
+      View,
+      { testID, accessibilityLabel: name },
+      name,
+    );
   };
-  MockIcon.getImageSource = jest.fn(() => Promise.resolve({ uri: 'mocked-icon' }));
+  MockIcon.getImageSource = jest.fn(() =>
+    Promise.resolve({ uri: 'mocked-icon' }),
+  );
   return MockIcon;
 });
 
 jest.mock('react-native-vector-icons/Ionicons', () => {
   const React = require('react');
   const { View } = require('react-native');
-  
-  const MockIcon = ({ name, size: _size, color: _color, testID, ..._props }: any) => {
-    return React.createElement(View, { testID, accessibilityLabel: name }, name);
+
+  const MockIcon = ({
+    name,
+    size: _size,
+    color: _color,
+    testID,
+    ..._props
+  }: any) => {
+    return React.createElement(
+      View,
+      { testID, accessibilityLabel: name },
+      name,
+    );
   };
-  MockIcon.getImageSource = jest.fn(() => Promise.resolve({ uri: 'mocked-icon' }));
+  MockIcon.getImageSource = jest.fn(() =>
+    Promise.resolve({ uri: 'mocked-icon' }),
+  );
   return MockIcon;
 });
 
@@ -89,14 +113,6 @@ jest.mock('react-native-vision-camera', () => ({
   useCameraDevices: () => ({}),
   useFrameProcessor: () => {},
 }));
-
-// Mock react-native-qrcode-scanner
-jest.mock('react-native-qrcode-scanner', () => 'QRCodeScanner');
-
-// Mock Permissions
-jest.mock('react-native-permissions', () =>
-  require('react-native-permissions/mock'),
-);
 
 // Global test utilities
 global.fetch = require('jest-fetch-mock');

@@ -16,9 +16,9 @@ export const CryptoListItem: React.FC<CryptoListItemProps> = React.memo(
     return (
       <View style={styles.listItem} testID="list-item-container">
         <View style={styles.itemLeft}>
-          <Image 
-            source={{ uri: item.image }} 
-            style={styles.cryptoImage} 
+          <Image
+            source={{ uri: item.image }}
+            style={styles.cryptoImage}
             testID="crypto-image"
           />
           <View style={styles.cryptoInfo}>

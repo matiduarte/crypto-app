@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { CustomIcon } from '@components/common/CustomIcon';
-import { Button } from '@components/common/Button';
+
 import { colors } from '@constants/colors';
 import { SelectedCurrency } from '@screens/main/ExchangeScreen';
+import { Button } from './Button';
+import { CustomIcon } from './CustomIcon';
 
 interface CurrencyInputSectionProps {
   label: 'From' | 'To';

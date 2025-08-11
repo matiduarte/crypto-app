@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { APP_CONFIG } from '../constants/config';
+import { APP_CONFIG } from '@constants/config';
 
 class StorageService {
   // Generic storage methods
@@ -68,7 +68,9 @@ class StorageService {
   }
 
   async getScannedWallets<T>(): Promise<T[]> {
-    const wallets = await this.getItem<T[]>(APP_CONFIG.STORAGE_KEYS.SCANNED_WALLETS);
+    const wallets = await this.getItem<T[]>(
+      APP_CONFIG.STORAGE_KEYS.SCANNED_WALLETS,
+    );
     return wallets || [];
   }
 
@@ -80,7 +82,9 @@ class StorageService {
 
   async removeScannedWallet<T>(walletId: string): Promise<void> {
     const existingWallets = await this.getScannedWallets<T & { id: string }>();
-    const updatedWallets = existingWallets.filter(wallet => wallet.id !== walletId);
+    const updatedWallets = existingWallets.filter(
+      wallet => wallet.id !== walletId,
+    );
     await this.setScannedWallets(updatedWallets);
   }
 
@@ -90,7 +94,9 @@ class StorageService {
   }
 
   async getFavoriteCryptos(): Promise<string[]> {
-    const favorites = await this.getItem<string[]>(APP_CONFIG.STORAGE_KEYS.FAVORITE_CRYPTOS);
+    const favorites = await this.getItem<string[]>(
+      APP_CONFIG.STORAGE_KEYS.FAVORITE_CRYPTOS,
+    );
     return favorites || [];
   }
 

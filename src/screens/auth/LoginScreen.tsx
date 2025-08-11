@@ -2,11 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Animated, Easing } from 'react-native';
 
 import { useAuth } from '@hooks/useAuth';
-import { FixedScreen } from '@components/common/ScreenWrapper';
-import { CustomIcon } from '@components/common/CustomIcon';
 import { APP_DETAILS } from '@constants/config';
 import { colors } from '@constants/colors';
-import { Button, GoogleSignInButton } from '@components/common';
+import {
+  Button,
+  GoogleSignInButton,
+  CustomIcon,
+  FixedScreen,
+} from '@components';
 
 export const LoginScreen: React.FC = () => {
   const { clearError, signInMutation } = useAuth();

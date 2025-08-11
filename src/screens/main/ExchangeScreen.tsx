@@ -6,12 +6,7 @@ import React, {
   useRef,
 } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { CustomIcon } from '@components/common/CustomIcon';
-import { ScrollableScreen } from '@components/common/ScreenWrapper';
-import {
-  SelectorModal,
-  SelectorOption,
-} from '@components/common/SelectorModal';
+
 import { useCurrencyConversion, useRealTimePrices } from '@hooks/useExchange';
 import { useCryptocurrencies } from '@hooks/useCryptocurrencies';
 import { FIAT_CURRENCIES } from '@constants/config';
@@ -24,9 +19,17 @@ import {
   extractNumericValue,
 } from '@utils/helpers';
 import { Cryptocurrency } from '@types';
-import { Button, ScreenHeader, LoadingIndicator } from '@components/common';
+import {
+  Button,
+  ScreenHeader,
+  LoadingIndicator,
+  CustomIcon,
+  ScrollableScreen,
+  SelectorModal,
+  SelectorOption,
+  CurrencyInputSection,
+} from '@components';
 import { colors } from '@constants/colors';
-import { CurrencyInputSection } from '../../components/common/CurrencyInputSection';
 
 type ConversionDirection = 'crypto-to-fiat' | 'fiat-to-crypto';
 

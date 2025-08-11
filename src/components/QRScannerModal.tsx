@@ -16,7 +16,9 @@ import {
 } from 'react-native-vision-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@constants/colors';
-import { Button, CustomIcon, ErrorModal } from '@components/common';
+import { Button } from './Button';
+import { CustomIcon } from './CustomIcon';
+import { ErrorModal } from './ErrorModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_BOX_SIZE = Math.min(250, SCREEN_WIDTH - 80);
@@ -32,7 +34,7 @@ interface QRScannerModalProps {
  * QRScannerModal provides camera-based QR code scanning functionality.
  * Handles camera permissions, device selection, and prevents duplicate scan triggers.
  * Shows appropriate error states for permission denied or unavailable camera.
- * 
+ *
  * @param visible - Controls modal visibility
  * @param onClose - Callback when modal should be closed
  * @param onScanSuccess - Callback with scanned QR code data
