@@ -56,64 +56,10 @@ export interface Cryptocurrency {
   last_updated: string;
 }
 
-// API Response Types
-export interface APIResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  page: number;
-  per_page: number;
-  total: number;
-  has_next: boolean;
-}
-
-// Filter and Sort Types
-export interface CryptoFilter {
-  priceRange?: {
-    min: number;
-    max: number;
+export interface SimplePrice {
+  [coinId: string]: {
+    [currency: string]: number;
   };
-  changeType?: 'positive' | 'negative' | 'all';
-  marketCapRange?: {
-    min: number;
-    max: number;
-  };
-  volumeRange?: {
-    min: number;
-    max: number;
-  };
-}
-
-export interface CryptoSort {
-  field:
-    | 'name'
-    | 'current_price'
-    | 'market_cap'
-    | 'total_volume'
-    | 'price_change_percentage_24h';
-  order: 'asc' | 'desc';
-}
-
-// Exchange Types
-export interface ExchangeRate {
-  from: string;
-  to: string;
-  rate: number;
-  lastUpdated: string;
-}
-
-export interface ConversionResult {
-  fromAmount: number;
-  toAmount: number;
-  fromCurrency: string;
-  toCurrency: string;
-  rate: number;
-  timestamp: string;
 }
 
 // Wallet Scanner Types
@@ -147,33 +93,3 @@ export type MainTabParamList = {
 export type CryptoStackParamList = {
   CryptoList: undefined;
 };
-
-// State Types
-
-export interface CryptoState {
-  cryptos: Cryptocurrency[];
-  loading: boolean;
-  error: string | null;
-  filters: CryptoFilter;
-  sort: CryptoSort;
-  searchQuery: string;
-  page: number;
-  hasMore: boolean;
-}
-
-export interface ExchangeState {
-  fromCurrency: string;
-  toCurrency: string;
-  fromAmount: string;
-  toAmount: string;
-  rate: number | null;
-  loading: boolean;
-  error: string | null;
-  lastUpdated: string | null;
-}
-
-export interface ScannerState {
-  scannedWallets: ScannedWallet[];
-  loading: boolean;
-  error: string | null;
-}

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '@constants/config';
-import { Cryptocurrency } from '@types';
+import { Cryptocurrency, SimplePrice } from '@types';
 
 /**
  * ApiService handles all cryptocurrency API requests.
@@ -88,7 +88,7 @@ class ApiService {
     ids: string;
     vs_currencies: string;
     include_24hr_change?: boolean;
-  }): Promise<any> {
+  }): Promise<SimplePrice> {
     const response = await this.api.get(API_CONFIG.ENDPOINTS.SIMPLE_PRICE, {
       params: {
         ids: params.ids,
