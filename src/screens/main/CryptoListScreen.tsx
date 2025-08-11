@@ -120,10 +120,27 @@ export const CryptoListScreen: React.FC = () => {
   }, []);
 
   const handleLoadMore = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage && !searchQuery.trim()) {
-      fetchNextPage();
+    if (
+      !hasNextPage ||
+      isFetchingNextPage ||
+      searchQuery.trim().length > 0 ||
+      cryptoData.length === 0 ||
+      baseCryptoData.length === 0 ||
+      isLoading
+    ) {
+      return;
     }
-  }, [hasNextPage, isFetchingNextPage, searchQuery, fetchNextPage]);
+
+    fetchNextPage();
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    searchQuery,
+    cryptoData.length,
+    baseCryptoData.length,
+    isLoading,
+    fetchNextPage,
+  ]);
 
   const renderEmptySearch = useCallback(() => {
     if (searchQuery.trim().length === 0 || isLoading) {
