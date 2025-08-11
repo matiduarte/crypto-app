@@ -53,8 +53,8 @@ export const CryptoListScreen: React.FC = () => {
     if (!infiniteData?.pages) return [];
 
     return infiniteData.pages
-      .filter(page => page.success)
-      .flatMap(page => page.data)
+      .filter(Boolean)
+      .flatMap(page => page)
       .filter(Boolean);
   }, [infiniteData]);
 

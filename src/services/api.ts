@@ -1,10 +1,11 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_CONFIG } from '@constants/config';
-import { APIResponse, Cryptocurrency } from '@types';
+import { Cryptocurrency } from '@types';
 
 /**
- * ApiService handles all cryptocurrency API requests with automatic error handling,
- * retry mechanisms, and response transformation. Integrates with CoinGecko API.
+ * ApiService handles all cryptocurrency API requests.
+ * Uses React Query for error handling, retry mechanisms, and caching.
+ * Integrates with CoinGecko API.
  */
 class ApiService {
   private api: AxiosInstance;
@@ -37,38 +38,16 @@ class ApiService {
         return response;
       },
       error => {
-        return Promise.reject(this.handleError(error));
+        return Promise.reject(error);
       },
     );
-  }
-
-  private handleError<T = any>(error: any): APIResponse<T> {
-    if (error.response) {
-      return {
-        success: false,
-        data: null as any,
-        error: `API Error: ${error.response.status} - ${error.response.statusText}`,
-      };
-    } else if (error.request) {
-      return {
-        success: false,
-        data: null as any,
-        error: 'Network Error: Unable to reach the server',
-      };
-    } else {
-      return {
-        success: false,
-        data: null as any,
-        error: `Request Error: ${error.message}`,
-      };
-    }
   }
 
   /**
    * Fetches paginated cryptocurrency market data with customizable parameters.
    *
    * @param params - Configuration for currency, sorting, pagination and data format
-   * @returns Promise resolving to cryptocurrency array with market data
+   * @returns Promise resolving to cryptocurrency array
    */
   async getCryptocurrencies(
     params: {
@@ -79,7 +58,7 @@ class ApiService {
       sparkline?: boolean;
       price_change_percentage?: string;
     } = {},
-  ): Promise<APIResponse<Cryptocurrency[]>> {
+  ): Promise<Cryptocurrency[]> {
     const response: AxiosResponse<Cryptocurrency[]> = await this.api.get(
       API_CONFIG.ENDPOINTS.COINS,
       {
@@ -95,10 +74,7 @@ class ApiService {
       },
     );
 
-    return {
-      success: true,
-      data: response.data,
-    };
+    return response.data;
   }
 
   /**
@@ -112,23 +88,16 @@ class ApiService {
     ids: string;
     vs_currencies: string;
     include_24hr_change?: boolean;
-  }): Promise<APIResponse<any>> {
-    try {
-      const response = await this.api.get(API_CONFIG.ENDPOINTS.SIMPLE_PRICE, {
-        params: {
-          ids: params.ids,
-          vs_currencies: params.vs_currencies,
-          include_24hr_change: params.include_24hr_change || true,
-        },
-      });
+  }): Promise<any> {
+    const response = await this.api.get(API_CONFIG.ENDPOINTS.SIMPLE_PRICE, {
+      params: {
+        ids: params.ids,
+        vs_currencies: params.vs_currencies,
+        include_24hr_change: params.include_24hr_change || true,
+      },
+    });
 
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return this.handleError<any>(error);
-    }
+    return response.data;
   }
 }
 

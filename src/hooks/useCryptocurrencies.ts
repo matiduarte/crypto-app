@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-query';
 import apiService from '@services/api';
 import { queryKeys } from '@services/queryClient';
-import { Cryptocurrency, APIResponse } from '@types';
+import { Cryptocurrency } from '@types';
 
 /**
  * Fetches paginated cryptocurrency market data with React Query caching.
@@ -20,10 +20,7 @@ export const useCryptocurrencies = (
     sparkline?: boolean;
     price_change_percentage?: string;
   } = {},
-  options?: Omit<
-    UseQueryOptions<APIResponse<Cryptocurrency[]>>,
-    'queryKey' | 'queryFn'
-  >,
+  options?: Omit<UseQueryOptions<Cryptocurrency[]>, 'queryKey' | 'queryFn'>,
 ) => {
   return useQuery({
     queryKey: queryKeys.cryptos.list(params),
@@ -50,12 +47,12 @@ export const useInfiniteCryptocurrencies = (
     queryFn: ({ pageParam = 1 }) =>
       apiService.getCryptocurrencies({ ...params, page: pageParam }),
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-      if (!lastPage.success || !lastPage.data || lastPage.data.length === 0) {
+      if (!lastPage || lastPage.length === 0) {
         return undefined;
       }
 
       const perPage = params.per_page || 50;
-      if (lastPage.data.length < perPage) {
+      if (lastPage.length < perPage) {
         return undefined;
       }
 

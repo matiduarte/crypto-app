@@ -25,11 +25,11 @@ export const useCurrencyConversion = () => {
         include_24hr_change: true,
       });
 
-      if (!priceData.success || !priceData.data) {
+      if (!priceData) {
         throw new Error('Failed to get conversion rate');
       }
 
-      const rate = priceData.data[fromCurrency]?.[toCurrency];
+      const rate = priceData[fromCurrency]?.[toCurrency];
       if (!rate) {
         throw new Error('Conversion rate not available');
       }

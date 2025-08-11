@@ -80,8 +80,8 @@ export const ExchangeScreen: React.FC = () => {
   const { isLoading: isConverting } = useCurrencyConversion();
 
   const currentRate = useMemo(() => {
-    if (!priceData?.success || !priceData.data) return null;
-    return priceData.data[selectedCrypto.id]?.[selectedFiat.code.toLowerCase()];
+    if (!priceData) return null;
+    return priceData[selectedCrypto.id]?.[selectedFiat.code.toLowerCase()];
   }, [priceData, selectedCrypto.id, selectedFiat.code]);
 
   const calculateConversion = useCallback(() => {
@@ -151,9 +151,9 @@ export const ExchangeScreen: React.FC = () => {
   }, []);
 
   const cryptos = useMemo(() => {
-    if (!cryptoData?.success || !cryptoData.data) return [];
+    if (!cryptoData) return [];
 
-    return cryptoData.data;
+    return cryptoData;
   }, [cryptoData]);
 
   const handleCryptoSelectFromModal = useCallback(
