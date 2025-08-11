@@ -5,8 +5,8 @@ import { CryptoListScreen } from '@screens/main/CryptoListScreen';
 import { ExchangeScreen } from '@screens/main/ExchangeScreen';
 import { ScannerScreen } from '@screens/main/ScannerScreen';
 import { ProfileScreen } from '@screens/main/ProfileScreen';
-import { CustomIcon } from '@components';
 import { colors } from '@constants/colors';
+import { CustomIcon } from '@components/CustomIcon';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 

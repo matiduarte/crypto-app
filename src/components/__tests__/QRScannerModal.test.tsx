@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { QRScannerModal } from '../QRScannerModal';
+import { QRScannerModal } from '@components/QRScannerModal';
 
 // Mock react-native-vision-camera
 jest.mock('react-native-vision-camera', () => {

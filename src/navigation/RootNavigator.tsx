@@ -6,9 +6,9 @@ import { useAuth } from '@hooks/useAuth';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { CustomIcon } from '@components';
 import { APP_DETAILS } from '@constants/config';
 import { colors } from '@constants/colors';
+import { CustomIcon } from '@components/CustomIcon';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
