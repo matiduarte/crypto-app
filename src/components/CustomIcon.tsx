@@ -17,7 +17,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
   size,
   color,
-  testID,
+  testID = 'icon-close',
 }) => {
   return <Icon name={name} size={size} color={color} testID={testID} />;
 };
