@@ -9,7 +9,7 @@ export const colors = {
   primaryLight: 'rgba(66, 133, 244, 0.1)', // Light blue background
   primaryAccent: '#007AFF', // iOS Blue accent
 
-  // Cryptocurrency Colors  
+  // Cryptocurrency Colors
   bitcoin: '#f7931a', // Bitcoin orange
   ethereum: '#627eea', // Ethereum blue
   crypto: '#FFD700', // Gold for general crypto
@@ -68,57 +68,4 @@ export const colors = {
   white: '#ffffff',
   whiteOverlay: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white
   black: '#000000',
-} as const;
-
-// Type for color keys to ensure type safety
-export type ColorKey = keyof typeof colors;
-
-// Utility function to get color with type safety
-export const getColor = (colorKey: ColorKey): string => {
-  return colors[colorKey];
-};
-
-// Color categories for better organization
-export const colorCategories = {
-  brand: ['primary', 'primaryLight', 'primaryAccent'],
-  crypto: ['bitcoin', 'ethereum', 'crypto'],
-  status: ['success', 'successLight', 'successOverlay', 'warning', 'error', 'errorLight'],
-  text: ['textPrimary', 'textSecondary', 'textTertiary', 'textLight'],
-  background: ['background', 'backgroundLight', 'backgroundDark', 'surface'],
-  interactive: ['active', 'inactive', 'disabled', 'favorite'],
-  transparent: ['transparent', 'white', 'whiteOverlay', 'black'],
-} as const;
-
-// Export individual color groups for convenience
-export const brandColors = {
-  primary: colors.primary,
-  primaryLight: colors.primaryLight,
-  primaryAccent: colors.primaryAccent,
-} as const;
-
-export const cryptoColors = {
-  bitcoin: colors.bitcoin,
-  ethereum: colors.ethereum,
-  crypto: colors.crypto,
-} as const;
-
-export const statusColors = {
-  success: colors.success,
-  successOverlay: colors.successOverlay,
-  warning: colors.warning,
-  error: colors.error,
-} as const;
-
-export const textColors = {
-  primary: colors.textPrimary,
-  secondary: colors.textSecondary,
-  tertiary: colors.textTertiary,
-  light: colors.textLight,
-} as const;
-
-export const backgroundColors = {
-  main: colors.background,
-  light: colors.backgroundLight,
-  dark: colors.backgroundDark,
-  surface: colors.surface,
 } as const;
