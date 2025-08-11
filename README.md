@@ -33,6 +33,13 @@ React Native cryptocurrency application with real-time price tracking, currency 
 # Install dependencies
 npm install
 
+# Setup environment variables
+cp .env.example .env
+# Edit .env with your API keys:
+# - COINGECKO_API_KEY (get from https://coingecko.com/api)
+# - WEB_CLIENT_ID (from Google Cloud Console)
+# - IOS_CLIENT_ID (from Google Cloud Console)
+
 # iOS setup
 cd ios && pod install && cd ..
 
@@ -84,3 +91,19 @@ src/
 
 - **CoinGecko API** for cryptocurrency data
 - **Real-time price updates** with auto-refresh
+- **Google OAuth** for authentication
+
+## Environment Variables
+
+This app uses environment variables for sensitive configuration. Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+- `COINGECKO_API_KEY` - API key from [CoinGecko](https://coingecko.com/api)
+- `WEB_CLIENT_ID` - Google OAuth web client ID
+- `IOS_CLIENT_ID` - Google OAuth iOS client ID
+
+**Note:** Never commit your `.env` file to version control.

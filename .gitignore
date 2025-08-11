@@ -92,3 +92,9 @@ junit.xml
 # Documentation that shouldn't be committed
 CLAUDE.md 
 TODO.md
+
+# Environment variables (contains sensitive keys)
+.env
+.env.local
+.env.production
+.env.staging

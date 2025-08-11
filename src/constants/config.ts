@@ -1,7 +1,15 @@
+import Config from 'react-native-config';
+
+const ENV_CONFIG = {
+  COINGECKO_API_KEY: Config.COINGECKO_API_KEY,
+  WEB_CLIENT_ID: Config.WEB_CLIENT_ID,
+  IOS_CLIENT_ID: Config.IOS_CLIENT_ID,
+};
+
 // API Configuration
 export const API_CONFIG = {
   COINGECKO_BASE_URL: 'https://api.coingecko.com/api/v3',
-  COINGECKO_API_KEY: 'CG-BuUVyNARYwdryyHA1bm1DLyH', // Should be moved to environment variable in production
+  COINGECKO_API_KEY: ENV_CONFIG.COINGECKO_API_KEY,
   ENDPOINTS: {
     COINS: '/coins/markets',
     COIN_DETAIL: '/coins/{id}',
@@ -25,10 +33,8 @@ export const APP_CONFIG = {
     APP_SETTINGS: '@app_settings',
   },
   GOOGLE_SIGNIN_CONFIG: {
-    WEB_CLIENT_ID:
-      '26541062723-0p5vcfdcbmuco5q4d71d1t91ucka42u4.apps.googleusercontent.com', // Web client ID (required for both platforms)
-    IOS_CLIENT_ID:
-      '26541062723-7lnu0qcfvo29iugs911osr7iuphcva86.apps.googleusercontent.com', // iOS client ID
+    WEB_CLIENT_ID: ENV_CONFIG.WEB_CLIENT_ID,
+    IOS_CLIENT_ID: ENV_CONFIG.IOS_CLIENT_ID,
     OFFLINE_ACCESS: true,
     FORCE_CODE_FOR_REFRESH_TOKEN: true,
   },
