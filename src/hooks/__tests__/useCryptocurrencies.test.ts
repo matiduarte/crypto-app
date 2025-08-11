@@ -1,5 +1,5 @@
 import apiService from '@services/api';
-import { Cryptocurrency } from '@types';
+import { mockCryptocurrencies } from '../../../jest/test-utils';
 
 // Mock the API service
 jest.mock('@services/api', () => ({
@@ -20,62 +20,6 @@ jest.mock('@services/queryClient', () => ({
 }));
 
 const mockApiService = apiService as jest.Mocked<typeof apiService>;
-
-const mockCryptocurrencies: Cryptocurrency[] = [
-  {
-    id: 'bitcoin',
-    symbol: 'btc',
-    name: 'Bitcoin',
-    image: 'bitcoin.png',
-    current_price: 50000,
-    market_cap: 1000000000,
-    market_cap_rank: 1,
-    fully_diluted_valuation: 1000000000,
-    total_volume: 50000000,
-    high_24h: 51000,
-    low_24h: 49000,
-    price_change_24h: 1000,
-    price_change_percentage_24h: 2.0,
-    market_cap_change_24h: 20000000,
-    market_cap_change_percentage_24h: 2.0,
-    circulating_supply: 19000000,
-    total_supply: 21000000,
-    max_supply: 21000000,
-    ath: 69000,
-    ath_change_percentage: -27.5,
-    ath_date: '2021-11-10T14:24:11.849Z',
-    atl: 67.81,
-    atl_change_percentage: 73655.2,
-    atl_date: '2013-07-06T00:00:00.000Z',
-    last_updated: '2023-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'ethereum',
-    symbol: 'eth',
-    name: 'Ethereum',
-    image: 'ethereum.png',
-    current_price: 3000,
-    market_cap: 500000000,
-    market_cap_rank: 2,
-    fully_diluted_valuation: 500000000,
-    total_volume: 30000000,
-    high_24h: 3100,
-    low_24h: 2900,
-    price_change_24h: 50,
-    price_change_percentage_24h: 1.7,
-    market_cap_change_24h: 10000000,
-    market_cap_change_percentage_24h: 1.7,
-    circulating_supply: 120000000,
-    total_supply: 120000000,
-    ath: 4878.26,
-    ath_change_percentage: -38.5,
-    ath_date: '2021-11-10T14:24:19.604Z',
-    atl: 0.432979,
-    atl_change_percentage: 692829.5,
-    atl_date: '2015-10-20T00:00:00.000Z',
-    last_updated: '2023-01-01T00:00:00.000Z',
-  },
-];
 
 describe('useCryptocurrencies hook', () => {
   beforeEach(() => {
