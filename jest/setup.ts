@@ -1,53 +1,7 @@
 import '@testing-library/jest-native/extend-expect';
 
-// Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
-);
-
-// Mock react-navigation
-jest.mock('@react-navigation/native', () => {
-  const actualNav = jest.requireActual('@react-navigation/native');
-  return {
-    ...actualNav,
-    useNavigation: () => ({
-      navigate: jest.fn(),
-      reset: jest.fn(),
-      goBack: jest.fn(),
-      setParams: jest.fn(),
-    }),
-    useRoute: () => ({
-      params: {},
-    }),
-    useIsFocused: () => true,
-  };
-});
-
 // Mock react-native-vector-icons
 jest.mock('react-native-vector-icons/MaterialIcons', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-
-  const MockIcon = ({
-    name,
-    size: _size,
-    color: _color,
-    testID,
-    ..._props
-  }: any) => {
-    return React.createElement(
-      View,
-      { testID, accessibilityLabel: name },
-      name,
-    );
-  };
-  MockIcon.getImageSource = jest.fn(() =>
-    Promise.resolve({ uri: 'mocked-icon' }),
-  );
-  return MockIcon;
-});
-
-jest.mock('react-native-vector-icons/Ionicons', () => {
   const React = require('react');
   const { View } = require('react-native');
 
@@ -105,13 +59,6 @@ jest.mock('axios', () => ({
   })),
   get: jest.fn(),
   post: jest.fn(),
-}));
-
-// Mock react-native-vision-camera
-jest.mock('react-native-vision-camera', () => ({
-  Camera: 'Camera',
-  useCameraDevices: () => ({}),
-  useFrameProcessor: () => {},
 }));
 
 // Global test utilities

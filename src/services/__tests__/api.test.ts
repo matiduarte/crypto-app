@@ -10,17 +10,6 @@ jest.mock('react-native-config', () => ({
 import { AxiosError } from 'axios';
 import apiService from '../api';
 
-// Mock axios module
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    get: jest.fn(),
-    interceptors: {
-      request: { use: jest.fn() },
-      response: { use: jest.fn() },
-    },
-  })),
-}));
-
 // Mock the actual API instance
 const mockApiInstance = {
   get: jest.fn(),

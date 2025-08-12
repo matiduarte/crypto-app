@@ -31,11 +31,6 @@ jest.mock('react-native-vision-camera', () => {
   };
 });
 
-// Mock react-native-safe-area-context
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
-}));
-
 describe('QRScannerModal', () => {
   const defaultProps = {
     visible: true,
