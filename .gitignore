@@ -89,8 +89,6 @@ junit.xml
 .bundle
 .claude
 
-# Documentation that shouldn't be committed
-CLAUDE.md 
 
 # Environment variables (contains sensitive keys)
 .env

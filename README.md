@@ -48,6 +48,10 @@ This app uses environment variables for sensitive configuration. Copy `.env.exam
 cp .env.example .env
 ```
 
+### Important
+
+- The key file and the repo URL have been sent in the email. Make sure to paste them into the .env file.
+
 Required variables:
 
 - `COINGECKO_API_KEY` - API key from [CoinGecko](https://coingecko.com/api)

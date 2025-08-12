@@ -1,14 +1,3 @@
-
-// Number formatting utilities
-export const formatPrice = (price: number, decimals: number = 2): string => {
-  if (price < 0.01) {
-    return price.toFixed(6);
-  } else if (price < 1) {
-    return price.toFixed(4);
-  }
-  return price.toFixed(decimals);
-};
-
 export const formatPriceUSD = (price: number): string => {
   if (price < 0.01) {
     return `${price.toFixed(6)} USD`;
@@ -173,19 +162,6 @@ export const sortCryptos = <T extends Record<string, any>>(
 
     return 0;
   });
-};
-
-// Debounce utility
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-): T => {
-  let timeout: NodeJS.Timeout;
-
-  return ((...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  }) as T;
 };
 
 // Generate unique ID
